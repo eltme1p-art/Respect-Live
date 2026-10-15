@@ -1663,9 +1663,9 @@ if __name__ == "__main__":
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230b55ea'%3E%3Cpath d='M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
    ROOT VARIABLES — TEAM SOL style
-   ═══════════════════════════════════════════════════════ */
+   # ═══════════════════════════════════════════════════════════
 :root{
   --blue:#0b55ea;--blue2:#1b67ff;--blue-rgb:11,85,234;
   --bg:#030508;--panel:#0a0f18;--card:linear-gradient(145deg,#0c1119,#040609);

@@ -1,51 +1,38 @@
-"""
-Respect Live — مراقبة قنوات البث + بوت ديسكورد
-FastAPI + Discord.py + SQLite + APScheduler
-"""
+"""Respect Live — مراقبة قنوات البث + بوت ديسكورد"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 from typing import Optional
-
 import httpx
 import discord
 from fastapi import FastAPI, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, Response as FastResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
-
 load_dotenv()
 
-# ═══════════════════════════════════════════════════════════
-# CONFIG
-# ═══════════════════════════════════════════════════════════
-ADMIN_USERNAME     = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD     = os.getenv("ADMIN_PASSWORD", "changeme")
-SESSION_SECRET     = os.getenv("SESSION_SECRET", secrets.token_hex(32))
-TELEGRAM_TOKEN     = os.getenv("TELEGRAM_TOKEN", "")
-DISCORD_TOKEN      = os.getenv("DISCORD_BOT_TOKEN", "")
-DISCORD_GUILD_ID   = os.getenv("DISCORD_GUILD_ID", "").strip()
-WATCH_CHANNELS     = [c.strip() for c in os.getenv("DISCORD_WATCH_CHANNELS", "").split(",") if c.strip()]
-ALLOWED_GUILDS     = [g.strip() for g in os.getenv("DISCORD_ALLOWED_GUILDS", "").split(",") if g.strip()]
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
+SESSION_SECRET = os.getenv("SESSION_SECRET", secrets.token_hex(32))
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
+DISCORD_GUILD_ID = os.getenv("DISCORD_GUILD_ID", "").strip()
+WATCH_CHANNELS = [c.strip() for c in os.getenv("DISCORD_WATCH_CHANNELS", "").split(",") if c.strip()]
+ALLOWED_GUILDS = [g.strip() for g in os.getenv("DISCORD_ALLOWED_GUILDS", "").split(",") if g.strip()]
 if DISCORD_GUILD_ID and DISCORD_GUILD_ID not in ALLOWED_GUILDS:
     ALLOWED_GUILDS.append(DISCORD_GUILD_ID)
-VAPID_PUBLIC       = os.getenv("VAPID_PUBLIC_KEY", "")
-VAPID_PRIVATE      = os.getenv("VAPID_PRIVATE_KEY", "")
-VAPID_EMAIL        = os.getenv("VAPID_EMAIL", "mailto:admin@example.com")
-SITE_NAME          = os.getenv("SITE_NAME", "Respect Live")
-DB_PATH            = os.getenv("DB_PATH", "respect.db")
-SESSION_TTL        = 7 * 24 * 3600
-UA                 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+VAPID_PUBLIC = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE = os.getenv("VAPID_PRIVATE_KEY", "")
+VAPID_EMAIL = os.getenv("VAPID_EMAIL", "mailto:admin@example.com")
+SITE_NAME = os.getenv("SITE_NAME", "Respect Live")
+DB_PATH = os.getenv("DB_PATH", "respect.db")
+SESSION_TTL = 7 * 24 * 3600
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+MAX_PER_MIN_TG = 30
+MAX_PER_MIN_CH = 15
+BATCH_KICK = 30
+BATCH_YT = 30
+MAX_IMAGE_SIZE = 2 * 1024 * 1024
 
-MAX_PER_MIN_TG     = 30
-MAX_PER_MIN_CH     = 15
-BATCH_KICK         = 30
-BATCH_YT           = 30
-MAX_IMAGE_SIZE     = 2 * 1024 * 1024
-
-
-# ═══════════════════════════════════════════════════════════
-# DATABASE
-# ═══════════════════════════════════════════════════════════
 def db():
     c = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     c.row_factory = sqlite3.Row
@@ -53,209 +40,96 @@ def db():
     c.execute("PRAGMA synchronous=NORMAL")
     return c
 
-
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    display TEXT DEFAULT '',
-    pass_hash TEXT DEFAULT '',
-    salt TEXT DEFAULT '',
-    role TEXT DEFAULT 'user',
-    active INTEGER DEFAULT 1,
-    banned INTEGER DEFAULT 0,
-    lim_kick INTEGER, lim_yt INTEGER, lim_tg INTEGER,
-    can_discord INTEGER DEFAULT 0,
-    created INTEGER, last_login INTEGER
-);
-CREATE TABLE IF NOT EXISTS sessions (
-    token TEXT PRIMARY KEY,
-    username TEXT NOT NULL,
-    created INTEGER,
-    expires INTEGER
-);
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, display TEXT DEFAULT '', pass_hash TEXT DEFAULT '', salt TEXT DEFAULT '', role TEXT DEFAULT 'user', active INTEGER DEFAULT 1, banned INTEGER DEFAULT 0, lim_kick INTEGER, lim_yt INTEGER, lim_tg INTEGER, can_discord INTEGER DEFAULT 0, created INTEGER, last_login INTEGER);
+CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, username TEXT NOT NULL, created INTEGER, expires INTEGER);
 CREATE INDEX IF NOT EXISTS idx_sessions_exp ON sessions(expires);
 CREATE TABLE IF NOT EXISTS settings (k TEXT PRIMARY KEY, v TEXT);
-CREATE TABLE IF NOT EXISTS default_channels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    kind TEXT NOT NULL, identifier TEXT NOT NULL,
-    name TEXT DEFAULT '', avatar TEXT DEFAULT '',
-    enabled INTEGER DEFAULT 1, created INTEGER,
-    UNIQUE(kind, identifier)
-);
+CREATE TABLE IF NOT EXISTS default_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, identifier TEXT NOT NULL, name TEXT DEFAULT '', avatar TEXT DEFAULT '', enabled INTEGER DEFAULT 1, created INTEGER, UNIQUE(kind, identifier));
 CREATE INDEX IF NOT EXISTS idx_def_kind ON default_channels(kind, enabled);
-CREATE TABLE IF NOT EXISTS kick_channels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    slug TEXT NOT NULL,
-    name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '',
-    msg TEXT DEFAULT '', enabled INTEGER DEFAULT 1, live INTEGER DEFAULT 0,
-    title TEXT DEFAULT '', viewers INTEGER DEFAULT 0, thumb TEXT DEFAULT '',
-    last_check INTEGER DEFAULT 0, added_by TEXT NOT NULL, created INTEGER,
-    UNIQUE(slug, added_by)
-);
+CREATE TABLE IF NOT EXISTS kick_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT NOT NULL, name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', msg TEXT DEFAULT '', enabled INTEGER DEFAULT 1, live INTEGER DEFAULT 0, title TEXT DEFAULT '', viewers INTEGER DEFAULT 0, thumb TEXT DEFAULT '', last_check INTEGER DEFAULT 0, added_by TEXT NOT NULL, created INTEGER, UNIQUE(slug, added_by));
 CREATE INDEX IF NOT EXISTS idx_kick_by ON kick_channels(added_by);
 CREATE INDEX IF NOT EXISTS idx_kick_check ON kick_channels(enabled, last_check);
-CREATE TABLE IF NOT EXISTS yt_channels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    channel_id TEXT NOT NULL, handle TEXT DEFAULT '', name TEXT DEFAULT '',
-    avatar TEXT DEFAULT '', msg TEXT DEFAULT '', enabled INTEGER DEFAULT 1,
-    last_video TEXT DEFAULT '', last_check INTEGER DEFAULT 0,
-    added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by)
-);
+CREATE TABLE IF NOT EXISTS yt_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, handle TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', msg TEXT DEFAULT '', enabled INTEGER DEFAULT 1, last_video TEXT DEFAULT '', last_check INTEGER DEFAULT 0, added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_yt_by ON yt_channels(added_by);
 CREATE INDEX IF NOT EXISTS idx_yt_check ON yt_channels(enabled, last_check);
-CREATE TABLE IF NOT EXISTS tg_channels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '',
-    avatar TEXT DEFAULT '', enabled INTEGER DEFAULT 1,
-    added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id, added_by)
-);
+CREATE TABLE IF NOT EXISTS tg_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_tg_by ON tg_channels(added_by);
-CREATE TABLE IF NOT EXISTS discord_feeds (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '',
-    template TEXT DEFAULT '', source_type TEXT DEFAULT 'generic',
-    enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER,
-    UNIQUE(channel_id, added_by)
-);
+CREATE TABLE IF NOT EXISTS discord_feeds (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '', template TEXT DEFAULT '', source_type TEXT DEFAULT 'generic', enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_df_by ON discord_feeds(added_by);
 CREATE INDEX IF NOT EXISTS idx_df_ch ON discord_feeds(channel_id, enabled);
 CREATE TABLE IF NOT EXISTS discord_seen (message_id TEXT PRIMARY KEY, ts INTEGER);
 CREATE INDEX IF NOT EXISTS idx_ds_ts ON discord_seen(ts);
-CREATE TABLE IF NOT EXISTS notifs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL, title TEXT DEFAULT '', body TEXT DEFAULT '',
-    image TEXT DEFAULT '', btn_text TEXT DEFAULT '', btn_url TEXT DEFAULT '',
-    kind TEXT DEFAULT 'admin', ts INTEGER, is_read INTEGER DEFAULT 0
-);
+CREATE TABLE IF NOT EXISTS notifs (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, title TEXT DEFAULT '', body TEXT DEFAULT '', image TEXT DEFAULT '', btn_text TEXT DEFAULT '', btn_url TEXT DEFAULT '', kind TEXT DEFAULT 'admin', ts INTEGER, is_read INTEGER DEFAULT 0);
 CREATE INDEX IF NOT EXISTS idx_notifs ON notifs(username, ts);
-CREATE TABLE IF NOT EXISTS recent_videos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    video_id TEXT NOT NULL, ch_name TEXT DEFAULT '', title TEXT DEFAULT '',
-    thumb TEXT DEFAULT '', url TEXT DEFAULT '', ts INTEGER,
-    added_by TEXT NOT NULL, UNIQUE(video_id, added_by)
-);
+CREATE TABLE IF NOT EXISTS recent_videos (id INTEGER PRIMARY KEY AUTOINCREMENT, video_id TEXT NOT NULL, ch_name TEXT DEFAULT '', title TEXT DEFAULT '', thumb TEXT DEFAULT '', url TEXT DEFAULT '', ts INTEGER, added_by TEXT NOT NULL, UNIQUE(video_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_rv_by ON recent_videos(added_by, ts);
-CREATE TABLE IF NOT EXISTS suggestions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL, text TEXT NOT NULL,
-    is_read INTEGER DEFAULT 0, ts INTEGER
-);
+CREATE TABLE IF NOT EXISTS suggestions (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, text TEXT NOT NULL, is_read INTEGER DEFAULT 0, ts INTEGER);
 CREATE INDEX IF NOT EXISTS idx_sug_ts ON suggestions(ts DESC);
-CREATE TABLE IF NOT EXISTS push_subs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL, endpoint TEXT UNIQUE NOT NULL,
-    p256dh TEXT NOT NULL, auth TEXT NOT NULL, ts INTEGER
-);
+CREATE TABLE IF NOT EXISTS push_subs (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, endpoint TEXT UNIQUE NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, ts INTEGER);
 CREATE INDEX IF NOT EXISTS idx_push_user ON push_subs(username);
-CREATE TABLE IF NOT EXISTS images (
-    id TEXT PRIMARY KEY, mime TEXT NOT NULL, data BLOB NOT NULL,
-    size INTEGER NOT NULL, uploaded_by TEXT, created INTEGER
-);
+CREATE TABLE IF NOT EXISTS images (id TEXT PRIMARY KEY, mime TEXT NOT NULL, data BLOB NOT NULL, size INTEGER NOT NULL, uploaded_by TEXT, created INTEGER);
 CREATE TABLE IF NOT EXISTS rate_limits (k TEXT PRIMARY KEY, cnt INTEGER, ts INTEGER);
-CREATE TABLE IF NOT EXISTS security_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts INTEGER, username TEXT, action TEXT, detail TEXT, ip TEXT
-);
+CREATE TABLE IF NOT EXISTS security_log (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, username TEXT, action TEXT, detail TEXT, ip TEXT);
 CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 """
 
-
 def init_db():
-    """يجري كل تشغيل — يزامن الأدمن مع متغيرات البيئة"""
     c = db()
     c.executescript(SCHEMA)
-    # ✅ إضافة عمود can_discord لو ناقص
     try:
         cols = [r["name"] for r in c.execute("PRAGMA table_info(users)").fetchall()]
         if "can_discord" not in cols:
             c.execute("ALTER TABLE users ADD COLUMN can_discord INTEGER DEFAULT 0")
             c.commit()
-            print("[DB] ✅ تم إضافة عمود can_discord")
+            print("[DB] ✅ can_discord column added")
     except Exception as e:
         print(f"[DB] ALTER: {e}")
-    # 🔐 مزامنة الأدمن مع المتغيرات في كل تشغيل
     salt = secrets.token_hex(16)
     new_hash = hash_pw(ADMIN_PASSWORD, salt)
     existing = c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone()
     if not existing:
-        c.execute(
-            "INSERT INTO users(username,display,pass_hash,salt,role,active,banned,can_discord,created) "
-            "VALUES(?,?,?,?,'owner',1,0,1,?)",
-            (ADMIN_USERNAME, ADMIN_USERNAME, new_hash, salt, now()),
-        )
-        print(f"[DB] ✅ تم إنشاء حساب الأدمن: {ADMIN_USERNAME}")
+        c.execute("INSERT INTO users(username,display,pass_hash,salt,role,active,banned,can_discord,created) VALUES(?,?,?,?,'owner',1,0,1,?)", (ADMIN_USERNAME, ADMIN_USERNAME, new_hash, salt, now()))
+        print(f"[DB] ✅ Created admin: {ADMIN_USERNAME}")
     else:
-        c.execute(
-            "UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0, can_discord=1 "
-            "WHERE username=?",
-            (new_hash, salt, ADMIN_USERNAME),
-        )
-        print(f"[DB] 🔄 تم تحديث بيانات الأدمن: {ADMIN_USERNAME}")
-    defaults = {
-        "site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL",
-        "hero_title": "مراقبة", "hero_accent": "القنوات.",
-        "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.",
-        "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>",
-        "tpl_yt":   "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>",
-        "tpl_discord": "<b>{author}</b>\n{content}",
-        "tpl_twitter": "<b>{author}</b>\n{content}",
-        "tpl_youtube_dc": "<b>{author}</b>\n{content}",
-        "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو",
-        "lim_kick": "10", "lim_yt": "5", "lim_tg": "3",
-        "guest_mode": "1", "guest_blur": "14",
-    }
+        c.execute("UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0, can_discord=1 WHERE username=?", (new_hash, salt, ADMIN_USERNAME))
+        print(f"[DB] 🔄 Synced admin: {ADMIN_USERNAME}")
+    defaults = {"site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL", "hero_title": "مراقبة", "hero_accent": "القنوات.", "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.", "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>", "tpl_yt": "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>", "tpl_discord": "<b>{author}</b>\n{content}", "tpl_twitter": "<b>{author}</b>\n{content}", "tpl_youtube_dc": "<b>{author}</b>\n{content}", "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو", "lim_kick": "10", "lim_yt": "5", "lim_tg": "3", "guest_mode": "1", "guest_blur": "14"}
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
     c.close()
-    print("[DB] ✅ قاعدة البيانات جاهزة")
+    print("[DB] ✅ Ready")
 
+def now(): return int(time.time())
 
-def now() -> int:
-    return int(time.time())
-
-
-def cfg(k: str, d: str = "") -> str:
+def cfg(k, d=""):
     c = db()
     r = c.execute("SELECT v FROM settings WHERE k=?", (k,)).fetchone()
     c.close()
     return r["v"] if r else d
 
-
-def set_cfg(k: str, v: str):
+def set_cfg(k, v):
     c = db()
-    c.execute("INSERT INTO settings(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v",
-              (k, str(v)))
+    c.execute("INSERT INTO settings(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v", (k, str(v)))
     c.commit()
     c.close()
 
-
-def hash_pw(pw: str, salt: str) -> str:
+def hash_pw(pw, salt):
     return hashlib.pbkdf2_hmac("sha256", pw.encode(), bytes.fromhex(salt), 100000).hex()
 
-
-def log_sec(username: str, action: str, detail: str = "", ip: str = ""):
+def log_sec(username, action, detail="", ip=""):
     try:
         c = db()
-        c.execute("INSERT INTO security_log(ts,username,action,detail,ip) VALUES(?,?,?,?,?)",
-                  (now(), username or "anon", action[:60], detail[:300], ip[:60]))
-        c.execute("DELETE FROM security_log WHERE id IN "
-                  "(SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn "
-                  "FROM security_log) WHERE rn > 5000)")
+        c.execute("INSERT INTO security_log(ts,username,action,detail,ip) VALUES(?,?,?,?,?)", (now(), username or "anon", action[:60], detail[:300], ip[:60]))
+        c.execute("DELETE FROM security_log WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn FROM security_log) WHERE rn > 5000)")
         c.commit()
         c.close()
     except Exception:
         pass
 
-
-# ═══════════════════════════════════════════════════════════
-# RATE LIMITING
-# ═══════════════════════════════════════════════════════════
-_rate_map: dict = {}
-
-
-def rate_ok(key: str, max_per_min: int = MAX_PER_MIN_TG) -> bool:
+_rate_map = {}
+def rate_ok(key, max_per_min=MAX_PER_MIN_TG):
     t = time.time()
     lst = _rate_map.setdefault(key, [])
     lst[:] = [x for x in lst if t - x < 60]
@@ -264,94 +138,59 @@ def rate_ok(key: str, max_per_min: int = MAX_PER_MIN_TG) -> bool:
     lst.append(t)
     return True
 
-
-# ═══════════════════════════════════════════════════════════
-# AUTH
-# ═══════════════════════════════════════════════════════════
-def auth(request: Request) -> Optional[dict]:
+def auth(request):
     tok = request.cookies.get("rl_sid")
     if not tok or len(tok) > 200:
         return None
     c = db()
-    row = c.execute(
-        "SELECT s.username, u.* FROM sessions s "
-        "JOIN users u ON u.username=s.username "
-        "WHERE s.token=? AND s.expires>? AND u.active=1 AND u.banned=0",
-        (tok, now()),
-    ).fetchone()
+    row = c.execute("SELECT s.username, u.* FROM sessions s JOIN users u ON u.username=s.username WHERE s.token=? AND s.expires>? AND u.active=1 AND u.banned=0", (tok, now())).fetchone()
     c.close()
     return dict(row) if row else None
 
-
-def new_session(username: str) -> str:
+def new_session(username):
     tok = secrets.token_urlsafe(32)
     c = db()
-    c.execute("INSERT INTO sessions(token,username,created,expires) VALUES(?,?,?,?)",
-              (tok, username, now(), now() + SESSION_TTL))
+    c.execute("INSERT INTO sessions(token,username,created,expires) VALUES(?,?,?,?)", (tok, username, now(), now() + SESSION_TTL))
     c.commit()
     c.close()
     return tok
 
-
-def kill_sessions(username: str):
+def kill_sessions(username):
     c = db()
     c.execute("DELETE FROM sessions WHERE username=?", (username,))
     c.commit()
     c.close()
 
-
-def require_auth(request: Request):
+def require_auth(request):
     u = auth(request)
     if not u:
         raise HTTPException(401, "غير مسجل")
     return u
 
-
-def require_owner(request: Request):
+def require_owner(request):
     u = require_auth(request)
     if u["role"] != "owner":
         raise HTTPException(403, "غير مصرح")
     return u
 
-
-def require_discord_access(request: Request):
+def require_discord_access(request):
     u = require_auth(request)
-    if u.get("role") == "owner":
-        return u
-    if u.get("can_discord") == 1:
-        return u
+    if u.get("role") == "owner": return u
+    if u.get("can_discord") == 1: return u
     raise HTTPException(403, "غير مصرح بالوصول لصفحة ديسكورد")
 
-
-# ═══════════════════════════════════════════════════════════
-# ✅ إصلاح حرج: check_limit يقرأ حد المستخدم أولاً
-# ═══════════════════════════════════════════════════════════
-def get_user_limits(username: str, role: str) -> dict:
-    """يرجع الحدود الفعلية للمستخدم (خاصة أو عامة)."""
+def get_user_limits(username, role):
     if role == "owner":
         return {"kick": 9999, "yt": 9999, "tg": 9999}
     c = db()
-    u = c.execute("SELECT lim_kick, lim_yt, lim_tg FROM users WHERE username=?",
-                  (username,)).fetchone()
+    u = c.execute("SELECT lim_kick, lim_yt, lim_tg FROM users WHERE username=?", (username,)).fetchone()
     c.close()
-    defaults = {
-        "kick": int(cfg("lim_kick", "10")),
-        "yt":   int(cfg("lim_yt", "5")),
-        "tg":   int(cfg("lim_tg", "3")),
-    }
-    if not u:
-        return defaults
-    return {
-        "kick": u["lim_kick"] if u["lim_kick"] is not None else defaults["kick"],
-        "yt":   u["lim_yt"]   if u["lim_yt"]   is not None else defaults["yt"],
-        "tg":   u["lim_tg"]   if u["lim_tg"]   is not None else defaults["tg"],
-    }
+    defaults = {"kick": int(cfg("lim_kick", "10")), "yt": int(cfg("lim_yt", "5")), "tg": int(cfg("lim_tg", "3"))}
+    if not u: return defaults
+    return {"kick": u["lim_kick"] if u["lim_kick"] is not None else defaults["kick"], "yt": u["lim_yt"] if u["lim_yt"] is not None else defaults["yt"], "tg": u["lim_tg"] if u["lim_tg"] is not None else defaults["tg"]}
 
-
-def check_limit(username: str, kind: str, role: str, adding: int = 1) -> bool:
-    """✅ يتحقق من حد المستخدم الخاص أولاً، ثم العام."""
-    if role == "owner":
-        return True
+def check_limit(username, kind, role, adding=1):
+    if role == "owner": return True
     limits = get_user_limits(username, role)
     limit = limits.get(kind, 10)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
@@ -360,9 +199,7 @@ def check_limit(username: str, kind: str, role: str, adding: int = 1) -> bool:
     c.close()
     return (n + adding) <= limit
 
-
-def limit_info(username: str, kind: str, role: str) -> dict:
-    """معلومات كاملة للواجهة."""
+def limit_info(username, kind, role):
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
     limits = get_user_limits(username, role)
     c = db()
@@ -371,37 +208,22 @@ def limit_info(username: str, kind: str, role: str) -> dict:
     limit = limits.get(kind, 10)
     return {"used": used, "limit": limit, "remaining": max(0, limit - used)}
 
-
-# ═══════════════════════════════════════════════════════════
-# TELEGRAM
-# ═══════════════════════════════════════════════════════════
-async def tg_send(chat_id: str, text: str, image: str = "",
-                  btn: str = "", url: str = "") -> bool:
-    if not TELEGRAM_TOKEN:
-        return False
+async def tg_send(chat_id, text, image="", btn="", url=""):
+    if not TELEGRAM_TOKEN: return False
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
     base = {"chat_id": str(chat_id), "parse_mode": "HTML"}
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
-                r = await c.post(
-                    f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto",
-                    json={**base, "photo": image, "caption": (text or ".")[:1024],
-                          "reply_markup": markup},
-                )
-                if r.status_code == 200:
-                    return True
-            r = await c.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={**base, "text": (text or ".")[:4096], "reply_markup": markup},
-            )
+                r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto", json={**base, "photo": image, "caption": (text or ".")[:1024], "reply_markup": markup})
+                if r.status_code == 200: return True
+            r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={**base, "text": (text or ".")[:4096], "reply_markup": markup})
             return r.status_code == 200
     except Exception as e:
         print(f"[TG ERROR] {e}")
         return False
 
-
-def norm_chat(s: str) -> Optional[str]:
+def norm_chat(s):
     s = (s or "").strip()
     m = re.match(r"(?:https?://)?t\.me/([A-Za-z][\w]{3,})", s)
     if m: return "@" + m.group(1)
@@ -410,11 +232,7 @@ def norm_chat(s: str) -> Optional[str]:
     if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
     return None
 
-
-# ═══════════════════════════════════════════════════════════
-# KICK
-# ═══════════════════════════════════════════════════════════
-async def kick_fetch(slug: str) -> Optional[dict]:
+async def kick_fetch(slug):
     h = {"User-Agent": UA, "Accept": "application/json", "Referer": "https://kick.com/"}
     async with httpx.AsyncClient(timeout=15, headers=h) as c:
         for v in ("v2", "v1"):
@@ -427,24 +245,12 @@ async def kick_fetch(slug: str) -> Optional[dict]:
                 u = j.get("user") or {}
                 bn = j.get("banner_image")
                 if isinstance(bn, dict): bn = bn.get("url") or ""
-                return {
-                    "name": u.get("username") or slug,
-                    "avatar": u.get("profile_pic") or "",
-                    "banner": bn or "",
-                    "live": bool(ls.get("is_live")),
-                    "title": ls.get("session_title") or "",
-                    "viewers": ls.get("viewer_count") or 0,
-                    "thumb": ((ls.get("thumbnail") or {}).get("url")) or "",
-                }
+                return {"name": u.get("username") or slug, "avatar": u.get("profile_pic") or "", "banner": bn or "", "live": bool(ls.get("is_live")), "title": ls.get("session_title") or "", "viewers": ls.get("viewer_count") or 0, "thumb": ((ls.get("thumbnail") or {}).get("url")) or ""}
             except Exception as e:
                 print(f"[KICK] {e}")
     return None
 
-
-# ═══════════════════════════════════════════════════════════
-# YOUTUBE
-# ═══════════════════════════════════════════════════════════
-async def yt_feed(channel_id: str) -> Optional[list]:
+async def yt_feed(channel_id):
     try:
         async with httpx.AsyncClient(timeout=15, headers={"User-Agent": UA}) as c:
             r = await c.get(f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}")
@@ -455,15 +261,13 @@ async def yt_feed(channel_id: str) -> Optional[list]:
                 vid = (re.search(r"<yt:videoId>([^<]+)", e) or [None, ""])[1]
                 title = (re.search(r"<title>([^<]*)", e) or [None, ""])[1]
                 pub = (re.search(r"<published>([^<]+)", e) or [None, ""])[1]
-                if vid:
-                    items.append({"id": vid, "title": title, "pub": pub})
+                if vid: items.append({"id": vid, "title": title, "pub": pub})
             return items
     except Exception as e:
         print(f"[YT] {e}")
         return None
 
-
-async def yt_resolve(input_str: str) -> Optional[dict]:
+async def yt_resolve(input_str):
     input_str = (input_str or "").strip()[:300]
     if not input_str: return None
     m = re.search(r"UC[\w-]{22}", input_str)
@@ -494,16 +298,9 @@ async def yt_resolve(input_str: str) -> Optional[dict]:
             return None
     return None
 
+def push_available(): return bool(VAPID_PUBLIC and VAPID_PRIVATE)
 
-# ═══════════════════════════════════════════════════════════
-# WEB PUSH
-# ═══════════════════════════════════════════════════════════
-def push_available() -> bool:
-    return bool(VAPID_PUBLIC and VAPID_PRIVATE)
-
-
-async def push_send_to_user(username: str, title: str, body: str,
-                            image: str = "", url: str = "/", tag: str = "") -> int:
+async def push_send_to_user(username, title, body, image="", url="/", tag=""):
     if not push_available(): return 0
     try:
         from pywebpush import webpush, WebPushException
@@ -513,16 +310,11 @@ async def push_send_to_user(username: str, title: str, body: str,
     subs = c.execute("SELECT * FROM push_subs WHERE username=?", (username,)).fetchall()
     c.close()
     if not subs: return 0
-    payload = json.dumps({"title": title[:80], "body": body[:200],
-                          "image": image or "", "url": url or "/", "tag": tag or "rl"})
+    payload = json.dumps({"title": title[:80], "body": body[:200], "image": image or "", "url": url or "/", "tag": tag or "rl"})
     sent = 0
     for sub in subs:
         try:
-            webpush(subscription_info={
-                "endpoint": sub["endpoint"],
-                "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]},
-            }, data=payload, vapid_private_key=VAPID_PRIVATE,
-               vapid_claims={"sub": VAPID_EMAIL}, timeout=10)
+            webpush(subscription_info={"endpoint": sub["endpoint"], "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]}}, data=payload, vapid_private_key=VAPID_PRIVATE, vapid_claims={"sub": VAPID_EMAIL}, timeout=10)
             sent += 1
         except WebPushException as e:
             code = getattr(e.response, "status_code", None) if hasattr(e, "response") else None
@@ -534,64 +326,38 @@ async def push_send_to_user(username: str, title: str, body: str,
         except Exception:
             pass
     return sent
-                                
 
-# ═══════════════════════════════════════════════════════════
-# DISCORD BOT — اكتشاف تلقائي للرومات
-# ═══════════════════════════════════════════════════════════
-discord_client = discord.Client(intents=discord.Intents(
-    guilds=True, guild_messages=True, message_content=True,
-))
-
-# 🎯 كاش للرومات المكتشفة تلقائياً (يتم تحديثه عند on_ready)
-_DISCORD_CHANNELS_CACHE: dict = {}
-
+discord_client = discord.Client(intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
+_DISCORD_CHANNELS_CACHE = {}
 
 @discord_client.event
 async def on_ready():
     global _DISCORD_CHANNELS_CACHE
-    print(f"[Discord] ✅ {discord_client.user} في {len(discord_client.guilds)} سيرفر")
-    # 🎯 اكتشاف كل الرومات تلقائياً
+    print(f"[Discord] ✅ {discord_client.user} in {len(discord_client.guilds)} guilds")
     _DISCORD_CHANNELS_CACHE = {}
     for g in discord_client.guilds:
-        if ALLOWED_GUILDS and str(g.id) not in ALLOWED_GUILDS:
-            continue
+        if ALLOWED_GUILDS and str(g.id) not in ALLOWED_GUILDS: continue
         for ch in g.text_channels:
-            _DISCORD_CHANNELS_CACHE[str(ch.id)] = {
-                "name": ch.name,
-                "guild": g.name,
-                "guild_id": str(g.id),
-            }
-    print(f"[Discord] 📡 اكتشف {len(_DISCORD_CHANNELS_CACHE)} روم تلقائياً")
-    if DISCORD_GUILD_ID:
-        print(f"[Discord] 🎯 سيرفر رئيسي: {DISCORD_GUILD_ID}")
+            _DISCORD_CHANNELS_CACHE[str(ch.id)] = {"name": ch.name, "guild": g.name, "guild_id": str(g.id)}
+    print(f"[Discord] 📡 Discovered {len(_DISCORD_CHANNELS_CACHE)} channels")
 
-
-def _is_watched_channel(ch_id: str) -> bool:
-    """لو DISCORD_WATCH_CHANNELS فاضي → كل الرومات المكتشفة تُراقب"""
-    if WATCH_CHANNELS:
-        return ch_id in WATCH_CHANNELS
+def _is_watched_channel(ch_id):
+    if WATCH_CHANNELS: return ch_id in WATCH_CHANNELS
     return ch_id in _DISCORD_CHANNELS_CACHE
 
-
-def classify_message_source(msg: discord.Message) -> str:
+def classify_message_source(msg):
     if msg.embeds:
         e = msg.embeds[0]
         url = (e.url or "").lower()
         author_name = ((e.author.name if e.author else "") or "").lower()
         provider = ((e.provider.name if e.provider else "") or "").lower()
-        if "twitter.com" in url or "x.com" in url or "twitter" in provider or "twitter" in author_name:
-            return "twitter"
-        if "youtube.com" in url or "youtu.be" in url or "youtube" in provider:
-            return "youtube"
-    if "twitter.com" in (msg.content or "").lower() or "x.com" in (msg.content or "").lower():
-        return "twitter"
-    if "youtube.com" in (msg.content or "").lower() or "youtu.be" in (msg.content or "").lower():
-        return "youtube"
+        if "twitter.com" in url or "x.com" in url or "twitter" in provider or "twitter" in author_name: return "twitter"
+        if "youtube.com" in url or "youtu.be" in url or "youtube" in provider: return "youtube"
+    if "twitter.com" in (msg.content or "").lower() or "x.com" in (msg.content or "").lower(): return "twitter"
+    if "youtube.com" in (msg.content or "").lower() or "youtu.be" in (msg.content or "").lower(): return "youtube"
     return "generic"
 
-
-def extract_author_and_content(msg: discord.Message) -> tuple:
+def extract_author_and_content(msg):
     author = msg.author.display_name or msg.author.name or ""
     content = (msg.content or "").strip()[:2000]
     if msg.author.bot and msg.embeds:
@@ -604,8 +370,7 @@ def extract_author_and_content(msg: discord.Message) -> tuple:
         if parts: content = "\n".join(parts)[:2000]
     return author, content
 
-
-def extract_image_and_url(msg: discord.Message) -> tuple:
+def extract_image_and_url(msg):
     image, url = "", ""
     if msg.embeds:
         e = msg.embeds[0]
@@ -619,170 +384,96 @@ def extract_image_and_url(msg: discord.Message) -> tuple:
                 break
     return image, url
 
-
 @discord_client.event
-async def on_message(msg: discord.Message):
-    # تجاهل رسائل البوتات العادية (بدون embeds)
-    if msg.author.bot and not msg.embeds:
-        return
-    if msg.guild is None:
-        return
-    if ALLOWED_GUILDS and str(msg.guild.id) not in ALLOWED_GUILDS:
-        return
+async def on_message(msg):
+    if msg.author.bot and not msg.embeds: return
+    if msg.guild is None: return
+    if ALLOWED_GUILDS and str(msg.guild.id) not in ALLOWED_GUILDS: return
     ch_id = str(msg.channel.id)
-    if not _is_watched_channel(ch_id):
-        return
-
-    # 🔒 منع التكرار
+    if not _is_watched_channel(ch_id): return
     c = db()
     if c.execute("SELECT 1 FROM discord_seen WHERE message_id=?", (str(msg.id),)).fetchone():
         c.close()
         return
     c.execute("INSERT INTO discord_seen(message_id,ts) VALUES(?,?)", (str(msg.id), now()))
     c.commit()
-
     source = classify_message_source(msg)
     author, content = extract_author_and_content(msg)
     image, url = extract_image_and_url(msg)
-
     if not content and not image:
         c.close()
         return
-
-    # ابحث عن روابط المستخدمين لهذا الروم
-    feeds = c.execute(
-        "SELECT * FROM discord_feeds WHERE channel_id=? AND enabled=1", (ch_id,)
-    ).fetchall()
+    feeds = c.execute("SELECT * FROM discord_feeds WHERE channel_id=? AND enabled=1", (ch_id,)).fetchall()
     c.close()
-
-    if not feeds:
-        return
-
+    if not feeds: return
     for feed in feeds:
         owner = feed["added_by"]
-        if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG):
-            continue
-
+        if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG): continue
         if feed["template"]: tpl = feed["template"]
         elif source == "twitter": tpl = cfg("tpl_twitter") or cfg("tpl_discord")
         elif source == "youtube": tpl = cfg("tpl_youtube_dc") or cfg("tpl_discord")
         else: tpl = cfg("tpl_discord")
-
-        text = (tpl.replace("{author}", author)
-                   .replace("{content}", content)
-                   .replace("{channel}", getattr(msg.channel, "name", "") or "")
-                   .replace("{source}", source))
-
+        text = tpl.replace("{author}", author).replace("{content}", content).replace("{channel}", getattr(msg.channel, "name", "") or "").replace("{source}", source)
         c2 = db()
-        tgs = c2.execute(
-            "SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (owner,)
-        ).fetchall()
-        c2.execute(
-            "INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) "
-            "VALUES(?,?,?,?,?,?,'discord',?,0)",
-            (owner, author or "رسالة ديسكورد", content[:500], image,
-             "فتح الرابط" if url else "", url or "", now()),
-        )
+        tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (owner,)).fetchall()
+        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (owner, author or "رسالة ديسكورد", content[:500], image, "فتح الرابط" if url else "", url or "", now()))
         c2.commit()
         c2.close()
-
-        asyncio.create_task(push_send_to_user(
-            owner, author or "رسالة ديسكورد", content[:200], image, url, "discord"
-        ))
+        asyncio.create_task(push_send_to_user(owner, author or "رسالة ديسكورد", content[:200], image, url, "discord"))
         for tg in tgs:
             await tg_send(tg["chat_id"], text, image, "عرض", url)
 
-
-# ═══════════════════════════════════════════════════════════
-# BACKGROUND JOBS
-# ═══════════════════════════════════════════════════════════
 async def job_kick():
     c = db()
-    rows = c.execute(
-        "SELECT * FROM kick_channels WHERE enabled=1 AND last_check<? "
-        "ORDER BY last_check LIMIT ?",
-        (now() - 90, BATCH_KICK),
-    ).fetchall()
+    rows = c.execute("SELECT * FROM kick_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now() - 90, BATCH_KICK)).fetchall()
     c.close()
     if not rows: return
     infos = {}
     sem = asyncio.Semaphore(8)
-    async def fetch_one(r):
+    async def f(r):
         async with sem:
             infos[r["slug"]] = await kick_fetch(r["slug"])
-    await asyncio.gather(*(fetch_one(r) for r in rows), return_exceptions=True)
-    updates, live_events = [], []
+    await asyncio.gather(*(f(r) for r in rows), return_exceptions=True)
+    updates, events = [], []
     t = now()
     for r in rows:
         info = infos.get(r["slug"])
         if not info:
             updates.append((t, r["id"]))
             continue
-        updates.append((
-            info["name"], info["avatar"], info["banner"],
-            1 if info["live"] else 0, info["title"], info["viewers"],
-            info["thumb"], t, r["id"]
-        ))
-        if info["live"] and not r["live"]:
-            live_events.append((r, info))
+        updates.append((info["name"], info["avatar"], info["banner"], 1 if info["live"] else 0, info["title"], info["viewers"], info["thumb"], t, r["id"]))
+        if info["live"] and not r["live"]: events.append((r, info))
     c = db()
     for u in updates:
-        if len(u) == 2:
-            c.execute("UPDATE kick_channels SET last_check=? WHERE id=?", u)
-        else:
-            c.execute(
-                "UPDATE kick_channels SET name=?,avatar=?,banner=?,live=?,title=?,"
-                "viewers=?,thumb=?,last_check=? WHERE id=?", u
-            )
+        if len(u) == 2: c.execute("UPDATE kick_channels SET last_check=? WHERE id=?", u)
+        else: c.execute("UPDATE kick_channels SET name=?,avatar=?,banner=?,live=?,title=?,viewers=?,thumb=?,last_check=? WHERE id=?", u)
     c.commit()
     c.close()
-    async def notify_one(r, info):
+    async def notify(r, info):
         tpl = r["msg"] or cfg("tpl_kick")
-        text = (tpl.replace("{name}", info["name"])
-                   .replace("{title}", info["title"])
-                   .replace("{url}", f"https://kick.com/{r['slug']}"))
+        text = tpl.replace("{name}", info["name"]).replace("{title}", info["title"]).replace("{url}", f"https://kick.com/{r['slug']}")
         c2 = db()
-        tgs = c2.execute(
-            "SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (r["added_by"],)
-        ).fetchall()
-        c2.execute(
-            "INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) "
-            "VALUES(?,?,?,?,?,?,'kick',?,0)",
-            (r["added_by"], info["name"] + " يبث الآن", info["title"],
-             info["banner"] or info["thumb"], cfg("btn_kick"),
-             f"https://kick.com/{r['slug']}", t),
-        )
+        tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (r["added_by"],)).fetchall()
+        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'kick',?,0)", (r["added_by"], info["name"] + " يبث الآن", info["title"], info["banner"] or info["thumb"], cfg("btn_kick"), f"https://kick.com/{r['slug']}", t))
         c2.commit()
         c2.close()
-        asyncio.create_task(push_send_to_user(
-            r["added_by"], info["name"] + " يبث الآن",
-            info["title"] or "بث مباشر الآن",
-            info["banner"] or info["thumb"],
-            f"https://kick.com/{r['slug']}", f"kick:{r['id']}"
-        ))
+        asyncio.create_task(push_send_to_user(r["added_by"], info["name"] + " يبث الآن", info["title"] or "بث مباشر الآن", info["banner"] or info["thumb"], f"https://kick.com/{r['slug']}", f"kick:{r['id']}"))
         for tg in tgs:
-            await tg_send(tg["chat_id"], text, info["banner"] or info["thumb"],
-                          cfg("btn_kick"), f"https://kick.com/{r['slug']}")
-    await asyncio.gather(*(notify_one(r, info) for r, info in live_events),
-                         return_exceptions=True)
-
+            await tg_send(tg["chat_id"], text, info["banner"] or info["thumb"], cfg("btn_kick"), f"https://kick.com/{r['slug']}")
+    await asyncio.gather(*(notify(r, info) for r, info in events), return_exceptions=True)
 
 async def job_yt():
     c = db()
-    rows = c.execute(
-        "SELECT * FROM yt_channels WHERE enabled=1 AND last_check<? "
-        "ORDER BY last_check LIMIT ?",
-        (now() - 300, BATCH_YT),
-    ).fetchall()
+    rows = c.execute("SELECT * FROM yt_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now() - 300, BATCH_YT)).fetchall()
     c.close()
     if not rows: return
     feeds = {}
     sem = asyncio.Semaphore(8)
-    async def fetch_one(r):
+    async def f(r):
         async with sem:
             feeds[r["channel_id"]] = await yt_feed(r["channel_id"])
-    await asyncio.gather(*(fetch_one(r) for r in rows), return_exceptions=True)
-    updates, new_videos = [], []
+    await asyncio.gather(*(f(r) for r in rows), return_exceptions=True)
+    updates, new_vids = [], []
     t = now()
     for r in rows:
         items = feeds.get(r["channel_id"])
@@ -795,78 +486,46 @@ async def job_yt():
             for it in items:
                 if it["id"] == r["last_video"]: break
                 fresh.append(it)
-            for v in reversed(fresh[:3]):
-                new_videos.append((r, v))
+            for v in reversed(fresh[:3]): new_vids.append((r, v))
         updates.append((latest, t, r["id"]))
     c = db()
     for u in updates:
-        if len(u) == 2:
-            c.execute("UPDATE yt_channels SET last_check=? WHERE id=?", u)
-        else:
-            c.execute("UPDATE yt_channels SET last_video=?,last_check=? WHERE id=?", u)
+        if len(u) == 2: c.execute("UPDATE yt_channels SET last_check=? WHERE id=?", u)
+        else: c.execute("UPDATE yt_channels SET last_video=?,last_check=? WHERE id=?", u)
     c.commit()
     c.close()
-    async def notify_one(r, v):
+    async def notify(r, v):
         thumb = f"https://i.ytimg.com/vi/{v['id']}/maxresdefault.jpg"
         url = f"https://youtube.com/watch?v={v['id']}"
         tpl = r["msg"] or cfg("tpl_yt")
-        text = (tpl.replace("{name}", r["name"])
-                   .replace("{title}", v["title"])
-                   .replace("{url}", url))
+        text = tpl.replace("{name}", r["name"]).replace("{title}", v["title"]).replace("{url}", url)
         c2 = db()
-        c2.execute(
-            "INSERT OR IGNORE INTO recent_videos(video_id,ch_name,title,thumb,url,ts,added_by) "
-            "VALUES(?,?,?,?,?,?,?)",
-            (v["id"], r["name"], v["title"], thumb, url, t, r["added_by"]),
-        )
-        c2.execute(
-            "INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) "
-            "VALUES(?,?,?,?,?,?,'yt',?,0)",
-            (r["added_by"], f"فيديو جديد من {r['name']}", v["title"],
-             thumb, cfg("btn_yt"), url, t),
-        )
-        tgs = c2.execute(
-            "SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (r["added_by"],)
-        ).fetchall()
+        c2.execute("INSERT OR IGNORE INTO recent_videos(video_id,ch_name,title,thumb,url,ts,added_by) VALUES(?,?,?,?,?,?,?)", (v["id"], r["name"], v["title"], thumb, url, t, r["added_by"]))
+        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'yt',?,0)", (r["added_by"], f"فيديو جديد من {r['name']}", v["title"], thumb, cfg("btn_yt"), url, t))
+        tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (r["added_by"],)).fetchall()
         c2.commit()
         c2.close()
-        asyncio.create_task(push_send_to_user(
-            r["added_by"], f"فيديو جديد من {r['name']}",
-            v["title"], thumb, url, f"yt:{v['id']}"
-        ))
+        asyncio.create_task(push_send_to_user(r["added_by"], f"فيديو جديد من {r['name']}", v["title"], thumb, url, f"yt:{v['id']}"))
         for tg in tgs:
             await tg_send(tg["chat_id"], text, thumb, cfg("btn_yt"), url)
-    await asyncio.gather(*(notify_one(r, v) for r, v in new_videos),
-                         return_exceptions=True)
-
+    await asyncio.gather(*(notify(r, v) for r, v in new_vids), return_exceptions=True)
 
 async def job_cleanup():
     c = db()
     c.execute("DELETE FROM discord_seen WHERE ts<?", (now() - 7 * 86400,))
     c.execute("DELETE FROM sessions WHERE expires<?", (now(),))
     c.execute("DELETE FROM rate_limits WHERE ts<?", (now() - 3600,))
-    c.execute("DELETE FROM security_log WHERE id IN "
-              "(SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn "
-              "FROM security_log) WHERE rn > 5000)")
-    c.execute("DELETE FROM recent_videos WHERE id IN "
-              "(SELECT id FROM (SELECT id, ROW_NUMBER() OVER "
-              "(PARTITION BY added_by ORDER BY ts DESC) rn FROM recent_videos) WHERE rn > 12)")
-    c.execute("DELETE FROM notifs WHERE id IN "
-              "(SELECT id FROM (SELECT id, ROW_NUMBER() OVER "
-              "(PARTITION BY username ORDER BY ts DESC) rn FROM notifs) WHERE rn > 60)")
+    c.execute("DELETE FROM security_log WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn FROM security_log) WHERE rn > 5000)")
+    c.execute("DELETE FROM recent_videos WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY added_by ORDER BY ts DESC) rn FROM recent_videos) WHERE rn > 12)")
+    c.execute("DELETE FROM notifs WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY username ORDER BY ts DESC) rn FROM notifs) WHERE rn > 60)")
     c.execute("DELETE FROM suggestions WHERE ts<?", (now() - 90 * 86400,))
     c.commit()
     c.close()
 
-
-# ═══════════════════════════════════════════════════════════
-# FASTAPI
-# ═══════════════════════════════════════════════════════════
 scheduler = AsyncIOScheduler()
 
-
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app):
     init_db()
     scheduler.add_job(job_kick, "interval", seconds=90)
     scheduler.add_job(job_yt, "interval", seconds=300)
@@ -875,63 +534,31 @@ async def lifespan(app: FastAPI):
     if DISCORD_TOKEN:
         asyncio.create_task(discord_client.start(DISCORD_TOKEN))
     else:
-        print("[Discord] ⚠️ DISCORD_BOT_TOKEN غير مضبوط")
-    if push_available():
-        print("[Push] ✅ Web Push مفعّل")
-    else:
-        print("[Push] ⚠️ VAPID غير مضبوط")
+        print("[Discord] ⚠️ DISCORD_BOT_TOKEN not set")
+    if push_available(): print("[Push] ✅ Enabled")
+    else: print("[Push] ⚠️ VAPID not configured")
     yield
     scheduler.shutdown(wait=False)
 
-
 app = FastAPI(lifespan=lifespan)
 
-
-# ═══════════════════════════════════════════════════════════
-# API — BOOT / GUEST
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/boot")
 async def boot(request: Request):
-    return {
-        "site_name": cfg("site_name", SITE_NAME),
-        "site_sub": cfg("site_sub"),
-        "hero_title": cfg("hero_title"),
-        "hero_accent": cfg("hero_accent"),
-        "hero_text": cfg("hero_text"),
-        "guest_mode": cfg("guest_mode", "1") == "1",
-        "guest_blur": int(cfg("guest_blur", "14")),
-        "has_telegram": bool(TELEGRAM_TOKEN),
-        "has_discord": bool(DISCORD_TOKEN),
-        "has_push": push_available(),
-        "discord_watching": len(_DISCORD_CHANNELS_CACHE) or len(WATCH_CHANNELS),
-    }
-
+    return {"site_name": cfg("site_name", SITE_NAME), "site_sub": cfg("site_sub"), "hero_title": cfg("hero_title"), "hero_accent": cfg("hero_accent"), "hero_text": cfg("hero_text"), "guest_mode": cfg("guest_mode", "1") == "1", "guest_blur": int(cfg("guest_blur", "14")), "has_telegram": bool(TELEGRAM_TOKEN), "has_discord": bool(DISCORD_TOKEN), "has_push": push_available(), "discord_watching": len(_DISCORD_CHANNELS_CACHE) or len(WATCH_CHANNELS)}
 
 @app.get("/api/guest-preview")
 async def guest_preview():
-    if cfg("guest_mode", "1") != "1":
-        raise HTTPException(403, "وضع الزائر معطل")
+    if cfg("guest_mode", "1") != "1": raise HTTPException(403, "وضع الزائر معطل")
     c = db()
-    kick_count = c.execute("SELECT COUNT(*) n FROM kick_channels WHERE enabled=1").fetchone()["n"]
-    yt_count = c.execute("SELECT COUNT(*) n FROM yt_channels WHERE enabled=1").fetchone()["n"]
-    tg_count = c.execute("SELECT COUNT(*) n FROM tg_channels WHERE enabled=1").fetchone()["n"]
-    live_list = c.execute(
-        "SELECT slug, name, avatar, title, viewers, thumb FROM kick_channels "
-        "WHERE live=1 AND enabled=1 LIMIT 6"
-    ).fetchall()
+    kc = c.execute("SELECT COUNT(*) n FROM kick_channels WHERE enabled=1").fetchone()["n"]
+    yc = c.execute("SELECT COUNT(*) n FROM yt_channels WHERE enabled=1").fetchone()["n"]
+    tc = c.execute("SELECT COUNT(*) n FROM tg_channels WHERE enabled=1").fetchone()["n"]
+    live = c.execute("SELECT slug, name, avatar, title, viewers, thumb FROM kick_channels WHERE live=1 AND enabled=1 LIMIT 6").fetchall()
     c.close()
-    return {
-        "counts": {"kick": kick_count, "yt": yt_count, "tg": tg_count},
-        "live": [dict(r) for r in live_list],
-    }
+    return {"counts": {"kick": kc, "yt": yc, "tg": tc}, "live": [dict(r) for r in live]}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — AUTH (دخول فقط — لا تسجيل)
-# ═══════════════════════════════════════════════════════════
 @app.post("/api/login")
-async def login(request: Request, response: Response,
-                u: str = Form(...), p: str = Form(...)):
+async def login(request: Request, response: Response, u: str = Form(...), p: str = Form(...)):
     u = u.strip()[:60]
     ip = request.client.host if request.client else ""
     c = db()
@@ -953,10 +580,8 @@ async def login(request: Request, response: Response,
     c.commit()
     c.close()
     log_sec(u, "login_ok", "", ip)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL,
-                        httponly=True, samesite="lax", secure=False)
+    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False)
     return {"ok": True, "user": {"username": row["username"], "role": row["role"]}}
-
 
 @app.post("/api/logout")
 async def logout(request: Request, response: Response):
@@ -969,38 +594,12 @@ async def logout(request: Request, response: Response):
     response.delete_cookie("rl_sid")
     return {"ok": True}
 
-
 @app.get("/api/me")
 async def me(request: Request):
     u = auth(request)
-    if not u:
-        return JSONResponse({"error": "غير مسجل", "auth": False}, 401)
-    return {
-        "user": {
-            "username": u["username"],
-            "display": u["display"],
-            "role": u["role"],
-            "can_discord": u.get("can_discord", 0) == 1,
-        },
-        "limits": get_user_limits(u["username"], u["role"]),
-        "usage": {
-            "kick": limit_info(u["username"], "kick", u["role"])["used"],
-            "yt":   limit_info(u["username"], "yt", u["role"])["used"],
-            "tg":   limit_info(u["username"], "tg", u["role"])["used"],
-        },
-        "tpl_kick": cfg("tpl_kick"), "tpl_yt": cfg("tpl_yt"),
-        "tpl_discord": cfg("tpl_discord"), "tpl_twitter": cfg("tpl_twitter"),
-        "tpl_youtube_dc": cfg("tpl_youtube_dc"),
-        "site_name": cfg("site_name", SITE_NAME),
-        "has_telegram": bool(TELEGRAM_TOKEN),
-        "has_discord": bool(DISCORD_TOKEN),
-        "has_push": push_available(),
-    }
+    if not u: return JSONResponse({"error": "غير مسجل", "auth": False}, 401)
+    return {"user": {"username": u["username"], "display": u["display"], "role": u["role"], "can_discord": u.get("can_discord", 0) == 1}, "limits": get_user_limits(u["username"], u["role"]), "usage": {"kick": limit_info(u["username"], "kick", u["role"])["used"], "yt": limit_info(u["username"], "yt", u["role"])["used"], "tg": limit_info(u["username"], "tg", u["role"])["used"]}, "tpl_kick": cfg("tpl_kick"), "tpl_yt": cfg("tpl_yt"), "tpl_discord": cfg("tpl_discord"), "tpl_twitter": cfg("tpl_twitter"), "tpl_youtube_dc": cfg("tpl_youtube_dc"), "site_name": cfg("site_name", SITE_NAME), "has_telegram": bool(TELEGRAM_TOKEN), "has_discord": bool(DISCORD_TOKEN), "has_push": push_available()}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — CHANNELS (مع check_limit مُصلح)
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/channels/{kind}")
 async def list_channels(kind: str, request: Request):
     u = require_auth(request)
@@ -1010,112 +609,74 @@ async def list_channels(kind: str, request: Request):
     if u["role"] == "owner":
         rows = c.execute(f"SELECT * FROM {table} ORDER BY id DESC").fetchall()
     else:
-        rows = c.execute(f"SELECT * FROM {table} WHERE added_by=? ORDER BY id DESC",
-                         (u["username"],)).fetchall()
+        rows = c.execute(f"SELECT * FROM {table} WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
-    # ✅ إرفاق معلومات الحد
     info = limit_info(u["username"], kind, u["role"])
     return {"rows": [dict(r) for r in rows], "limits": info}
-
 
 @app.get("/api/channels/{kind}/suggestions")
 async def channel_suggestions(kind: str, request: Request):
     u = require_auth(request)
     if kind not in ("kick", "yt", "tg"): raise HTTPException(404)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
-    ident_col = {"kick": "slug", "yt": "channel_id", "tg": "chat_id"}[kind]
+    ic = {"kick": "slug", "yt": "channel_id", "tg": "chat_id"}[kind]
     c = db()
-    defaults = c.execute(
-        "SELECT * FROM default_channels WHERE kind=? AND enabled=1 ORDER BY id DESC", (kind,)
-    ).fetchall()
-    mine = set(r[ident_col] for r in c.execute(
-        f"SELECT {ident_col} FROM {table} WHERE added_by=?", (u["username"],)
-    ).fetchall())
+    defaults = c.execute("SELECT * FROM default_channels WHERE kind=? AND enabled=1 ORDER BY id DESC", (kind,)).fetchall()
+    mine = set(r[ic] for r in c.execute(f"SELECT {ic} FROM {table} WHERE added_by=?", (u["username"],)).fetchall())
     c.close()
     return {"rows": [dict(r) for r in defaults if r["identifier"] not in mine]}
-
 
 @app.post("/api/channels/{kind}")
 async def add_channel(kind: str, request: Request):
     u = require_auth(request)
-    if not rate_ok(f"add:{u['username']}", MAX_PER_MIN_CH):
-        raise HTTPException(429, "عدد كبير من الإضافات")
+    if not rate_ok(f"add:{u['username']}", MAX_PER_MIN_CH): raise HTTPException(429, "عدد كبير من الإضافات")
     body = await request.json()
     c = db()
     t = now()
-
     if kind == "kick":
         slug = re.sub(r"[^a-z0-9_-]", "", (body.get("slug") or "").lower().replace("@", ""))
         if not slug:
             c.close()
             return JSONResponse({"error": "اسم غير صالح"}, 400)
-        if c.execute("SELECT 1 FROM kick_channels WHERE slug=? AND added_by=?",
-                     (slug, u["username"])).fetchone():
+        if c.execute("SELECT 1 FROM kick_channels WHERE slug=? AND added_by=?", (slug, u["username"])).fetchone():
             c.close()
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
-        # ✅ الإصلاح: check_limit الصحيح
         if not check_limit(u["username"], "kick", u["role"]):
             c.close()
             info = limit_info(u["username"], "kick", u["role"])
-            return JSONResponse({
-                "error": f"وصلت الحد الأقصى ({info['limit']}) لقنوات كيك"
-            }, 400)
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({info['limit']}) لقنوات كيك"}, 400)
         info = await kick_fetch(slug)
-        c.execute(
-            "INSERT INTO kick_channels(slug,name,avatar,banner,msg,enabled,live,title,"
-            "viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?)",
-            (slug, (info or {}).get("name") or slug, (info or {}).get("avatar") or "",
-             (info or {}).get("banner") or "", body.get("msg", "")[:1500],
-             1 if (info or {}).get("live") else 0, (info or {}).get("title") or "",
-             (info or {}).get("viewers") or 0, (info or {}).get("thumb") or "",
-             t, u["username"], t),
-        )
+        c.execute("INSERT INTO kick_channels(slug,name,avatar,banner,msg,enabled,live,title,viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?)", (slug, (info or {}).get("name") or slug, (info or {}).get("avatar") or "", (info or {}).get("banner") or "", body.get("msg", "")[:1500], 1 if (info or {}).get("live") else 0, (info or {}).get("title") or "", (info or {}).get("viewers") or 0, (info or {}).get("thumb") or "", t, u["username"], t))
     elif kind == "yt":
         info = await yt_resolve(body.get("channel_id") or body.get("input") or "")
         if not info:
             c.close()
             return JSONResponse({"error": "تعذّر التعرف على القناة"}, 400)
         cid = info["channel_id"]
-        if c.execute("SELECT 1 FROM yt_channels WHERE channel_id=? AND added_by=?",
-                     (cid, u["username"])).fetchone():
+        if c.execute("SELECT 1 FROM yt_channels WHERE channel_id=? AND added_by=?", (cid, u["username"])).fetchone():
             c.close()
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
         if not check_limit(u["username"], "yt", u["role"]):
             c.close()
             info2 = limit_info(u["username"], "yt", u["role"])
-            return JSONResponse({
-                "error": f"وصلت الحد الأقصى ({info2['limit']}) لقنوات يوتيوب"
-            }, 400)
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({info2['limit']}) لقنوات يوتيوب"}, 400)
         feed = await yt_feed(cid)
         last = feed[0]["id"] if feed else ""
-        c.execute(
-            "INSERT INTO yt_channels(channel_id,handle,name,avatar,msg,enabled,last_video,"
-            "last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?)",
-            (cid, "", info["name"] or cid, info.get("avatar") or "",
-             body.get("msg", "")[:1500], last, t, u["username"], t),
-        )
+        c.execute("INSERT INTO yt_channels(channel_id,handle,name,avatar,msg,enabled,last_video,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?)", (cid, "", info["name"] or cid, info.get("avatar") or "", body.get("msg", "")[:1500], last, t, u["username"], t))
     elif kind == "tg":
         raw = (body.get("chat_id") or "").strip()
         cid = norm_chat(raw)
         if not cid:
             c.close()
             return JSONResponse({"error": "معرّف غير صالح"}, 400)
-        if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?",
-                     (cid, u["username"])).fetchone():
+        if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (cid, u["username"])).fetchone():
             c.close()
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
         if not check_limit(u["username"], "tg", u["role"]):
             c.close()
             info3 = limit_info(u["username"], "tg", u["role"])
-            return JSONResponse({
-                "error": f"وصلت الحد الأقصى ({info3['limit']}) لقنوات تيليجرام"
-            }, 400)
-        c.execute(
-            "INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) "
-            "VALUES(?,?,?,?,1,?,?)",
-            (cid, cid if cid.startswith("@") else "", body.get("name") or cid, "",
-             u["username"], t),
-        )
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({info3['limit']}) لقنوات تيليجرام"}, 400)
+        c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (cid, cid if cid.startswith("@") else "", body.get("name") or cid, "", u["username"], t))
     else:
         c.close()
         raise HTTPException(404)
@@ -1123,41 +684,24 @@ async def add_channel(kind: str, request: Request):
     c.close()
     return {"ok": True}
 
-
 @app.post("/api/channels/{kind}/bulk-add")
 async def bulk_add_suggestions(kind: str, request: Request):
-    """يضيف عدة قنوات افتراضية دفعة واحدة — يحسب الحد مرة واحدة"""
     u = require_auth(request)
     if kind not in ("kick", "yt", "tg"): raise HTTPException(404)
     body = await request.json()
     ids = body.get("ids") or []
-    if not isinstance(ids, list) or not ids:
-        return JSONResponse({"error": "لا توجد قنوات"}, 400)
+    if not isinstance(ids, list) or not ids: return JSONResponse({"error": "لا توجد قنوات"}, 400)
     ids = [int(x) for x in ids if str(x).isdigit()][:50]
-    if not ids:
-        return JSONResponse({"error": "معرّفات غير صالحة"}, 400)
-
-    # ✅ تحقق من الحد مرة واحدة لكل الكمية
+    if not ids: return JSONResponse({"error": "معرّفات غير صالحة"}, 400)
     info = limit_info(u["username"], kind, u["role"])
     if u["role"] != "owner" and info["remaining"] < len(ids):
-        return JSONResponse({
-            "error": f"الحد المتبقي {info['remaining']} فقط — لا يمكن إضافة {len(ids)} قناة"
-        }, 400)
-
+        return JSONResponse({"error": f"الحد المتبقي {info['remaining']} فقط — لا يمكن إضافة {len(ids)} قناة"}, 400)
     c = db()
-    rows = c.execute(
-        f"SELECT * FROM default_channels WHERE id IN ({','.join('?' * len(ids))}) "
-        f"AND kind=? AND enabled=1",
-        (*ids, kind)
-    ).fetchall()
+    rows = c.execute(f"SELECT * FROM default_channels WHERE id IN ({','.join('?' * len(ids))}) AND kind=? AND enabled=1", (*ids, kind)).fetchall()
     c.close()
-    if not rows:
-        return JSONResponse({"error": "لا توجد قنوات"}, 404)
-
+    if not rows: return JSONResponse({"error": "لا توجد قنوات"}, 404)
     added, failed, errors = 0, 0, []
-    # ✅ تحقق من الحد داخل الحلقة أيضاً للأمان
     remaining = info["remaining"] if u["role"] != "owner" else 9999
-
     for row in rows:
         if u["role"] != "owner" and remaining <= 0:
             errors.append(f"{row['name']}: وصلت الحد")
@@ -1167,63 +711,37 @@ async def bulk_add_suggestions(kind: str, request: Request):
             c = db()
             t = now()
             if kind == "kick":
-                if c.execute("SELECT 1 FROM kick_channels WHERE slug=? AND added_by=?",
-                             (row["identifier"], u["username"])).fetchone():
+                if c.execute("SELECT 1 FROM kick_channels WHERE slug=? AND added_by=?", (row["identifier"], u["username"])).fetchone():
                     c.close()
                     failed += 1
                     errors.append(f"{row['name']}: مضافة مسبقاً")
                     continue
                 inf = await kick_fetch(row["identifier"])
-                c.execute(
-                    "INSERT INTO kick_channels(slug,name,avatar,banner,msg,enabled,live,title,"
-                    "viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?)",
-                    (row["identifier"], (inf or {}).get("name") or row["name"] or row["identifier"],
-                     (inf or {}).get("avatar") or row["avatar"] or "",
-                     (inf or {}).get("banner") or "", "",
-                     1 if (inf or {}).get("live") else 0, (inf or {}).get("title") or "",
-                     (inf or {}).get("viewers") or 0, (inf or {}).get("thumb") or "",
-                     t, u["username"], t),
-                )
+                c.execute("INSERT INTO kick_channels(slug,name,avatar,banner,msg,enabled,live,title,viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?)", (row["identifier"], (inf or {}).get("name") or row["name"] or row["identifier"], (inf or {}).get("avatar") or row["avatar"] or "", (inf or {}).get("banner") or "", "", 1 if (inf or {}).get("live") else 0, (inf or {}).get("title") or "", (inf or {}).get("viewers") or 0, (inf or {}).get("thumb") or "", t, u["username"], t))
             elif kind == "yt":
-                if c.execute("SELECT 1 FROM yt_channels WHERE channel_id=? AND added_by=?",
-                             (row["identifier"], u["username"])).fetchone():
+                if c.execute("SELECT 1 FROM yt_channels WHERE channel_id=? AND added_by=?", (row["identifier"], u["username"])).fetchone():
                     c.close()
                     failed += 1
                     errors.append(f"{row['name']}: مضافة مسبقاً")
                     continue
                 feed = await yt_feed(row["identifier"])
                 last = feed[0]["id"] if feed else ""
-                c.execute(
-                    "INSERT INTO yt_channels(channel_id,handle,name,avatar,msg,enabled,"
-                    "last_video,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?)",
-                    (row["identifier"], "", row["name"] or row["identifier"],
-                     row["avatar"] or "", "", last, t, u["username"], t),
-                )
+                c.execute("INSERT INTO yt_channels(channel_id,handle,name,avatar,msg,enabled,last_video,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?)", (row["identifier"], "", row["name"] or row["identifier"], row["avatar"] or "", "", last, t, u["username"], t))
             elif kind == "tg":
-                if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?",
-                             (row["identifier"], u["username"])).fetchone():
+                if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (row["identifier"], u["username"])).fetchone():
                     c.close()
                     failed += 1
                     errors.append(f"{row['name']}: مضافة مسبقاً")
                     continue
-                c.execute(
-                    "INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) "
-                    "VALUES(?,?,?,?,1,?,?)",
-                    (row["identifier"], row["identifier"] if row["identifier"].startswith("@") else "",
-                     row["name"] or row["identifier"], row["avatar"] or "",
-                     u["username"], t),
-                )
+                c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (row["identifier"], row["identifier"] if row["identifier"].startswith("@") else "", row["name"] or row["identifier"], row["avatar"] or "", u["username"], t))
             c.commit()
             c.close()
             added += 1
-            if u["role"] != "owner":
-                remaining -= 1
+            if u["role"] != "owner": remaining -= 1
         except Exception as e:
             failed += 1
             errors.append(f"{row['name']}: {str(e)[:60]}")
-
     return {"ok": True, "added": added, "failed": failed, "errors": errors}
-
 
 @app.delete("/api/channels/{kind}/{cid}")
 async def del_channel(kind: str, cid: int, request: Request):
@@ -1242,7 +760,6 @@ async def del_channel(kind: str, cid: int, request: Request):
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.patch("/api/channels/{kind}/{cid}")
 async def patch_channel(kind: str, cid: int, request: Request):
@@ -1269,70 +786,39 @@ async def patch_channel(kind: str, cid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — DISCORD (محمي بـ can_discord)
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/discord/channels")
 async def discord_available_channels(request: Request):
-    """يرجع كل الرومات المكتشفة تلقائياً — للمصرح لهم فقط"""
     require_discord_access(request)
-    return {
-        "channels": _DISCORD_CHANNELS_CACHE,
-        "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
-        "auto_discovery": not bool(WATCH_CHANNELS),
-        "guild_id": DISCORD_GUILD_ID,
-    }
-
+    return {"channels": _DISCORD_CHANNELS_CACHE, "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS, "auto_discovery": not bool(WATCH_CHANNELS), "guild_id": DISCORD_GUILD_ID}
 
 @app.get("/api/discord/feeds")
 async def list_feeds(request: Request):
     u = require_discord_access(request)
     c = db()
-    rows = c.execute(
-        "SELECT * FROM discord_feeds WHERE added_by=? ORDER BY id DESC", (u["username"],)
-    ).fetchall()
+    rows = c.execute("SELECT * FROM discord_feeds WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
-    return {
-        "rows": [dict(r) for r in rows],
-        "known_channels": _DISCORD_CHANNELS_CACHE,
-        "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
-        "auto_discovery": not bool(WATCH_CHANNELS),
-    }
-
+    return {"rows": [dict(r) for r in rows], "known_channels": _DISCORD_CHANNELS_CACHE, "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS, "auto_discovery": not bool(WATCH_CHANNELS)}
 
 @app.post("/api/discord/feeds")
 async def add_feed(request: Request):
     u = require_discord_access(request)
     body = await request.json()
     ch = str(body.get("channel_id") or "").strip()
-    if not ch or not ch.isdigit():
-        return JSONResponse({"error": "channel_id يجب أن يكون رقماً"}, 400)
-    # ✅ التحقق: الروم موجود في الكاش
-    if _DISCORD_CHANNELS_CACHE and ch not in _DISCORD_CHANNELS_CACHE:
-        return JSONResponse({"error": "الروم غير موجود في السيرفر"}, 400)
-    if WATCH_CHANNELS and ch not in WATCH_CHANNELS:
-        return JSONResponse({"error": "هذا الروم غير مُراقب"}, 400)
+    if not ch or not ch.isdigit(): return JSONResponse({"error": "channel_id يجب أن يكون رقماً"}, 400)
+    if _DISCORD_CHANNELS_CACHE and ch not in _DISCORD_CHANNELS_CACHE: return JSONResponse({"error": "الروم غير موجود في السيرفر"}, 400)
+    if WATCH_CHANNELS and ch not in WATCH_CHANNELS: return JSONResponse({"error": "هذا الروم غير مُراقب"}, 400)
     tpl = str(body.get("template") or "")[:2000]
     name = str(body.get("channel_name") or "")[:100]
     source = str(body.get("source_type") or "generic")[:20]
-    # استخرج اسم الروم من الكاش
-    if not name and ch in _DISCORD_CHANNELS_CACHE:
-        name = _DISCORD_CHANNELS_CACHE[ch]["name"]
+    if not name and ch in _DISCORD_CHANNELS_CACHE: name = _DISCORD_CHANNELS_CACHE[ch]["name"]
     c = db()
-    if c.execute("SELECT 1 FROM discord_feeds WHERE channel_id=? AND added_by=?",
-                 (ch, u["username"])).fetchone():
+    if c.execute("SELECT 1 FROM discord_feeds WHERE channel_id=? AND added_by=?", (ch, u["username"])).fetchone():
         c.close()
         return JSONResponse({"error": "مضاف مسبقاً"}, 409)
-    c.execute(
-        "INSERT INTO discord_feeds(channel_id,channel_name,template,source_type,enabled,"
-        "added_by,created) VALUES(?,?,?,?,1,?,?)",
-        (ch, name, tpl, source, u["username"], now()),
-    )
+    c.execute("INSERT INTO discord_feeds(channel_id,channel_name,template,source_type,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (ch, name, tpl, source, u["username"], now()))
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.patch("/api/discord/feeds/{fid}")
 async def patch_feed(fid: int, request: Request):
@@ -1356,7 +842,6 @@ async def patch_feed(fid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
 @app.delete("/api/discord/feeds/{fid}")
 async def del_feed(fid: int, request: Request):
     u = require_discord_access(request)
@@ -1373,24 +858,17 @@ async def del_feed(fid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — NOTIFICATIONS
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/notifs")
 async def notifs(request: Request):
     u = require_auth(request)
     c = db()
-    unread = c.execute("SELECT COUNT(*) n FROM notifs WHERE username=? AND is_read=0",
-                       (u["username"],)).fetchone()["n"]
+    unread = c.execute("SELECT COUNT(*) n FROM notifs WHERE username=? AND is_read=0", (u["username"],)).fetchone()["n"]
     if request.query_params.get("count"):
         c.close()
         return {"unread": unread}
-    rows = c.execute("SELECT * FROM notifs WHERE username=? ORDER BY ts DESC LIMIT 50",
-                     (u["username"],)).fetchall()
+    rows = c.execute("SELECT * FROM notifs WHERE username=? ORDER BY ts DESC LIMIT 50", (u["username"],)).fetchall()
     c.close()
     return {"rows": [dict(r) for r in rows], "unread": unread}
-
 
 @app.post("/api/notifs/read-all")
 async def notifs_read_all(request: Request):
@@ -1401,7 +879,6 @@ async def notifs_read_all(request: Request):
     c.close()
     return {"ok": True}
 
-
 @app.post("/api/notifs/clear")
 async def notifs_clear(request: Request):
     u = require_auth(request)
@@ -1411,10 +888,6 @@ async def notifs_clear(request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — SUGGESTIONS
-# ═══════════════════════════════════════════════════════════
 @app.post("/api/suggestions")
 async def submit_suggestion(request: Request):
     u = require_auth(request)
@@ -1422,15 +895,12 @@ async def submit_suggestion(request: Request):
     text = (body.get("text") or "").strip()
     if not text: return JSONResponse({"error": "النص فارغ"}, 400)
     if len(text) > 1000: return JSONResponse({"error": "الحد 1000 حرف"}, 400)
-    if not rate_ok(f"sug:{u['username']}", max_per_min=3):
-        return JSONResponse({"error": "عدد كبير من الاقتراحات"}, 429)
+    if not rate_ok(f"sug:{u['username']}", max_per_min=3): return JSONResponse({"error": "عدد كبير من الاقتراحات"}, 429)
     c = db()
-    c.execute("INSERT INTO suggestions(username,text,is_read,ts) VALUES(?,?,0,?)",
-              (u["username"], text[:1000], now()))
+    c.execute("INSERT INTO suggestions(username,text,is_read,ts) VALUES(?,?,0,?)", (u["username"], text[:1000], now()))
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.get("/api/admin/suggestions")
 async def admin_suggestions(request: Request):
@@ -1441,19 +911,16 @@ async def admin_suggestions(request: Request):
     c.close()
     return {"rows": [dict(r) for r in rows], "unread": unread}
 
-
 @app.patch("/api/admin/suggestions/{sid}")
 async def admin_patch_suggestion(sid: int, request: Request):
     require_owner(request)
     body = await request.json()
     c = db()
     if "is_read" in body:
-        c.execute("UPDATE suggestions SET is_read=? WHERE id=?",
-                  (1 if body["is_read"] else 0, sid))
+        c.execute("UPDATE suggestions SET is_read=? WHERE id=?", (1 if body["is_read"] else 0, sid))
         c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.delete("/api/admin/suggestions/{sid}")
 async def admin_del_suggestion(sid: int, request: Request):
@@ -1464,135 +931,87 @@ async def admin_del_suggestion(sid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — WEB PUSH
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/push/key")
 async def push_key():
-    if not push_available():
-        return JSONResponse({"error": "Push غير مفعّل"}, 404)
+    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 404)
     return {"key": VAPID_PUBLIC}
-
 
 @app.post("/api/push/subscribe")
 async def push_subscribe(request: Request):
     u = require_auth(request)
-    if not push_available():
-        return JSONResponse({"error": "Push غير مفعّل"}, 400)
+    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 400)
     body = await request.json()
     endpoint = body.get("endpoint") or ""
     keys = body.get("keys") or {}
     p256dh = keys.get("p256dh") or ""
     auth_key = keys.get("auth") or ""
-    if not endpoint or not p256dh or not auth_key:
-        return JSONResponse({"error": "بيانات ناقصة"}, 400)
+    if not endpoint or not p256dh or not auth_key: return JSONResponse({"error": "بيانات ناقصة"}, 400)
     c = db()
-    c.execute(
-        "INSERT INTO push_subs(username,endpoint,p256dh,auth,ts) "
-        "VALUES(?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET "
-        "username=excluded.username,p256dh=excluded.p256dh,auth=excluded.auth,ts=excluded.ts",
-        (u["username"], endpoint[:600], p256dh[:200], auth_key[:200], now()),
-    )
+    c.execute("INSERT INTO push_subs(username,endpoint,p256dh,auth,ts) VALUES(?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET username=excluded.username,p256dh=excluded.p256dh,auth=excluded.auth,ts=excluded.ts", (u["username"], endpoint[:600], p256dh[:200], auth_key[:200], now()))
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.post("/api/push/unsubscribe")
 async def push_unsubscribe(request: Request):
     u = require_auth(request)
     body = await request.json()
     c = db()
-    c.execute("DELETE FROM push_subs WHERE endpoint=? AND username=?",
-              (body.get("endpoint") or "", u["username"]))
+    c.execute("DELETE FROM push_subs WHERE endpoint=? AND username=?", (body.get("endpoint") or "", u["username"]))
     c.commit()
     c.close()
     return {"ok": True}
 
-
 @app.post("/api/push/test")
 async def push_test(request: Request):
     u = require_auth(request)
-    if not push_available():
-        return JSONResponse({"error": "Push غير مفعّل"}, 400)
-    sent = await push_send_to_user(
-        u["username"], "تجربة الإشعارات",
-        "إذا وصلتك هذي، فالإشعارات تعمل ✅", "", "/", "test"
-    )
-    if sent == 0:
-        return JSONResponse({"error": "لا يوجد اشتراك فعّال"}, 404)
+    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 400)
+    sent = await push_send_to_user(u["username"], "تجربة الإشعارات", "إذا وصلتك هذي، فالإشعارات تعمل ✅", "", "/", "test")
+    if sent == 0: return JSONResponse({"error": "لا يوجد اشتراك فعّال"}, 404)
     return {"ok": True, "sent": sent}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — IMAGES UPLOAD
-# ═══════════════════════════════════════════════════════════
 @app.post("/api/upload")
 async def upload_image(request: Request):
     u = require_auth(request)
-    if not rate_ok(f"upload:{u['username']}", max_per_min=5):
-        return JSONResponse({"error": "عدد كبير من الرفع"}, 429)
+    if not rate_ok(f"upload:{u['username']}", max_per_min=5): return JSONResponse({"error": "عدد كبير من الرفع"}, 429)
     form = await request.form()
     file = form.get("file")
-    if not file:
-        return JSONResponse({"error": "لم يُرفع ملف"}, 400)
+    if not file: return JSONResponse({"error": "لم يُرفع ملف"}, 400)
     content = await file.read()
-    if len(content) > MAX_IMAGE_SIZE:
-        return JSONResponse({"error": "الحجم أكبر من 2MB"}, 413)
+    if len(content) > MAX_IMAGE_SIZE: return JSONResponse({"error": "الحجم أكبر من 2MB"}, 413)
     mime = file.content_type or "image/png"
-    if not mime.startswith("image/"):
-        return JSONResponse({"error": "يجب أن يكون صورة"}, 400)
+    if not mime.startswith("image/"): return JSONResponse({"error": "يجب أن يكون صورة"}, 400)
     img_id = secrets.token_urlsafe(16)
     c = db()
-    c.execute("INSERT INTO images(id,mime,data,size,uploaded_by,created) VALUES(?,?,?,?,?,?)",
-              (img_id, mime, content, len(content), u["username"], now()))
+    c.execute("INSERT INTO images(id,mime,data,size,uploaded_by,created) VALUES(?,?,?,?,?,?)", (img_id, mime, content, len(content), u["username"], now()))
     c.commit()
     c.close()
     return {"ok": True, "id": img_id, "url": f"/api/image/{img_id}"}
 
-
 @app.get("/api/image/{img_id}")
 async def get_image(img_id: str):
-    if not re.match(r"^[A-Za-z0-9_-]{10,40}$", img_id):
-        raise HTTPException(400, "معرّف غير صالح")
+    if not re.match(r"^[A-Za-z0-9_-]{10,40}$", img_id): raise HTTPException(400, "معرّف غير صالح")
     c = db()
     row = c.execute("SELECT mime, data FROM images WHERE id=?", (img_id,)).fetchone()
     c.close()
     if not row: raise HTTPException(404, "غير موجودة")
-    return FastResponse(content=row["data"], media_type=row["mime"],
-                        headers={"cache-control": "public, max-age=31536000, immutable"})
+    return FastResponse(content=row["data"], media_type=row["mime"], headers={"cache-control": "public, max-age=31536000, immutable"})
 
-
-# ═══════════════════════════════════════════════════════════
-# API — SETTINGS
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/settings")
 async def get_settings(request: Request):
     require_auth(request)
-    keys = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text",
-            "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc",
-            "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg",
-            "guest_mode", "guest_blur"]
+    keys = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text", "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc", "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg", "guest_mode", "guest_blur"]
     return {k: cfg(k) for k in keys}
-
 
 @app.post("/api/settings")
 async def save_settings(request: Request):
     require_owner(request)
     body = await request.json()
-    allowed = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text",
-               "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc",
-               "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg",
-               "guest_mode", "guest_blur"]
+    allowed = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text", "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc", "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg", "guest_mode", "guest_blur"]
     for k in allowed:
         if k in body: set_cfg(k, str(body[k])[:2000])
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — DEFAULT CHANNELS (owner) — مع bulk-add وتعديل
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/default-channels")
 async def list_default_channels(request: Request):
     require_owner(request)
@@ -1605,14 +1024,12 @@ async def list_default_channels(request: Request):
     c.close()
     return {"rows": [dict(r) for r in rows]}
 
-
 @app.post("/api/admin/default-channels")
 async def add_default_channel(request: Request):
     require_owner(request)
     body = await request.json()
     kind = body.get("kind")
-    if kind not in ("kick", "yt", "tg"):
-        return JSONResponse({"error": "نوع غير صالح"}, 400)
+    if kind not in ("kick", "yt", "tg"): return JSONResponse({"error": "نوع غير صالح"}, 400)
     raw = (body.get("identifier") or "").strip()
     if not raw: return JSONResponse({"error": "المعرّف مطلوب"}, 400)
     if kind == "kick":
@@ -1621,7 +1038,8 @@ async def add_default_channel(request: Request):
         avatar = ""
         info = await kick_fetch(ident)
         if info:
-            name = info["name"]; avatar = info["avatar"]
+            name = info["name"]
+            avatar = info["avatar"]
     elif kind == "yt":
         info = await yt_resolve(raw)
         if not info: return JSONResponse({"error": "تعذّر التعرف على القناة"}, 400)
@@ -1634,39 +1052,30 @@ async def add_default_channel(request: Request):
         name = body.get("name") or ident
         avatar = ""
     c = db()
-    if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?",
-                 (kind, ident)).fetchone():
+    if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?", (kind, ident)).fetchone():
         c.close()
         return JSONResponse({"error": "موجودة مسبقاً"}, 409)
-    c.execute("INSERT INTO default_channels(kind,identifier,name,avatar,enabled,created) "
-              "VALUES(?,?,?,?,1,?)", (kind, ident, name, avatar, now()))
+    c.execute("INSERT INTO default_channels(kind,identifier,name,avatar,enabled,created) VALUES(?,?,?,?,1,?)", (kind, ident, name, avatar, now()))
     c.commit()
     c.close()
     return {"ok": True}
 
-
 @app.post("/api/admin/default-channels/bulk")
 async def add_default_channels_bulk(request: Request):
-    """✅ إضافة جماعية للقنوات الافتراضية (المالك)"""
     require_owner(request)
     body = await request.json()
     kind = body.get("kind")
-    if kind not in ("kick", "yt", "tg"):
-        return JSONResponse({"error": "نوع غير صالح"}, 400)
+    if kind not in ("kick", "yt", "tg"): return JSONResponse({"error": "نوع غير صالح"}, 400)
     text = (body.get("text") or "").strip()
-    if not text:
-        return JSONResponse({"error": "لا يوجد نص"}, 400)
+    if not text: return JSONResponse({"error": "لا يوجد نص"}, 400)
     lines = [l.strip() for l in text.split("\n") if l.strip()][:100]
-    if not lines:
-        return JSONResponse({"error": "لا توجد أسطر"}, 400)
-
+    if not lines: return JSONResponse({"error": "لا توجد أسطر"}, 400)
     added, failed, errors = 0, 0, []
     for line in lines:
         try:
             parts = [p.strip() for p in line.split("|")]
             raw = parts[0]
             custom_name = parts[1] if len(parts) > 1 else ""
-
             if kind == "kick":
                 ident = re.sub(r"[^a-z0-9_-]", "", raw.lower().replace("@", ""))
                 if not ident:
@@ -1696,25 +1105,20 @@ async def add_default_channels_bulk(request: Request):
                     continue
                 name = custom_name or ident
                 avatar = ""
-
             c = db()
-            if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?",
-                         (kind, ident)).fetchone():
+            if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?", (kind, ident)).fetchone():
                 c.close()
                 failed += 1
                 errors.append(f"{name}: موجودة مسبقاً")
                 continue
-            c.execute("INSERT INTO default_channels(kind,identifier,name,avatar,enabled,created) "
-                      "VALUES(?,?,?,?,1,?)", (kind, ident, name, avatar, now()))
+            c.execute("INSERT INTO default_channels(kind,identifier,name,avatar,enabled,created) VALUES(?,?,?,?,1,?)", (kind, ident, name, avatar, now()))
             c.commit()
             c.close()
             added += 1
         except Exception as e:
             failed += 1
             errors.append(f"{line[:30]}: {str(e)[:40]}")
-
     return {"ok": True, "added": added, "failed": failed, "errors": errors}
-
 
 @app.delete("/api/admin/default-channels/{cid}")
 async def del_default_channel(cid: int, request: Request):
@@ -1724,7 +1128,6 @@ async def del_default_channel(cid: int, request: Request):
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.patch("/api/admin/default-channels/{cid}")
 async def patch_default_channel(cid: int, request: Request):
@@ -1741,21 +1144,13 @@ async def patch_default_channel(cid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — ADMIN USERS
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/users")
 async def admin_users(request: Request):
     require_owner(request)
     c = db()
-    rows = c.execute(
-        "SELECT id, username, display, role, active, banned, lim_kick, lim_yt, lim_tg, "
-        "can_discord, created, last_login FROM users ORDER BY id"
-    ).fetchall()
+    rows = c.execute("SELECT id, username, display, role, active, banned, lim_kick, lim_yt, lim_tg, can_discord, created, last_login FROM users ORDER BY id").fetchall()
     c.close()
     return {"rows": [dict(r) for r in rows]}
-
 
 @app.post("/api/admin/users")
 async def admin_add_user(request: Request):
@@ -1763,8 +1158,7 @@ async def admin_add_user(request: Request):
     body = await request.json()
     un = (body.get("username") or "").strip()
     pw = str(body.get("password") or "")
-    if not re.match(r"^[A-Za-z0-9_.-]{3,30}$", un):
-        return JSONResponse({"error": "اسم غير صالح"}, 400)
+    if not re.match(r"^[A-Za-z0-9_.-]{3,30}$", un): return JSONResponse({"error": "اسم غير صالح"}, 400)
     if len(pw) < 6: return JSONResponse({"error": "كلمة المرور 6+"}, 400)
     if un.lower() == ADMIN_USERNAME.lower(): return JSONResponse({"error": "محجوز"}, 400)
     c = db()
@@ -1773,17 +1167,10 @@ async def admin_add_user(request: Request):
         return JSONResponse({"error": "مستخدم"}, 409)
     salt = secrets.token_hex(16)
     opt = lambda v: (None if v in ("", None) else max(0, min(9999, int(v))))
-    c.execute(
-        "INSERT INTO users(username,display,pass_hash,salt,role,active,banned,"
-        "lim_kick,lim_yt,lim_tg,can_discord,created) VALUES(?,?,?,?,'user',1,0,?,?,?,?,?)",
-        (un, (body.get("display") or un)[:60], hash_pw(pw, salt), salt,
-         opt(body.get("lim_kick")), opt(body.get("lim_yt")), opt(body.get("lim_tg")),
-         1 if body.get("can_discord") else 0, now()),
-    )
+    c.execute("INSERT INTO users(username,display,pass_hash,salt,role,active,banned,lim_kick,lim_yt,lim_tg,can_discord,created) VALUES(?,?,?,?,'user',1,0,?,?,?,?,?)", (un, (body.get("display") or un)[:60], hash_pw(pw, salt), salt, opt(body.get("lim_kick")), opt(body.get("lim_yt")), opt(body.get("lim_tg")), 1 if body.get("can_discord") else 0, now()))
     c.commit()
     c.close()
     return {"ok": True}
-
 
 @app.patch("/api/admin/users/{uid}")
 async def admin_patch_user(uid: int, request: Request):
@@ -1829,7 +1216,6 @@ async def admin_patch_user(uid: int, request: Request):
         kill_sessions(row["username"])
     return {"ok": True}
 
-
 @app.delete("/api/admin/users/{uid}")
 async def admin_del_user(uid: int, request: Request):
     u = require_owner(request)
@@ -1851,28 +1237,11 @@ async def admin_del_user(uid: int, request: Request):
     c.close()
     return {"ok": True}
 
-
-# ═══════════════════════════════════════════════════════════
-# API — ADMIN STATS + SECURITY
-# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/stats")
 async def admin_stats(request: Request):
     require_owner(request)
     c = db()
-    stats = {
-        "users_total": c.execute("SELECT COUNT(*) n FROM users").fetchone()["n"],
-        "users_active": c.execute("SELECT COUNT(*) n FROM users WHERE active=1 AND banned=0").fetchone()["n"],
-        "users_banned": c.execute("SELECT COUNT(*) n FROM users WHERE banned=1").fetchone()["n"],
-        "kick_total": c.execute("SELECT COUNT(*) n FROM kick_channels").fetchone()["n"],
-        "kick_live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE live=1").fetchone()["n"],
-        "yt_total": c.execute("SELECT COUNT(*) n FROM yt_channels").fetchone()["n"],
-        "tg_total": c.execute("SELECT COUNT(*) n FROM tg_channels").fetchone()["n"],
-        "feeds_total": c.execute("SELECT COUNT(*) n FROM discord_feeds").fetchone()["n"],
-        "notifs_total": c.execute("SELECT COUNT(*) n FROM notifs").fetchone()["n"],
-        "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"],
-        "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"],
-        "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"],
-    }
+    stats = {"users_total": c.execute("SELECT COUNT(*) n FROM users").fetchone()["n"], "users_active": c.execute("SELECT COUNT(*) n FROM users WHERE active=1 AND banned=0").fetchone()["n"], "users_banned": c.execute("SELECT COUNT(*) n FROM users WHERE banned=1").fetchone()["n"], "kick_total": c.execute("SELECT COUNT(*) n FROM kick_channels").fetchone()["n"], "kick_live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE live=1").fetchone()["n"], "yt_total": c.execute("SELECT COUNT(*) n FROM yt_channels").fetchone()["n"], "tg_total": c.execute("SELECT COUNT(*) n FROM tg_channels").fetchone()["n"], "feeds_total": c.execute("SELECT COUNT(*) n FROM discord_feeds").fetchone()["n"], "notifs_total": c.execute("SELECT COUNT(*) n FROM notifs").fetchone()["n"], "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"], "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"], "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"]}
     c.close()
     stats["discord_ready"] = discord_client.is_ready() if discord_client else False
     stats["discord_guilds"] = len(discord_client.guilds) if discord_client and discord_client.is_ready() else 0
@@ -1884,21 +1253,14 @@ async def admin_stats(request: Request):
     stats["has_push"] = push_available()
     return stats
 
-
 @app.get("/api/admin/security")
 async def admin_security(request: Request):
     require_owner(request)
     c = db()
-    rows = c.execute(
-        "SELECT ts, username, action, detail, ip FROM security_log ORDER BY id DESC LIMIT 200"
-    ).fetchall()
+    rows = c.execute("SELECT ts, username, action, detail, ip FROM security_log ORDER BY id DESC LIMIT 200").fetchall()
     c.close()
     return {"rows": [dict(r) for r in rows]}
 
-
-# ═══════════════════════════════════════════════════════════
-# ROOT + HEALTH
-# ═══════════════════════════════════════════════════════════
 @app.get("/", response_class=HTMLResponse)
 async def index():
     try:
@@ -1907,34 +1269,37 @@ async def index():
     except FileNotFoundError:
         return HTMLResponse("<h1>index.html غير موجود</h1>", status_code=500)
 
-
 @app.get("/manifest.json")
 async def manifest():
-    return JSONResponse({
-        "name": cfg("site_name", SITE_NAME),
-        "short_name": cfg("site_name", SITE_NAME)[:12],
-        "start_url": "/", "display": "standalone",
-        "background_color": "#030508", "theme_color": "#030508",
-        "dir": "rtl", "lang": "ar",
-    })
+    return JSONResponse({"name": cfg("site_name", SITE_NAME), "short_name": cfg("site_name", SITE_NAME)[:12], "start_url": "/", "display": "standalone", "background_color": "#030508", "theme_color": "#030508", "dir": "rtl", "lang": "ar"})
 
+@app.get("/sw.js")
+async def sw():
+    js = """
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data.json(); } catch (x) { d = { title: 'إشعار جديد', body: e.data ? e.data.text() : '' }; }
+  const o = { body: d.body || '', icon: d.icon || '/favicon.ico', badge: d.icon || '/favicon.ico', image: d.image || undefined, tag: d.tag || undefined, renotify: !!d.tag, dir: 'rtl', lang: 'ar', data: { url: d.url || '/' } };
+  e.waitUntil(Promise.all([self.registration.showNotification(d.title || 'إشعار جديد', o), self.clients.matchAll({ type: 'window' }).then(cs => cs.forEach(c => c.postMessage({ t: 'push' })))]));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    const same = cs.find(c => new URL(c.url).origin === location.origin);
+    if (url.startsWith('/') && same) return same.focus();
+    return self.clients.openWindow(url);
+  }));
+});
+"""
+    return FastResponse(content=js, media_type="application/javascript", headers={"cache-control": "no-cache"})
 
 @app.get("/health")
 async def health():
-    return {
-        "ok": True,
-        "discord_ready": discord_client.is_ready() if discord_client else False,
-        "discord_channels": len(_DISCORD_CHANNELS_CACHE),
-        "auto_discovery": not bool(WATCH_CHANNELS),
-        "watching": len(WATCH_CHANNELS),
-        "push_enabled": push_available(),
-        "telegram_enabled": bool(TELEGRAM_TOKEN),
-    }
+    return {"ok": True, "discord_ready": discord_client.is_ready() if discord_client else False, "discord_channels": len(_DISCORD_CHANNELS_CACHE), "auto_discovery": not bool(WATCH_CHANNELS), "watching": len(WATCH_CHANNELS), "push_enabled": push_available(), "telegram_enabled": bool(TELEGRAM_TOKEN)}
 
-
-# ═══════════════════════════════════════════════════════════
-# RUN
-# ═══════════════════════════════════════════════════════════
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))

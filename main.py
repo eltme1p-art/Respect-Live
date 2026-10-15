@@ -160,12 +160,14 @@ CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 def init_db():
     c = db()
     c.executescript(SCHEMA)
-    # 🔐 مزامنة حساب الأدمن مع المتغيرات في كل تشغيل
+
+    # ═══════════════════════════════════════════════════════
+    # 🔐 مزامنة حساب الأدمن مع متغيرات البيئة في كل تشغيل
+    # ═══════════════════════════════════════════════════════
     salt = secrets.token_hex(16)
     new_hash = hash_pw(ADMIN_PASSWORD, salt)
     existing = c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone()
     if not existing:
-        # إنشاء أول مرة
         c.execute(
             "INSERT INTO users(username,display,pass_hash,salt,role,active,banned,created) "
             "VALUES(?,?,?,?,'owner',1,0,?)",
@@ -173,13 +175,13 @@ def init_db():
         )
         print(f"[DB] ✅ تم إنشاء حساب الأدمن: {ADMIN_USERNAME}")
     else:
-        # 🆕 مزامنة كلمة المرور والدور في كل Redeploy
         c.execute(
             "UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0 "
             "WHERE username=?",
             (new_hash, salt, ADMIN_USERNAME),
         )
         print(f"[DB] 🔄 تم تحديث بيانات الأدمن: {ADMIN_USERNAME}")
+
     # الإعدادات الافتراضية
     defaults = {
         "site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL",
@@ -198,8 +200,7 @@ def init_db():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
     c.close()
-
-
+    print("[DB] ✅ قاعدة البيانات جاهزة")
 def now() -> int:
     return int(time.time())
 

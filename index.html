@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#030508">
 <title>Respect Live</title>
+<link rel="manifest" href="/manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230b55ea'%3E%3Cpath d='M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -94,7 +95,7 @@ img{display:block;max-width:100%}
 .login-head p{color:var(--muted);font-size:12.5px;letter-spacing:.3px}
 .fld{display:block;margin:16px 0}
 .fld>span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:9px;font-weight:800;letter-spacing:.3px}
-input[type="text"],input[type="password"],input[type="number"],input[type="email"],input[type="search"],textarea,select{-webkit-appearance:none;appearance:none;display:block;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--text);background:rgba(5,8,16,.85);border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;min-height:52px;line-height:1.4;transition:border-color .22s var(--ease-soft),box-shadow .22s var(--ease-soft),background .22s var(--ease-soft);outline:none}
+input[type="text"],input[type="password"],input[type="number"],input[type="email"],input[type="search"],input[type="url"],textarea,select{-webkit-appearance:none;appearance:none;display:block;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--text);background:rgba(5,8,16,.85);border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;min-height:52px;line-height:1.4;transition:border-color .22s var(--ease-soft),box-shadow .22s var(--ease-soft),background .22s var(--ease-soft);outline:none}
 input::placeholder,textarea::placeholder{color:var(--muted-2);font-weight:500}
 input:hover,textarea:hover,select:hover{border-color:var(--line-2)}
 input:focus,textarea:focus,select:focus{border-color:var(--blue);background:rgba(8,12,22,.9);box-shadow:0 0 0 4px rgba(var(--blue-rgb),.14),0 0 20px rgba(var(--blue-rgb),.20)}
@@ -220,7 +221,7 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .sug-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:12px;border-radius:14px;background:rgba(var(--blue-rgb),.06);border:1px solid rgba(var(--blue-rgb),.20);font-size:12.5px;font-weight:800}
 .sug-toolbar button{padding:7px 14px;border-radius:18px;background:transparent;border:1.5px dashed rgba(var(--blue-rgb),.5);color:var(--blue);font-size:11.5px;font-weight:900;transition:.2s var(--ease-soft)}
 .sug-toolbar button:hover{background:rgba(var(--blue-rgb),.12)}
-.acc-menu{position:fixed;top:calc(72px + env(safe-area-inset-top));left:var(--pad);min-width:300px;max-width:calc(100vw - 2 * var(--pad));background:var(--card);border:1px solid var(--blue-line);border-radius:20px;box-shadow:0 32px 64px rgba(0,0,0,.6),0 0 60px rgba(var(--blue-rgb),.15);padding:8px;z-index:1500;opacity:0;transform:translateY(-12px) scale(.96);transition:.26s var(--ease-soft);pointer-events:none}
+.acc-menu{position:fixed;top:calc(72px + env(safe-area-inset-top));left:var(--pad);min-width:300px;max-width:calc(100vw - 2 * var(--pad));background:var(--card);border:1px solid var(--blue-line);border-radius:20px;box-shadow:0 32px 64px rgba(0,0,0,.6),0 0 60px rgba(var(--blue-rgb),.15);padding:8px;z-index:1500;opacity:0;transform:translateY(-12px) scale(.96);transition:.26s var(--ease-soft);pointer-events:none;max-height:calc(100vh - 100px);overflow-y:auto}
 .acc-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 .acc-head{padding:16px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px}
 .acc-head .nm{font-size:16px;font-weight:900;margin-bottom:4px}
@@ -228,11 +229,14 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .acc-head .stats-mini{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
 .acc-head .stats-mini span{font-size:11px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
 .acc-head .stats-mini b{color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:13px}
-.acc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:800;color:var(--text);transition:.2s var(--ease-soft);cursor:pointer;width:100%;text-align:right;background:transparent}
+.acc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:800;color:var(--text);transition:.2s var(--ease-soft);cursor:pointer;width:100%;text-align:right;background:transparent;position:relative}
 .acc-item:hover{background:rgba(var(--blue-rgb),.08);color:var(--blue)}
 .acc-item.danger{color:var(--red)}
 .acc-item.danger:hover{background:rgba(239,68,68,.10)}
 .acc-item svg{width:18px;height:18px;flex-shrink:0}
+.acc-item .badge-mini{margin-right:auto;font-size:10.5px;padding:2px 8px;border-radius:10px;font-family:var(--font-en);font-weight:900}
+.acc-item .badge-mini.ok{background:rgba(16,185,129,.15);color:var(--green)}
+.acc-item .badge-mini.off{background:rgba(124,135,153,.15);color:var(--muted)}
 .acc-sep{height:1px;background:var(--line);margin:6px 6px}
 .admin-h{display:flex;gap:8px;padding:10px var(--pad) 0;overflow-x:auto;scrollbar-width:none}
 .admin-h::-webkit-scrollbar{display:none}
@@ -259,6 +263,10 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .limit-bar b{display:block;height:100%;border-radius:inherit;background:linear-gradient(270deg,var(--blue),var(--blue2));transition:width .5s var(--ease-soft)}
 .limit-bar.warn b{background:linear-gradient(270deg,var(--orange),var(--gold))}
 .limit-bar.full b{background:linear-gradient(270deg,var(--red),#dc2626)}
+.img-preview-box{border:1.5px dashed var(--line-2);border-radius:12px;padding:14px;text-align:center;margin-top:8px;transition:.22s var(--ease-soft)}
+.img-preview-box img{max-height:160px;margin:0 auto 10px;border-radius:10px;border:1px solid var(--line);object-fit:contain}
+.img-preview-box.empty{padding:26px 14px;color:var(--muted-2);font-size:12.5px}
+.tpl-preview{margin-top:10px;padding:14px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text-2);min-height:60px}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -283,12 +291,74 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 <script>
 'use strict';
 
+/* ═══════════════════════════════════════════════════════════
+   SERVICE WORKER — Web Push + PWA
+   ═══════════════════════════════════════════════════════════ */
+const SW_JS = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data.json(); } catch (x) { d = { title: 'إشعار جديد', body: e.data ? e.data.text() : '' }; }
+  const o = {
+    body: d.body || '',
+    icon: d.icon || '/favicon.ico',
+    badge: d.icon || '/favicon.ico',
+    image: d.image || undefined,
+    tag: d.tag || undefined,
+    renotify: !!d.tag,
+    dir: 'rtl',
+    lang: 'ar',
+    data: { url: d.url || '/' }
+  };
+  e.waitUntil(Promise.all([
+    self.registration.showNotification(d.title || 'إشعار جديد', o),
+    self.clients.matchAll({ type: 'window' }).then(cs => cs.forEach(c => c.postMessage({ t: 'push' })))
+  ]));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    const same = cs.find(c => new URL(c.url).origin === location.origin);
+    if (url.startsWith('/') && same) return same.focus();
+    return self.clients.openWindow(url);
+  }));
+});
+`;
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {
+    // نستخدم blob URL كبديل
+    try {
+      const blob = new Blob([SW_JS], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    } catch (e) {}
+  });
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.t === 'push') {
+      loadNotifs().then(() => { if (S.view === 'notifs') renderView(); updateBadge(); });
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+   ═══════════════════════════════════════════════════════════ */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const stripTags = s => String(s ?? '').replace(/<[^>]+>/g,'').trim();
-const fmtTime = ts => { if (!ts) return ''; const d = Math.floor(Date.now()/1000) - ts; if (d < 60) return 'الآن'; if (d < 3600) return 'قبل ' + Math.floor(d/60) + ' دقيقة'; if (d < 86400) return 'قبل ' + Math.floor(d/3600) + ' ساعة'; if (d < 604800) return 'قبل ' + Math.floor(d/86400) + ' يوم'; return new Date(ts*1000).toLocaleDateString('ar-EG'); };
+const fmtTime = ts => {
+  if (!ts) return '';
+  const d = Math.floor(Date.now()/1000) - ts;
+  if (d < 60) return 'الآن';
+  if (d < 3600) return 'قبل ' + Math.floor(d/60) + ' دقيقة';
+  if (d < 86400) return 'قبل ' + Math.floor(d/3600) + ' ساعة';
+  if (d < 604800) return 'قبل ' + Math.floor(d/86400) + ' يوم';
+  return new Date(ts*1000).toLocaleDateString('ar-EG');
+};
 
 async function api(path, opts={}) {
   const o = { credentials:'include', method: opts.method || 'GET', headers: {} };
@@ -304,7 +374,11 @@ async function api(path, opts={}) {
 
 function toast(msg, kind) {
   const t = el('div', 'toast ' + (kind || ''));
-  const icon = kind === 'ok' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>' : kind === 'bad' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+  const icon = kind === 'ok'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>'
+    : kind === 'bad'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
   t.innerHTML = icon + '<span>' + esc(msg) + '</span>';
   $('#toasts').appendChild(t);
   requestAnimationFrame(() => t.classList.add('on'));
@@ -331,6 +405,7 @@ function modal(opts) {
     if (cBtn) cBtn.onclick = () => close(opts.input ? null : false);
     m.onclick = e => { if (e.target === m) close(opts.input ? null : false); };
     if (opts.input) setTimeout(() => { const i = $('#__mi'); if (i) i.focus(); }, 200);
+    if (opts.onReady) setTimeout(opts.onReady, 50);
   });
 }
 const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد', sub: msg, danger, okText:'تأكيد' });
@@ -355,15 +430,25 @@ const IC = {
   edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/><path d="M20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
   shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
 };
 
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
 const S = {
   boot: {},
   me: null,
   guest: false,
   view: 'home',
   channels: { kick: [], yt: [], tg: [] },
-  limits: { kick: { used:0, limit:10, remaining:10 }, yt: { used:0, limit:5, remaining:5 }, tg: { used:0, limit:3, remaining:3 } },
+  limits: {
+    kick: { used:0, limit:10, remaining:10 },
+    yt:   { used:0, limit:5,  remaining:5  },
+    tg:   { used:0, limit:3,  remaining:3  }
+  },
   feeds: [],
   knownChannels: {},
   watching: [],
@@ -373,11 +458,15 @@ const S = {
   settings: {},
   admin: { users: [], defaults: [], suggestions: [], stats: {}, sec: [], tab: 'stats' },
   preview: null,
+  pushEnabled: false,
 };
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
 const isLogged = () => !!(S.me && S.me.user);
 const canDiscord = () => isLogged() && (isOwner() || S.me.user.can_discord);
 
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════ */
 async function boot() {
   try {
     const b = await api('/api/boot');
@@ -392,7 +481,7 @@ async function boot() {
     const me = await api('/api/me');
     S.me = me;
     await loadAll();
-    renderApp();
+    checkPushStatus().then(() => renderApp());
   } catch (e) {
     S.guest = true;
     if (S.boot.guest_mode) {
@@ -437,14 +526,97 @@ async function loadFeeds() {
   } catch (e) { S.feeds = []; S.knownChannels = {}; S.watching = []; }
 }
 async function loadNotifs() {
-  try { const r = await api('/api/notifs'); S.notifs = r.rows || []; S.unread = r.unread || 0; }
-  catch (e) { S.notifs = []; S.unread = 0; }
+  try {
+    const r = await api('/api/notifs');
+    S.notifs = r.rows || [];
+    S.unread = r.unread || 0;
+    updateBadge();
+  } catch (e) { S.notifs = []; S.unread = 0; }
 }
 async function loadSettings() {
   try { S.settings = await api('/api/settings'); }
   catch (e) { S.settings = {}; }
 }
+function updateBadge() {
+  const b = $('#notifBadge');
+  if (!b) return;
+  if (S.unread > 0) {
+    b.textContent = S.unread > 99 ? '99+' : S.unread;
+    b.style.display = 'grid';
+  } else {
+    b.style.display = 'none';
+  }
+}
 
+/* ═══════════════════════════════════════════════════════════
+   WEB PUSH
+   ═══════════════════════════════════════════════════════════ */
+async function checkPushStatus() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    S.pushEnabled = false;
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    S.pushEnabled = !!sub;
+  } catch (e) { S.pushEnabled = false; }
+}
+
+function urlB64ToU8(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  s += '='.repeat((4 - s.length % 4) % 4);
+  const raw = atob(s);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+async function enablePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return toast('المتصفح لا يدعم الإشعارات', 'bad');
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return toast('تم رفض الإذن', 'bad');
+    const reg = await navigator.serviceWorker.ready;
+    const keyRes = await api('/api/push/key');
+    if (!keyRes.key) return toast('Push غير مفعّل من السيرفر', 'bad');
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToU8(keyRes.key)
+    });
+    await api('/api/push/subscribe', { method:'POST', body: sub.toJSON() });
+    S.pushEnabled = true;
+    toast('تم تفعيل الإشعارات', 'ok');
+    openAccountMenu();
+  } catch (e) { toast(e.message || 'فشل تفعيل الإشعارات', 'bad'); }
+}
+
+async function disablePush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await api('/api/push/unsubscribe', { method:'POST', body: { endpoint: sub.endpoint } });
+      await sub.unsubscribe();
+    }
+    S.pushEnabled = false;
+    toast('تم إيقاف الإشعارات', 'ok');
+    openAccountMenu();
+  } catch (e) { toast(e.message || 'فشل الإيقاف', 'bad'); }
+}
+
+async function testPush() {
+  try {
+    const r = await api('/api/push/test', { method:'POST' });
+    toast('أُرسل ' + (r.sent || 0) + ' إشعار تجريبي', 'ok');
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH PAGE
+   ═══════════════════════════════════════════════════════════ */
 function renderAuth() {
   $('#app').innerHTML = `
     <div class="login-page">
@@ -480,12 +652,19 @@ function renderAuth() {
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || j.detail || 'فشل الدخول');
       location.reload();
-    } catch (e2) { err.textContent = e2.message; toast(e2.message, 'bad'); btn.disabled = false; }
+    } catch (e2) {
+      err.textContent = e2.message;
+      toast(e2.message, 'bad');
+      btn.disabled = false;
+    }
   };
   const skip = $('#skipBtn');
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════════════════════ */
 function renderApp() {
   const name = (S.boot.site_name || 'Respect Live').split(' ');
   const brandHTML = name.length >= 2
@@ -494,7 +673,6 @@ function renderApp() {
   const avatarHTML = isLogged()
     ? '<div class="avatar-btn" id="accBtn" role="button">' + esc(S.me.user.username.charAt(0).toUpperCase()) + '<div class="st"></div></div>'
     : '<div class="avatar-btn guest" id="accBtn" role="button">' + IC.user + '</div>';
-
   const showDcTab = canDiscord();
 
   $('#app').innerHTML = `
@@ -507,7 +685,10 @@ function renderApp() {
         </div>
       </div>
       <div class="hdr-acts">
-        ${isLogged() ? `<button class="hdr-btn" id="notifBtn" aria-label="الإشعارات">${IC.bell}${S.unread > 0 ? '<span class="badge">' + (S.unread > 99 ? '99+' : S.unread) + '</span>' : ''}</button>` : ''}
+        ${isLogged() ? `<button class="hdr-btn" id="notifBtn" aria-label="الإشعارات">
+          ${IC.bell}
+          <span class="badge" id="notifBadge" style="${S.unread > 0 ? '' : 'display:none'}">${S.unread > 99 ? '99+' : S.unread}</span>
+        </button>` : ''}
         ${avatarHTML}
       </div>
     </div>
@@ -523,13 +704,18 @@ function renderApp() {
       <button data-v="kick" class="${S.view==='kick'?'on':''}" aria-label="كيك">${IC.kick}</button>
       <button data-v="yt" class="${S.view==='yt'?'on':''}" aria-label="يوتيوب">${IC.yt}</button>
       <button data-v="tg" class="${S.view==='tg'?'on':''}" aria-label="تيليجرام">${IC.tg}</button>
-      ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}" aria-label="ديسكورد">${IC.dc}</button>` : `<button data-v="acc" aria-label="حسابي">${IC.user}</button>`}
+      ${showDcTab
+        ? `<button data-v="dc" class="${S.view==='dc'?'on':''}" aria-label="ديسكورد">${IC.dc}</button>`
+        : `<button data-v="acc" aria-label="حسابي">${IC.user}</button>`}
     </div>`;
+
   $$('[data-v]').forEach(b => { b.onclick = () => { S.view = b.dataset.v; renderApp(); }; });
   const ab = $('#accBtn'); if (ab) ab.onclick = openAccountMenu;
   const nb = $('#notifBtn'); if (nb) nb.onclick = () => { S.view = 'notifs'; renderApp(); };
   const ln = $('#loginNow'); if (ln) ln.onclick = () => { S.guest = false; renderAuth(); };
-  window.addEventListener('scroll', () => { const t = $('#top'); if (t) t.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
+  window.addEventListener('scroll', () => {
+    const t = $('#top'); if (t) t.classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive: true });
   renderView();
 }
 
@@ -538,12 +724,18 @@ function renderView() {
   if (!v) return;
   if (S.view === 'home') return viewHome(v);
   if (S.view === 'notifs') return viewNotifs(v);
-  if (S.view === 'dc') { if (!canDiscord()) { S.view = 'home'; return renderView(); } return viewDiscord(v); }
+  if (S.view === 'dc') {
+    if (!canDiscord()) { S.view = 'home'; return renderView(); }
+    return viewDiscord(v);
+  }
   if (S.view === 'acc') return openAccountMenu();
   if (S.view === 'admin') return openAdmin();
   return viewChannels(v, S.view);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   HOME
+   ═══════════════════════════════════════════════════════════ */
 function viewHome(v) {
   const counts = isLogged()
     ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, dc:S.feeds.length }
@@ -574,6 +766,9 @@ function viewHome(v) {
   if (btn) btn.onclick = () => { S.guest = false; renderAuth(); };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CHANNELS
+   ═══════════════════════════════════════════════════════════ */
 function limitBarHTML(kind) {
   const l = S.limits[kind] || { used:0, limit:10, remaining:10 };
   const pct = l.limit > 0 ? Math.min(100, (l.used / l.limit) * 100) : 0;
@@ -637,7 +832,10 @@ function chCard(kind, r) {
       <div class="lock-blur" style="padding:14px">
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
           <div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div>
-          <div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div>
+          <div style="flex:1">
+            <div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div>
+            <div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div>
+          </div>
         </div>
         <div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div>
       </div>
@@ -645,14 +843,20 @@ function chCard(kind, r) {
         <div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div>
         <h3>سجّل دخولك</h3>
         <p>لرؤية تفاصيل هذه القناة</p>
-        <button class="btn pri sm" onclick="window.__goLogin()">دخول سريع</button>
+        <button class="btn pri sm" id="glk_${kind}_${r.id}">دخول سريع</button>
       </div>`;
+    setTimeout(() => {
+      const b = $('#glk_' + kind + '_' + r.id);
+      if (b) b.onclick = () => { S.guest = false; renderAuth(); };
+    }, 50);
     return card;
   }
+
   let slug = '', title = '';
   if (kind === 'kick') { slug = '@' + (r.slug||''); title = r.name || r.slug || ''; }
   else if (kind === 'yt') { slug = r.channel_id||''; title = r.name || r.channel_id || ''; }
   else { slug = r.chat_id||''; title = r.name || r.chat_id || ''; }
+
   const liveBadge = kind === 'kick' && r.live && r.enabled
     ? '<span class="ch-badge live">مباشر</span>'
     : (!r.enabled ? '<span class="ch-badge off">موقوف</span>' : '');
@@ -660,9 +864,19 @@ function chCard(kind, r) {
   const avatarHTML = r.avatar
     ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">`
     : `<div class="ph">${IC[kind]}</div>`;
+
   card.innerHTML = `
-    <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}</div>
-    <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
+    <div class="ch-cover">
+      ${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}
+      ${liveBadge}
+    </div>
+    <div class="ch-head">
+      ${avatarHTML}
+      <div class="ch-info">
+        <b>${esc(title)}</b>
+        <small>${esc(slug)}</small>
+      </div>
+    </div>
     ${kind === 'kick' && r.live && r.title ? `<div class="ch-live"><div>${esc(r.title)}</div><span>${r.viewers||0} 👁</span></div>` : ''}
     ${r.msg ? `<div class="ch-note">${esc(stripTags(r.msg))}</div>` : ''}
     <div class="ch-acts">
@@ -672,6 +886,7 @@ function chCard(kind, r) {
       <button class="btn sm ghost" data-act="toggle">${r.enabled?'إيقاف':'تفعيل'}</button>
       <button class="btn sm danger" data-act="del">${IC.trash}</button>
     </div>`;
+
   card.querySelectorAll('[data-act]').forEach(b => {
     b.onclick = async (e) => {
       e.stopPropagation();
@@ -693,26 +908,112 @@ function chCard(kind, r) {
           renderApp();
         } catch (e2) { toast(e2.message, 'bad'); }
       } else if (act === 'edit') {
-        const msg = await modal({
-          title:'تخصيص رسالة الإشعار',
-          sub:'المتغيرات: {name} {title} {url}',
-          html:'<label class="fld"><span>نص الرسالة</span><textarea id="__msg" rows="5">' + esc(r.msg || '') + '</textarea></label>',
-          okText:'حفظ'
-        });
-        if (msg === null || msg === false) return;
-        try {
-          await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { msg: $('#__msg').value } });
-          toast('تم الحفظ', 'ok');
-          await loadChannels(kind);
-          renderApp();
-        } catch (e2) { toast(e2.message, 'bad'); }
+        await editChannelMsg(kind, r);
       }
     };
   });
   return card;
 }
-window.__goLogin = () => { S.guest = false; renderAuth(); };
 
+/* ═══════════════════════════════════════════════════════════
+   EDIT CHANNEL MSG + IMAGE
+   ═══════════════════════════════════════════════════════════ */
+async function editChannelMsg(kind, r) {
+  const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
+  const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
+
+  let uploadedImage = curImg ? curImg[1] : '';
+
+  const html = `
+    <label class="fld">
+      <span>نص الرسالة</span>
+      <textarea id="__msg" rows="6">${esc(curMsg)}</textarea>
+    </label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:12px">
+      <span class="mu" style="font-size:11.5px">المتغيرات:</span>
+      <span class="pill">{name}</span>
+      <span class="pill">{title}</span>
+      <span class="pill">{url}</span>
+    </div>
+    <label class="fld" style="margin-top:6px">
+      <span>صورة مرفقة (اختياري)</span>
+    </label>
+    <div class="img-preview-box ${uploadedImage ? '' : 'empty'}" id="__imgBox">
+      ${uploadedImage
+        ? `<img src="${esc(uploadedImage)}" alt="" id="__imgPrev">`
+        : '<div id="__imgEmpty">لا توجد صورة</div>'}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button type="button" class="btn sm" id="__upBtn">${IC.camera} رفع صورة</button>
+      <button type="button" class="btn sm ghost" id="__clrBtn">${IC.x} مسح</button>
+      <input type="file" id="__upFile" accept="image/*" style="display:none">
+    </div>
+    <div class="tpl-preview" id="__tplPrev"></div>`;
+
+  const r2 = await modal({
+    title:'تخصيص رسالة الإشعار',
+    sub:'اتركها فارغة لاستخدام القالب العام',
+    html,
+    okText:'حفظ',
+    wide: true,
+    onReady: () => {
+      const ta = $('#__msg');
+      const prev = $('#__tplPrev');
+      const updatePrev = () => {
+        const tpl = ta.value.trim() || (kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || ''));
+        const sample = tpl
+          .replace(/\{name\}/g, r.name || 'اسم القناة')
+          .replace(/\{title\}/g, kind === 'kick' ? 'عنوان البث' : 'عنوان الفيديو')
+          .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : 'https://youtube.com/watch?v=...');
+        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + esc(sample).replace(/\n/g, '<br>');
+      };
+      ta.oninput = updatePrev;
+      updatePrev();
+
+      $('#__upBtn').onclick = () => $('#__upFile').click();
+      $('#__upFile').onchange = async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        if (f.size > 2 * 1024 * 1024) return toast('الحجم أكبر من 2MB', 'bad');
+        const fd = new FormData();
+        fd.append('file', f);
+        try {
+          const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
+          const j = await res.json();
+          if (!res.ok) throw new Error(j.error || 'فشل الرفع');
+          uploadedImage = j.url;
+          const box = $('#__imgBox');
+          box.classList.remove('empty');
+          box.innerHTML = `<img src="${esc(uploadedImage)}" alt="" id="__imgPrev">`;
+          toast('تم رفع الصورة', 'ok');
+        } catch (err) { toast(err.message, 'bad'); }
+      };
+      $('#__clrBtn').onclick = () => {
+        uploadedImage = '';
+        const box = $('#__imgBox');
+        box.classList.add('empty');
+        box.innerHTML = '<div id="__imgEmpty">لا توجد صورة</div>';
+      };
+    }
+  });
+  if (r2 === null || r2 === false) return;
+
+  let finalMsg = ($('#__msg')?.value || '').trim();
+  if (uploadedImage) {
+    finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
+  }
+
+  try {
+    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { msg: finalMsg } });
+    toast('تم الحفظ', 'ok');
+    await loadChannels(kind);
+    renderApp();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADD CHANNEL
+   ═══════════════════════════════════════════════════════════ */
 async function openAddChannel(kind) {
   if (!isLogged()) return;
   let suggestions = [];
@@ -732,8 +1033,13 @@ async function openAddChannel(kind) {
       <div class="sug-grid" id="sugGrid">
         ${suggestions.map(s => `
           <div class="sug-item" data-id="${s.id}">
-            <div class="av">${s.avatar ? `<img src="${esc(s.avatar)}" onerror="this.remove()">` : esc((s.name||'?').charAt(0).toUpperCase())}</div>
-            <div class="if"><b>${esc(s.name || s.identifier)}</b><small>${esc(s.identifier)}</small></div>
+            <div class="av">${s.avatar
+              ? `<img src="${esc(s.avatar)}" onerror="this.remove()">`
+              : esc((s.name||'?').charAt(0).toUpperCase())}</div>
+            <div class="if">
+              <b>${esc(s.name || s.identifier)}</b>
+              <small>${esc(s.identifier)}</small>
+            </div>
             <div class="ck">${IC.check}</div>
           </div>`).join('')}
       </div>
@@ -758,13 +1064,16 @@ async function openAddChannel(kind) {
       <input type="text" id="__cn" placeholder="اسم مختصر"></label>
     ${sugHTML}`;
 
-  const result = await modal({ title: labels.title, html, okText: 'إضافة', cancelText: 'إلغاء', wide: suggestions.length > 0 });
+  const result = await modal({
+    title: labels.title, html,
+    okText: 'إضافة', cancelText: 'إلغاء',
+    wide: suggestions.length > 0
+  });
   if (result === false || result === null) return;
 
   const val = ($('#__ci')?.value || '').trim();
   const customName = ($('#__cn')?.value || '').trim();
 
-  // أولاً: اذا فيه اقتراحات محددة → bulk-add
   if (suggestions.length) {
     const ids = $$('#sugGrid .sug-item.on').map(x => +x.dataset.id);
     if (ids.length > 0) {
@@ -773,7 +1082,7 @@ async function openAddChannel(kind) {
         const added = r.added || 0;
         const failed = r.failed || 0;
         toast('تمت إضافة ' + added + ' قناة' + (failed ? ' — فشل ' + failed : ''), failed && !added ? 'bad' : 'ok');
-        if (r.errors && r.errors.length) setTimeout(() => toast(r.errors[0], 'bad'), 400);
+        if (r.errors && r.errors.length) setTimeout(() => toast(r.errors[0], ''), 500);
         await loadChannels(kind);
         renderApp();
         return;
@@ -781,7 +1090,6 @@ async function openAddChannel(kind) {
     }
   }
 
-  // ثانياً: إضافة يدوية
   if (!val) return toast('اكتب القيمة أو اختر من المقترحات', 'bad');
   try {
     const body = kind === 'kick' ? { slug: val, msg: '' }
@@ -794,10 +1102,14 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   DISCORD
+   ═══════════════════════════════════════════════════════════ */
 function viewDiscord(v) {
   const autoBadge = S.autoDiscovery
-    ? '<span class="pill ok">'+IC.check+' اكتشاف تلقائي</span>'
+    ? '<span class="pill ok">' + IC.check + ' اكتشاف تلقائي</span>'
     : '<span class="pill warn">قائمة محددة يدوياً</span>';
+  const chsCount = Object.keys(S.knownChannels).length;
 
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
@@ -807,12 +1119,12 @@ function viewDiscord(v) {
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
         ${autoBadge}
-        <span class="pill">${IC.dc} ${Object.keys(S.knownChannels).length} روم متاح</span>
+        <span class="pill">${IC.dc} ${chsCount} روم متاح</span>
         <span class="pill">${S.feeds.length} ربط نشط</span>
       </div>
-      ${Object.keys(S.knownChannels).length > 0 ? `
+      ${chsCount > 0 ? `
         <details style="margin-bottom:16px;padding:12px 14px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px">
-          <summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">عرض الرومات المتاحة (${Object.keys(S.knownChannels).length})</summary>
+          <summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">عرض الرومات المتاحة (${chsCount})</summary>
           <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
             ${Object.entries(S.knownChannels).map(([id, info]) =>
               `<span class="pill" style="font-size:10.5px">#${esc(info.name)}</span>`
@@ -827,6 +1139,7 @@ function viewDiscord(v) {
           <button class="btn pri" id="emptyAddFeed">${IC.plus} ربط روم</button>
         </div>`}
     </div>`;
+
   const emptyBtn = $('#emptyAddFeed'); if (emptyBtn) emptyBtn.onclick = openAddFeed;
   const addBtn = $('#addFeedBtn'); if (addBtn) addBtn.onclick = openAddFeed;
 
@@ -835,7 +1148,9 @@ function viewDiscord(v) {
     S.feeds.forEach(f => {
       const card = el('div', 'ch');
       const name = (S.knownChannels[f.channel_id]?.name) || f.channel_name || f.channel_id;
-      const sourceLabel = f.source_type === 'twitter' ? 'تويتر' : f.source_type === 'youtube' ? 'يوتيوب' : 'عام';
+      const sourceLabel = f.source_type === 'twitter' ? 'تويتر'
+                        : f.source_type === 'youtube' ? 'يوتيوب'
+                        : 'عام';
       card.innerHTML = `
         <div style="padding:18px">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
@@ -873,25 +1188,57 @@ function viewDiscord(v) {
               renderApp();
             } catch (e) { toast(e.message, 'bad'); }
           } else if (act === 'edit') {
-            const tpl = await modal({
-              title:'تعديل القالب',
-              sub:'المتغيرات: {author} {content} {channel} {source}',
-              html:'<label class="fld"><span>القالب</span><textarea id="__tp" rows="5">' + esc(f.template || '') + '</textarea></label>',
-              okText:'حفظ'
-            });
-            if (tpl === null || tpl === false) return;
-            try {
-              await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { template: $('#__tp').value } });
-              toast('تم الحفظ', 'ok');
-              await loadFeeds();
-              renderApp();
-            } catch (e) { toast(e.message, 'bad'); }
+            await editFeedTemplate(f);
           }
         };
       });
       list.appendChild(card);
     });
   }
+}
+
+async function editFeedTemplate(f) {
+  const html = `
+    <label class="fld">
+      <span>القالب</span>
+      <textarea id="__tp" rows="6">${esc(f.template || '')}</textarea>
+    </label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:10px">
+      <span class="mu" style="font-size:11.5px">المتغيرات:</span>
+      <span class="pill">{author}</span>
+      <span class="pill">{content}</span>
+      <span class="pill">{channel}</span>
+      <span class="pill">{source}</span>
+    </div>
+    <div class="tpl-preview" id="__tplPrev"></div>`;
+  const r = await modal({
+    title:'تعديل القالب',
+    sub:'اتركه فارغاً لاستخدام القالب الافتراضي',
+    html,
+    okText:'حفظ',
+    onReady: () => {
+      const ta = $('#__tp');
+      const prev = $('#__tplPrev');
+      const update = () => {
+        const tpl = ta.value.trim() || (S.settings.tpl_discord || '<b>{author}</b>\n{content}');
+        const sample = tpl
+          .replace(/\{author\}/g, 'اسم الحساب')
+          .replace(/\{content\}/g, 'محتوى الرسالة')
+          .replace(/\{channel\}/g, 'twitter')
+          .replace(/\{source\}/g, 'twitter');
+        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + esc(sample).replace(/\n/g, '<br>');
+      };
+      ta.oninput = update;
+      update();
+    }
+  });
+  if (r === null || r === false) return;
+  try {
+    await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { template: $('#__tp').value } });
+    toast('تم الحفظ', 'ok');
+    await loadFeeds();
+    renderApp();
+  } catch (e) { toast(e.message, 'bad'); }
 }
 
 async function openAddFeed() {
@@ -902,12 +1249,11 @@ async function openAddFeed() {
   if (!chs.length) {
     return modal({
       title:'لا توجد رومات متاحة',
-      sub:'البوت لم يكتشف رومات بعد. تأكد من:\n• DISCORD_GUILD_ID صحيح\n• البوت مضاف للسيرفر\n• Message Content Intent مُفعّل',
+      sub:'البوت لم يكتشف رومات بعد.\n\nتأكد من:\n• DISCORD_GUILD_ID صحيح في متغيرات البيئة\n• البوت مضاف للسيرفر\n• Message Content Intent مُفعّل في Discord Developer Portal',
       okText:'حسناً', cancel:false
     });
   }
 
-  // فلتر الرومات التي لم تُربط بعد
   const linked = new Set(S.feeds.map(f => f.channel_id));
   const available = chs.filter(([id]) => !linked.has(id));
 
@@ -934,7 +1280,12 @@ async function openAddFeed() {
       <textarea id="__tpl" rows="4" placeholder="<b>{author}</b>&#10;{content}"></textarea>
     </label>
     <div class="mu" style="font-size:12px;margin-top:-6px">المتغيرات: {author} {content} {channel} {source}</div>`;
-  const r = await modal({ title:'ربط روم ديسكورد', sub:'كل رسالة جديدة في الروم تُرسل لقنواتك على تيليجرام', html, okText:'ربط' });
+
+  const r = await modal({
+    title:'ربط روم ديسكورد',
+    sub:'كل رسالة جديدة في الروم تُرسل لقنواتك على تيليجرام',
+    html, okText:'ربط'
+  });
   if (!r) return;
   const cid = $('#__chList').value;
   if (!cid) return toast('اختر الروم', 'bad');
@@ -951,18 +1302,30 @@ async function openAddFeed() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════ */
 function viewNotifs(v) {
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
         <div class="sec-title">الإشعارات <span>.</span></div>
-        ${S.notifs.length ? `<div style="display:flex;gap:7px"><button class="btn sm ghost" id="readAll">قرأت الكل</button><button class="btn sm danger" id="clearAll">مسح</button></div>` : ''}
+        ${S.notifs.length ? `
+          <div style="display:flex;gap:7px">
+            <button class="btn sm ghost" id="readAll">قرأت الكل</button>
+            <button class="btn sm danger" id="clearAll">مسح</button>
+          </div>` : ''}
       </div>
       <div id="ntList"></div>
     </div>`;
   const l = $('#ntList');
   if (!S.notifs.length) {
-    l.innerHTML = `<div class="empty"><div class="em-icon">${IC.bell}</div><h3>لا توجد إشعارات</h3><p>ستظهر هنا إشعارات البث والفيديو</p></div>`;
+    l.innerHTML = `
+      <div class="empty">
+        <div class="em-icon">${IC.bell}</div>
+        <h3>لا توجد إشعارات</h3>
+        <p>ستظهر هنا إشعارات البث والفيديو</p>
+      </div>`;
     return;
   }
   S.notifs.forEach(n => {
@@ -977,13 +1340,19 @@ function viewNotifs(v) {
       </div>`;
     if (!n.is_read) {
       c.onclick = async () => {
-        try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {}
+        try {
+          await api('/api/notifs/read-all', { method:'POST' });
+          await loadNotifs();
+          renderApp();
+        } catch (e) {}
       };
     }
     l.appendChild(c);
   });
   const ra = $('#readAll');
-  if (ra) ra.onclick = async () => { try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
+  if (ra) ra.onclick = async () => {
+    try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {}
+  };
   const ca = $('#clearAll');
   if (ca) ca.onclick = async () => {
     const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true);
@@ -992,12 +1361,20 @@ function viewNotifs(v) {
   };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ACCOUNT MENU
+   ═══════════════════════════════════════════════════════════ */
 function openAccountMenu() {
   if (!isLogged()) { if (S.guest) { S.guest = false; renderAuth(); } return; }
   const old = $('#accMenu'); if (old) old.remove();
   const m = el('div', 'acc-menu'); m.id = 'accMenu';
   const u = S.me.user;
   const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg;
+
+  const pushBadge = S.pushEnabled
+    ? '<span class="badge-mini ok">مفعّل</span>'
+    : '<span class="badge-mini off">معطل</span>';
+
   m.innerHTML = `
     <div class="acc-head">
       <div class="nm">${esc(u.display || u.username)}</div>
@@ -1008,26 +1385,34 @@ function openAccountMenu() {
         <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
       </div>
     </div>
+    <button class="acc-item" data-a="push">
+      ${IC.bell} إشعارات المتصفح
+      ${pushBadge}
+    </button>
+    ${S.pushEnabled ? `<button class="acc-item" data-a="pushtest">${IC.send} اختبار الإشعارات</button>` : ''}
     <button class="acc-item" data-a="suggest">${IC.msg} إرسال اقتراح</button>
     ${isOwner() ? `<button class="acc-item" data-a="admin">${IC.shield} لوحة الإدارة</button>` : ''}
     <div class="acc-sep"></div>
     <button class="acc-item danger" data-a="logout">${IC.logout} تسجيل الخروج</button>`;
+
   document.body.appendChild(m);
   requestAnimationFrame(() => m.classList.add('on'));
+
   m.querySelectorAll('[data-a]').forEach(b => {
     b.onclick = () => {
-      m.classList.remove('on');
-      setTimeout(() => m.remove(), 260);
       const a = b.dataset.a;
-      if (a === 'logout') doLogout();
-      else if (a === 'suggest') openSuggestion();
-      else if (a === 'admin') { S.view = 'admin'; renderApp(); }
+      if (a === 'logout') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); doLogout(); }
+      else if (a === 'suggest') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); openSuggestion(); }
+      else if (a === 'admin') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); S.view = 'admin'; renderApp(); }
+      else if (a === 'push') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); S.pushEnabled ? disablePush() : enablePush(); }
+      else if (a === 'pushtest') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); testPush(); }
     };
   });
   setTimeout(() => {
     const close = e => {
       if (!m.contains(e.target) && e.target.id !== 'accBtn' && !e.target.closest('#accBtn')) {
-        m.classList.remove('on'); setTimeout(() => m.remove(), 260);
+        m.classList.remove('on');
+        setTimeout(() => m.remove(), 260);
         document.removeEventListener('click', close);
       }
     };
@@ -1043,13 +1428,13 @@ async function doLogout() {
 }
 
 async function openSuggestion() {
-  const txt = await modal({
+  const r = await modal({
     title:'إرسال اقتراح',
     sub:'شاركنا رأيك أو اقتراحك — سيصل للإدارة مباشرة',
     html:'<label class="fld"><span>نص الاقتراح</span><textarea id="__sg" rows="6" maxlength="1000" placeholder="اكتب اقتراحك هنا..."></textarea></label>',
     okText:'إرسال'
   });
-  if (!txt) return;
+  if (!r) return;
   const text = ($('#__sg')?.value || '').trim();
   if (!text) return toast('اكتب نص الاقتراح', 'bad');
   try {
@@ -1180,7 +1565,7 @@ function renderAdminUsers(c) {
           <b>${esc(u.display||u.username)}
             ${u.banned ? ' <span class="pill bad">محظور</span>' : ''}
             ${u.role==='owner' ? ' <span class="pill">إدارة</span>' : ''}
-            ${u.can_discord ? ' <span class="pill ok">'+IC.dc+'</span>' : ''}
+            ${u.can_discord ? ' <span class="pill ok">' + IC.dc + '</span>' : ''}
           </b>
           <small>@${esc(u.username)} · K:${lk} Y:${ly} T:${lt}</small>
         </div>
@@ -1235,12 +1620,17 @@ async function adminUserAction(u, act) {
     const ok = await modal({
       title:'تعديل ' + u.username,
       html:`
-        <label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label>
-        <label class="fld"><span>كلمة مرور جديدة (اتركها فارغة)</span><input type="password" id="__pw"></label>
+        <label class="fld"><span>الاسم المعروض</span>
+          <input type="text" id="__dn" value="${esc(u.display||'')}"></label>
+        <label class="fld"><span>كلمة مرور جديدة (اتركها فارغة)</span>
+          <input type="password" id="__pw"></label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label>
-          <label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label>
-          <label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label>
+          <label class="fld"><span>حد كيك</span>
+            <input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label>
+          <label class="fld"><span>حد يوتيوب</span>
+            <input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label>
+          <label class="fld"><span>حد تيليجرام</span>
+            <input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label>
         </div>
         <label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer">
           <input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> السماح بالوصول لصفحة ديسكورد
@@ -1365,7 +1755,6 @@ function renderAdminDefaults(c) {
     });
   });
 
-  // إضافة جماعية
   $('#adBulkAdd').onclick = async () => {
     const html = `
       <label class="fld"><span>النوع</span>
@@ -1395,24 +1784,27 @@ function renderAdminDefaults(c) {
       const added = res.added || 0;
       const failed = res.failed || 0;
       toast('تمت إضافة ' + added + (failed ? ' — فشل ' + failed : ''), failed && !added ? 'bad' : 'ok');
-      if (res.errors && res.errors.length) {
-        setTimeout(() => toast(res.errors[0], ''), 500);
-      }
+      if (res.errors && res.errors.length) setTimeout(() => toast(res.errors[0], ''), 500);
       await loadAdminData();
       renderAdminContent();
     } catch (e) { toast(e.message, 'bad'); }
   };
 
-  // إضافة واحدة
   $('#adAddDef').onclick = async () => {
     const ok = await modal({
       title:'إضافة قناة افتراضية',
       html:`
         <label class="fld"><span>النوع</span>
-          <select id="__kd"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="tg">تيليجرام</option></select>
+          <select id="__kd">
+            <option value="kick">كيك</option>
+            <option value="yt">يوتيوب</option>
+            <option value="tg">تيليجرام</option>
+          </select>
         </label>
-        <label class="fld"><span>المعرّف</span><input type="text" id="__id" placeholder="xqc أو UC... أو @channel"></label>
-        <label class="fld"><span>الاسم المعروض (اختياري)</span><input type="text" id="__nm"></label>`,
+        <label class="fld"><span>المعرّف</span>
+          <input type="text" id="__id" placeholder="xqc أو UC... أو @channel"></label>
+        <label class="fld"><span>الاسم المعروض (اختياري)</span>
+          <input type="text" id="__nm"></label>`,
       okText:'إضافة'
     });
     if (!ok) return;
@@ -1434,7 +1826,11 @@ function renderAdminSuggestions(c) {
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الاقتراحات <span>(${rows.length})</span></div></div>
     ${rows.length ? '<div id="sugList"></div>' : `
-      <div class="empty"><div class="em-icon">${IC.msg}</div><h3>لا توجد اقتراحات</h3><p>ستظهر هنا اقتراحات المستخدمين</p></div>`}`;
+      <div class="empty">
+        <div class="em-icon">${IC.msg}</div>
+        <h3>لا توجد اقتراحات</h3>
+        <p>ستظهر هنا اقتراحات المستخدمين</p>
+      </div>`}`;
   const list = $('#sugList');
   if (!list) return;
   rows.forEach(s => {
@@ -1596,6 +1992,17 @@ document.addEventListener('click', e => {
       const counter = document.getElementById('sugCount');
       if (counter) counter.textContent = (allOn ? 0 : items.length) + ' محددة';
     }
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Keyboard shortcuts
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Escape') {
+    const m = $('#modal');
+    if (m && m.classList.contains('on')) m.classList.remove('on');
   }
 });
 

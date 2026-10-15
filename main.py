@@ -1664,8 +1664,8 @@ if __name__ == "__main__":
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 # ═══════════════════════════════════════════════════════════
-   ROOT VARIABLES — TEAM SOL style
-   # ═══════════════════════════════════════════════════════════
+# ROOT VARIABLES — TEAM SOL style
+# ═══════════════════════════════════════════════════════════
 :root{
   --blue:#0b55ea;--blue2:#1b67ff;--blue-rgb:11,85,234;
   --bg:#030508;--panel:#0a0f18;--card:linear-gradient(145deg,#0c1119,#040609);

@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, Response as FastResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
+
 load_dotenv()
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
@@ -33,6 +34,15 @@ BATCH_KICK = 30
 BATCH_YT = 30
 MAX_IMAGE_SIZE = 2 * 1024 * 1024
 
+THEMES = [
+    {"id": "default", "n": "الافتراضي", "c1": "#030508", "c2": "#0a0f18", "ac": "#0b55ea"},
+    {"id": "saudi", "n": "اليوم الوطني السعودي", "c1": "#033a20", "c2": "#0b7a3e", "ac": "#ffffff"},
+    {"id": "founding", "n": "يوم التأسيس", "c1": "#3a290b", "c2": "#0b5c3a", "ac": "#e6b85c"},
+    {"id": "ramadan", "n": "رمضان", "c1": "#0a1733", "c2": "#1d3a6e", "ac": "#f5c04a"},
+    {"id": "fitr", "n": "عيد الفطر", "c1": "#0d3434", "c2": "#1d6b57", "ac": "#ffd166"},
+    {"id": "adha", "n": "عيد الأضحى", "c1": "#2a1a0a", "c2": "#6a4720", "ac": "#f0b84d"},
+]
+
 def db():
     c = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     c.row_factory = sqlite3.Row
@@ -41,7 +51,7 @@ def db():
     return c
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, display TEXT DEFAULT '', pass_hash TEXT DEFAULT '', salt TEXT DEFAULT '', role TEXT DEFAULT 'user', active INTEGER DEFAULT 1, banned INTEGER DEFAULT 0, lim_kick INTEGER, lim_yt INTEGER, lim_tg INTEGER, can_discord INTEGER DEFAULT 0, created INTEGER, last_login INTEGER);
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, display TEXT DEFAULT '', avatar TEXT DEFAULT '', pass_hash TEXT DEFAULT '', salt TEXT DEFAULT '', role TEXT DEFAULT 'user', active INTEGER DEFAULT 1, banned INTEGER DEFAULT 0, lim_kick INTEGER, lim_yt INTEGER, lim_tg INTEGER, can_discord INTEGER DEFAULT 0, created INTEGER, last_login INTEGER);
 CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, username TEXT NOT NULL, created INTEGER, expires INTEGER);
 CREATE INDEX IF NOT EXISTS idx_sessions_exp ON sessions(expires);
 CREATE TABLE IF NOT EXISTS settings (k TEXT PRIMARY KEY, v TEXT);
@@ -77,31 +87,48 @@ CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 def init_db():
     c = db()
     c.executescript(SCHEMA)
-    try:
-        cols = [r["name"] for r in c.execute("PRAGMA table_info(users)").fetchall()]
-        if "can_discord" not in cols:
-            c.execute("ALTER TABLE users ADD COLUMN can_discord INTEGER DEFAULT 0")
-            c.commit()
-            print("[DB] ✅ can_discord column added")
-    except Exception as e:
-        print(f"[DB] ALTER: {e}")
+    for tbl, col, typ in [("users", "can_discord", "INTEGER DEFAULT 0"), ("users", "avatar", "TEXT DEFAULT ''")]:
+        try:
+            cols = [r["name"] for r in c.execute(f"PRAGMA table_info({tbl})").fetchall()]
+            if col not in cols:
+                c.execute(f"ALTER TABLE {tbl} ADD COLUMN {col} {typ}")
+                c.commit()
+                print(f"[DB] Added {col} to {tbl}")
+        except Exception as e:
+            print(f"[DB] ALTER: {e}")
     salt = secrets.token_hex(16)
     new_hash = hash_pw(ADMIN_PASSWORD, salt)
     existing = c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone()
     if not existing:
         c.execute("INSERT INTO users(username,display,pass_hash,salt,role,active,banned,can_discord,created) VALUES(?,?,?,?,'owner',1,0,1,?)", (ADMIN_USERNAME, ADMIN_USERNAME, new_hash, salt, now()))
-        print(f"[DB] ✅ Created admin: {ADMIN_USERNAME}")
+        print(f"[DB] Admin created: {ADMIN_USERNAME}")
     else:
         c.execute("UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0, can_discord=1 WHERE username=?", (new_hash, salt, ADMIN_USERNAME))
-        print(f"[DB] 🔄 Synced admin: {ADMIN_USERNAME}")
-    defaults = {"site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL", "hero_title": "مراقبة", "hero_accent": "القنوات.", "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.", "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>", "tpl_yt": "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>", "tpl_discord": "<b>{author}</b>\n{content}", "tpl_twitter": "<b>{author}</b>\n{content}", "tpl_youtube_dc": "<b>{author}</b>\n{content}", "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو", "lim_kick": "10", "lim_yt": "5", "lim_tg": "3", "guest_mode": "1", "guest_blur": "14"}
+        print("[DB] Admin synced")
+    defaults = {
+        "site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL",
+        "hero_title": "مراقبة", "hero_accent": "القنوات.",
+        "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد. إشعارات فورية عند أي بث أو فيديو جديد.",
+        "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>",
+        "tpl_yt": "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>",
+        "tpl_discord": "<b>{author}</b>\n\n{content}",
+        "tpl_twitter": "<b>{author}</b>\n\n{content}",
+        "tpl_youtube_dc": "<b>{title}</b>\n\n{author}",
+        "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو",
+        "lim_kick": "10", "lim_yt": "5", "lim_tg": "3",
+        "guest_mode": "1", "guest_blur": "14",
+        "site_theme": "default",
+        "site_logo": "",
+        "site_c1": "#030508", "site_c2": "#0a0f18", "site_ac": "#0b55ea",
+    }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
     c.close()
-    print("[DB] ✅ Ready")
+    print("[DB] Ready")
 
-def now(): return int(time.time())
+def now():
+    return int(time.time())
 
 def cfg(k, d=""):
     c = db()
@@ -127,6 +154,15 @@ def log_sec(username, action, detail="", ip=""):
         c.close()
     except Exception:
         pass
+
+def get_site_theme():
+    tid = cfg("site_theme", "default")
+    if tid == "custom":
+        return {"id": "custom", "n": "مخصص", "c1": cfg("site_c1", "#030508"), "c2": cfg("site_c2", "#0a0f18"), "ac": cfg("site_ac", "#0b55ea")}
+    for t in THEMES:
+        if t["id"] == tid:
+            return t
+    return THEMES[0]
 
 _rate_map = {}
 def rate_ok(key, max_per_min=MAX_PER_MIN_TG):
@@ -175,8 +211,10 @@ def require_owner(request):
 
 def require_discord_access(request):
     u = require_auth(request)
-    if u.get("role") == "owner": return u
-    if u.get("can_discord") == 1: return u
+    if u.get("role") == "owner":
+        return u
+    if u.get("can_discord") == 1:
+        return u
     raise HTTPException(403, "غير مصرح بالوصول لصفحة ديسكورد")
 
 def get_user_limits(username, role):
@@ -186,13 +224,18 @@ def get_user_limits(username, role):
     u = c.execute("SELECT lim_kick, lim_yt, lim_tg FROM users WHERE username=?", (username,)).fetchone()
     c.close()
     defaults = {"kick": int(cfg("lim_kick", "10")), "yt": int(cfg("lim_yt", "5")), "tg": int(cfg("lim_tg", "3"))}
-    if not u: return defaults
-    return {"kick": u["lim_kick"] if u["lim_kick"] is not None else defaults["kick"], "yt": u["lim_yt"] if u["lim_yt"] is not None else defaults["yt"], "tg": u["lim_tg"] if u["lim_tg"] is not None else defaults["tg"]}
+    if not u:
+        return defaults
+    return {
+        "kick": u["lim_kick"] if u["lim_kick"] is not None else defaults["kick"],
+        "yt": u["lim_yt"] if u["lim_yt"] is not None else defaults["yt"],
+        "tg": u["lim_tg"] if u["lim_tg"] is not None else defaults["tg"],
+    }
 
 def check_limit(username, kind, role, adding=1):
-    if role == "owner": return True
-    limits = get_user_limits(username, role)
-    limit = limits.get(kind, 10)
+    if role == "owner":
+        return True
+    limit = get_user_limits(username, role).get(kind, 10)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
     c = db()
     n = c.execute(f"SELECT COUNT(*) n FROM {table} WHERE added_by=?", (username,)).fetchone()["n"]
@@ -201,35 +244,89 @@ def check_limit(username, kind, role, adding=1):
 
 def limit_info(username, kind, role):
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
-    limits = get_user_limits(username, role)
+    limit = get_user_limits(username, role).get(kind, 10)
     c = db()
     used = c.execute(f"SELECT COUNT(*) n FROM {table} WHERE added_by=?", (username,)).fetchone()["n"]
     c.close()
-    limit = limits.get(kind, 10)
     return {"used": used, "limit": limit, "remaining": max(0, limit - used)}
 
 async def tg_send(chat_id, text, image="", btn="", url=""):
-    if not TELEGRAM_TOKEN: return False
+    if not TELEGRAM_TOKEN:
+        return False
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
     base = {"chat_id": str(chat_id), "parse_mode": "HTML"}
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
                 r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto", json={**base, "photo": image, "caption": (text or ".")[:1024], "reply_markup": markup})
-                if r.status_code == 200: return True
+                if r.status_code == 200:
+                    return True
             r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={**base, "text": (text or ".")[:4096], "reply_markup": markup})
             return r.status_code == 200
     except Exception as e:
-        print(f"[TG ERROR] {e}")
+        print(f"[TG] {e}")
         return False
+
+async def tg_api(method, body):
+    if not TELEGRAM_TOKEN:
+        return {"ok": False}
+    try:
+        async with httpx.AsyncClient(timeout=15) as c:
+            r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/{method}", json=body or {})
+            return r.json()
+    except Exception as e:
+        print(f"[TG API] {e}")
+        return {"ok": False}
+
+async def tg_save_photo(file_id):
+    if not TELEGRAM_TOKEN:
+        return ""
+    j = await tg_api("getFile", {"file_id": file_id})
+    if not j.get("ok"):
+        return ""
+    file_path = j["result"]["file_path"]
+    try:
+        async with httpx.AsyncClient(timeout=20) as c:
+            r = await c.get(f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_path}")
+            if r.status_code != 200:
+                return ""
+            content = r.content
+    except Exception:
+        return ""
+    if len(content) > MAX_IMAGE_SIZE:
+        return ""
+    img_id = secrets.token_urlsafe(16)
+    c = db()
+    c.execute("INSERT INTO images(id,mime,data,size,uploaded_by,created) VALUES(?,?,?,?,?,?)", (img_id, "image/jpeg", content, len(content), "system", now()))
+    c.commit()
+    c.close()
+    return f"/api/image/{img_id}"
+
+async def tg_get_chat_info(chat_id):
+    j = await tg_api("getChat", {"chat_id": chat_id})
+    if not j.get("ok"):
+        return None
+    chat = j.get("result", {})
+    name = chat.get("title") or " ".join(filter(None, [chat.get("first_name"), chat.get("last_name")])) or chat.get("username") or str(chat_id)
+    username = ("@" + chat["username"]) if chat.get("username") else ""
+    photo = chat.get("photo") or {}
+    photo_id = photo.get("big_file_id") or photo.get("small_file_id") or ""
+    avatar_url = ""
+    if photo_id:
+        avatar_url = await tg_save_photo(photo_id)
+    return {"name": name, "username": username, "avatar": avatar_url, "chat_id": str(chat.get("id", chat_id))}
 
 def norm_chat(s):
     s = (s or "").strip()
     m = re.match(r"(?:https?://)?t\.me/([A-Za-z][\w]{3,})", s)
-    if m: return "@" + m.group(1)
-    if re.match(r"^-?\d+$", s): return s
-    if re.match(r"^@[A-Za-z][\w]{3,}$", s): return s
-    if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
+    if m:
+        return "@" + m.group(1)
+    if re.match(r"^-?\d+$", s):
+        return s
+    if re.match(r"^@[A-Za-z][\w]{3,}$", s):
+        return s
+    if re.match(r"^[A-Za-z][\w]{3,}$", s):
+        return "@" + s
     return None
 
 async def kick_fetch(slug):
@@ -238,13 +335,16 @@ async def kick_fetch(slug):
         for v in ("v2", "v1"):
             try:
                 r = await c.get(f"https://kick.com/api/{v}/channels/{slug}")
-                if r.status_code == 404: continue
-                if r.status_code != 200: continue
+                if r.status_code == 404:
+                    continue
+                if r.status_code != 200:
+                    continue
                 j = r.json()
                 ls = j.get("livestream") or {}
                 u = j.get("user") or {}
                 bn = j.get("banner_image")
-                if isinstance(bn, dict): bn = bn.get("url") or ""
+                if isinstance(bn, dict):
+                    bn = bn.get("url") or ""
                 return {"name": u.get("username") or slug, "avatar": u.get("profile_pic") or "", "banner": bn or "", "live": bool(ls.get("is_live")), "title": ls.get("session_title") or "", "viewers": ls.get("viewer_count") or 0, "thumb": ((ls.get("thumbnail") or {}).get("url")) or ""}
             except Exception as e:
                 print(f"[KICK] {e}")
@@ -254,14 +354,16 @@ async def yt_feed(channel_id):
     try:
         async with httpx.AsyncClient(timeout=15, headers={"User-Agent": UA}) as c:
             r = await c.get(f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}")
-            if r.status_code != 200: return None
+            if r.status_code != 200:
+                return None
             items = []
             for m in re.finditer(r"<entry>(.*?)</entry>", r.text, re.S):
                 e = m.group(1)
                 vid = (re.search(r"<yt:videoId>([^<]+)", e) or [None, ""])[1]
                 title = (re.search(r"<title>([^<]*)", e) or [None, ""])[1]
                 pub = (re.search(r"<published>([^<]+)", e) or [None, ""])[1]
-                if vid: items.append({"id": vid, "title": title, "pub": pub})
+                if vid:
+                    items.append({"id": vid, "title": title, "pub": pub})
             return items
     except Exception as e:
         print(f"[YT] {e}")
@@ -269,7 +371,8 @@ async def yt_feed(channel_id):
 
 async def yt_resolve(input_str):
     input_str = (input_str or "").strip()[:300]
-    if not input_str: return None
+    if not input_str:
+        return None
     m = re.search(r"UC[\w-]{22}", input_str)
     if m:
         cid = m.group(0)
@@ -289,7 +392,8 @@ async def yt_resolve(input_str):
                 r = await c.get(f"https://www.youtube.com/@{h.group(1)}")
                 html = r.text
             cid_m = re.search(r'"externalId":"(UC[\w-]{22})"', html) or re.search(r'"channelId":"(UC[\w-]{22})"', html)
-            if not cid_m: return None
+            if not cid_m:
+                return None
             cid = cid_m.group(1)
             title = (re.search(r'<meta property="og:title" content="([^"]*)"', html) or [None, cid])[1]
             avatar = (re.search(r'<meta property="og:image" content="([^"]*)"', html) or [None, ""])[1]
@@ -298,10 +402,12 @@ async def yt_resolve(input_str):
             return None
     return None
 
-def push_available(): return bool(VAPID_PUBLIC and VAPID_PRIVATE)
+def push_available():
+    return bool(VAPID_PUBLIC and VAPID_PRIVATE)
 
 async def push_send_to_user(username, title, body, image="", url="/", tag=""):
-    if not push_available(): return 0
+    if not push_available():
+        return 0
     try:
         from pywebpush import webpush, WebPushException
     except ImportError:
@@ -309,7 +415,8 @@ async def push_send_to_user(username, title, body, image="", url="/", tag=""):
     c = db()
     subs = c.execute("SELECT * FROM push_subs WHERE username=?", (username,)).fetchall()
     c.close()
-    if not subs: return 0
+    if not subs:
+        return 0
     payload = json.dumps({"title": title[:80], "body": body[:200], "image": image or "", "url": url or "/", "tag": tag or "rl"})
     sent = 0
     for sub in subs:
@@ -329,68 +436,102 @@ async def push_send_to_user(username, title, body, image="", url="/", tag=""):
 
 discord_client = discord.Client(intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
 _DISCORD_CHANNELS_CACHE = {}
+_DISCORD_GUILDS_CACHE = {}
+
+def _refresh_discord_cache():
+    global _DISCORD_CHANNELS_CACHE, _DISCORD_GUILDS_CACHE
+    _DISCORD_CHANNELS_CACHE = {}
+    _DISCORD_GUILDS_CACHE = {}
+    if not discord_client.is_ready():
+        return
+    for g in discord_client.guilds:
+        _DISCORD_GUILDS_CACHE[str(g.id)] = {"name": g.name, "id": str(g.id)}
+        if ALLOWED_GUILDS and str(g.id) not in ALLOWED_GUILDS:
+            continue
+        for ch in g.text_channels:
+            _DISCORD_CHANNELS_CACHE[str(ch.id)] = {"name": ch.name, "guild": g.name, "guild_id": str(g.id), "guild_name": g.name}
+    print(f"[Discord] Cache refreshed: {len(_DISCORD_CHANNELS_CACHE)} channels, {len(_DISCORD_GUILDS_CACHE)} guilds")
 
 @discord_client.event
 async def on_ready():
-    global _DISCORD_CHANNELS_CACHE
-    print(f"[Discord] ✅ {discord_client.user} in {len(discord_client.guilds)} guilds")
-    _DISCORD_CHANNELS_CACHE = {}
-    for g in discord_client.guilds:
-        if ALLOWED_GUILDS and str(g.id) not in ALLOWED_GUILDS: continue
-        for ch in g.text_channels:
-            _DISCORD_CHANNELS_CACHE[str(ch.id)] = {"name": ch.name, "guild": g.name, "guild_id": str(g.id)}
-    print(f"[Discord] 📡 Discovered {len(_DISCORD_CHANNELS_CACHE)} channels")
+    print(f"[Discord] Logged in as {discord_client.user} in {len(discord_client.guilds)} guilds")
+    _refresh_discord_cache()
+
+@discord_client.event
+async def on_guild_channel_create(channel):
+    _refresh_discord_cache()
+
+@discord_client.event
+async def on_guild_channel_delete(channel):
+    _refresh_discord_cache()
 
 def _is_watched_channel(ch_id):
-    if WATCH_CHANNELS: return ch_id in WATCH_CHANNELS
-    return ch_id in _DISCORD_CHANNELS_CACHE
+    if ch_id in _DISCORD_CHANNELS_CACHE:
+        return True
+    if WATCH_CHANNELS and ch_id in WATCH_CHANNELS:
+        return True
+    return False
 
 def classify_message_source(msg):
     if msg.embeds:
         e = msg.embeds[0]
         url = (e.url or "").lower()
-        author_name = ((e.author.name if e.author else "") or "").lower()
-        provider = ((e.provider.name if e.provider else "") or "").lower()
-        if "twitter.com" in url or "x.com" in url or "twitter" in provider or "twitter" in author_name: return "twitter"
-        if "youtube.com" in url or "youtu.be" in url or "youtube" in provider: return "youtube"
-    if "twitter.com" in (msg.content or "").lower() or "x.com" in (msg.content or "").lower(): return "twitter"
-    if "youtube.com" in (msg.content or "").lower() or "youtu.be" in (msg.content or "").lower(): return "youtube"
+        an = ((e.author.name if e.author else "") or "").lower()
+        pv = ((e.provider.name if e.provider else "") or "").lower()
+        if "twitter.com" in url or "x.com" in url or "twitter" in pv or "twitter" in an:
+            return "twitter"
+        if "youtube.com" in url or "youtu.be" in url or "youtube" in pv or "youtube" in an:
+            return "youtube"
+    if "twitter.com" in (msg.content or "").lower() or "x.com" in (msg.content or "").lower():
+        return "twitter"
+    if "youtube.com" in (msg.content or "").lower() or "youtu.be" in (msg.content or "").lower():
+        return "youtube"
     return "generic"
 
-def extract_author_and_content(msg):
+def extract_discord_data(msg):
     author = msg.author.display_name or msg.author.name or ""
-    content = (msg.content or "").strip()[:2000]
-    if msg.author.bot and msg.embeds:
-        e = msg.embeds[0]
-        if e.author and e.author.name: author = e.author.name
-        elif e.provider and e.provider.name: author = e.provider.name
-        parts = []
-        if e.title: parts.append(e.title.strip())
-        if e.description: parts.append(e.description.strip())
-        if parts: content = "\n".join(parts)[:2000]
-    return author, content
-
-def extract_image_and_url(msg):
-    image, url = "", ""
+    content = (msg.content or "").strip()
+    title = ""
+    description = ""
+    image = ""
+    url = ""
+    author_url = ""
     if msg.embeds:
         e = msg.embeds[0]
-        if e.image and e.image.url: image = e.image.url
-        elif e.thumbnail and e.thumbnail.url: image = e.thumbnail.url
+        if e.author and e.author.name:
+            author = e.author.name
+            author_url = (e.author.url or "")
+        elif e.provider and e.provider.name:
+            author = e.provider.name
+        if e.title:
+            title = e.title.strip()
+        if e.description:
+            description = e.description.strip()
         url = e.url or ""
+        if e.image and e.image.url:
+            image = e.image.url
+        elif e.thumbnail and e.thumbnail.url:
+            image = e.thumbnail.url
+        if not content:
+            content = description or title
     if not image and msg.attachments:
         for a in msg.attachments:
             if a.content_type and a.content_type.startswith("image/"):
                 image = a.url
                 break
-    return image, url
+    return {"author": author[:200], "content": content[:2000], "title": title[:200], "description": description[:2000], "image": image, "url": url, "author_url": author_url}
 
 @discord_client.event
 async def on_message(msg):
-    if msg.author.bot and not msg.embeds: return
-    if msg.guild is None: return
-    if ALLOWED_GUILDS and str(msg.guild.id) not in ALLOWED_GUILDS: return
+    if msg.author.bot and not msg.embeds:
+        return
+    if msg.guild is None:
+        return
+    if ALLOWED_GUILDS and str(msg.guild.id) not in ALLOWED_GUILDS:
+        return
     ch_id = str(msg.channel.id)
-    if not _is_watched_channel(ch_id): return
+    if not _is_watched_channel(ch_id):
+        return
     c = db()
     if c.execute("SELECT 1 FROM discord_seen WHERE message_id=?", (str(msg.id),)).fetchone():
         c.close()
@@ -398,36 +539,47 @@ async def on_message(msg):
     c.execute("INSERT INTO discord_seen(message_id,ts) VALUES(?,?)", (str(msg.id), now()))
     c.commit()
     source = classify_message_source(msg)
-    author, content = extract_author_and_content(msg)
-    image, url = extract_image_and_url(msg)
-    if not content and not image:
+    data = extract_discord_data(msg)
+    if not data["content"] and not data["image"]:
         c.close()
         return
     feeds = c.execute("SELECT * FROM discord_feeds WHERE channel_id=? AND enabled=1", (ch_id,)).fetchall()
     c.close()
-    if not feeds: return
+    if not feeds:
+        return
     for feed in feeds:
         owner = feed["added_by"]
-        if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG): continue
-        if feed["template"]: tpl = feed["template"]
-        elif source == "twitter": tpl = cfg("tpl_twitter") or cfg("tpl_discord")
-        elif source == "youtube": tpl = cfg("tpl_youtube_dc") or cfg("tpl_discord")
-        else: tpl = cfg("tpl_discord")
-        text = tpl.replace("{author}", author).replace("{content}", content).replace("{channel}", getattr(msg.channel, "name", "") or "").replace("{source}", source)
+        if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG):
+            continue
+        if feed["template"]:
+            tpl = feed["template"]
+        elif source == "twitter":
+            tpl = cfg("tpl_twitter") or cfg("tpl_discord")
+        elif source == "youtube":
+            tpl = cfg("tpl_youtube_dc") or cfg("tpl_discord")
+        else:
+            tpl = cfg("tpl_discord")
+        text = (tpl.replace("{author}", data["author"])
+                    .replace("{content}", data["content"])
+                    .replace("{title}", data["title"])
+                    .replace("{description}", data["description"])
+                    .replace("{channel}", getattr(msg.channel, "name", "") or "")
+                    .replace("{source}", source))
         c2 = db()
         tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (owner,)).fetchall()
-        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (owner, author or "رسالة ديسكورد", content[:500], image, "فتح الرابط" if url else "", url or "", now()))
+        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (owner, data["author"] or data["title"] or "رسالة ديسكورد", (data["content"] or data["description"])[:500], data["image"], "فتح الرابط" if data["url"] else "", data["url"] or "", now()))
         c2.commit()
         c2.close()
-        asyncio.create_task(push_send_to_user(owner, author or "رسالة ديسكورد", content[:200], image, url, "discord"))
+        asyncio.create_task(push_send_to_user(owner, data["author"] or "رسالة ديسكورد", (data["content"] or data["description"])[:200], data["image"], data["url"], "discord"))
         for tg in tgs:
-            await tg_send(tg["chat_id"], text, image, "عرض", url)
+            await tg_send(tg["chat_id"], text, data["image"], "عرض", data["url"])
 
 async def job_kick():
     c = db()
     rows = c.execute("SELECT * FROM kick_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now() - 90, BATCH_KICK)).fetchall()
     c.close()
-    if not rows: return
+    if not rows:
+        return
     infos = {}
     sem = asyncio.Semaphore(8)
     async def f(r):
@@ -442,11 +594,14 @@ async def job_kick():
             updates.append((t, r["id"]))
             continue
         updates.append((info["name"], info["avatar"], info["banner"], 1 if info["live"] else 0, info["title"], info["viewers"], info["thumb"], t, r["id"]))
-        if info["live"] and not r["live"]: events.append((r, info))
+        if info["live"] and not r["live"]:
+            events.append((r, info))
     c = db()
     for u in updates:
-        if len(u) == 2: c.execute("UPDATE kick_channels SET last_check=? WHERE id=?", u)
-        else: c.execute("UPDATE kick_channels SET name=?,avatar=?,banner=?,live=?,title=?,viewers=?,thumb=?,last_check=? WHERE id=?", u)
+        if len(u) == 2:
+            c.execute("UPDATE kick_channels SET last_check=? WHERE id=?", u)
+        else:
+            c.execute("UPDATE kick_channels SET name=?,avatar=?,banner=?,live=?,title=?,viewers=?,thumb=?,last_check=? WHERE id=?", u)
     c.commit()
     c.close()
     async def notify(r, info):
@@ -466,7 +621,8 @@ async def job_yt():
     c = db()
     rows = c.execute("SELECT * FROM yt_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now() - 300, BATCH_YT)).fetchall()
     c.close()
-    if not rows: return
+    if not rows:
+        return
     feeds = {}
     sem = asyncio.Semaphore(8)
     async def f(r):
@@ -484,14 +640,18 @@ async def job_yt():
         if r["last_video"] and latest != r["last_video"]:
             fresh = []
             for it in items:
-                if it["id"] == r["last_video"]: break
+                if it["id"] == r["last_video"]:
+                    break
                 fresh.append(it)
-            for v in reversed(fresh[:3]): new_vids.append((r, v))
+            for v in reversed(fresh[:3]):
+                new_vids.append((r, v))
         updates.append((latest, t, r["id"]))
     c = db()
     for u in updates:
-        if len(u) == 2: c.execute("UPDATE yt_channels SET last_check=? WHERE id=?", u)
-        else: c.execute("UPDATE yt_channels SET last_video=?,last_check=? WHERE id=?", u)
+        if len(u) == 2:
+            c.execute("UPDATE yt_channels SET last_check=? WHERE id=?", u)
+        else:
+            c.execute("UPDATE yt_channels SET last_video=?,last_check=? WHERE id=?", u)
     c.commit()
     c.close()
     async def notify(r, v):
@@ -534,21 +694,42 @@ async def lifespan(app):
     if DISCORD_TOKEN:
         asyncio.create_task(discord_client.start(DISCORD_TOKEN))
     else:
-        print("[Discord] ⚠️ DISCORD_BOT_TOKEN not set")
-    if push_available(): print("[Push] ✅ Enabled")
-    else: print("[Push] ⚠️ VAPID not configured")
+        print("[Discord] No token")
+    if push_available():
+        print("[Push] Enabled")
+    else:
+        print("[Push] VAPID missing")
     yield
     scheduler.shutdown(wait=False)
 
 app = FastAPI(lifespan=lifespan)
 
+# ═══════════════════════════════════════════════════════════
+# API — BOOT / GUEST
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/boot")
 async def boot(request: Request):
-    return {"site_name": cfg("site_name", SITE_NAME), "site_sub": cfg("site_sub"), "hero_title": cfg("hero_title"), "hero_accent": cfg("hero_accent"), "hero_text": cfg("hero_text"), "guest_mode": cfg("guest_mode", "1") == "1", "guest_blur": int(cfg("guest_blur", "14")), "has_telegram": bool(TELEGRAM_TOKEN), "has_discord": bool(DISCORD_TOKEN), "has_push": push_available(), "discord_watching": len(_DISCORD_CHANNELS_CACHE) or len(WATCH_CHANNELS)}
+    theme = get_site_theme()
+    return {
+        "site_name": cfg("site_name", SITE_NAME),
+        "site_sub": cfg("site_sub"),
+        "hero_title": cfg("hero_title"),
+        "hero_accent": cfg("hero_accent"),
+        "hero_text": cfg("hero_text"),
+        "guest_mode": cfg("guest_mode", "1") == "1",
+        "guest_blur": int(cfg("guest_blur", "14")),
+        "has_telegram": bool(TELEGRAM_TOKEN),
+        "has_discord": bool(DISCORD_TOKEN),
+        "has_push": push_available(),
+        "discord_watching": len(_DISCORD_CHANNELS_CACHE) or len(WATCH_CHANNELS),
+        "theme": theme,
+        "site_logo": cfg("site_logo", ""),
+    }
 
 @app.get("/api/guest-preview")
 async def guest_preview():
-    if cfg("guest_mode", "1") != "1": raise HTTPException(403, "وضع الزائر معطل")
+    if cfg("guest_mode", "1") != "1":
+        raise HTTPException(403, "وضع الزائر معطل")
     c = db()
     kc = c.execute("SELECT COUNT(*) n FROM kick_channels WHERE enabled=1").fetchone()["n"]
     yc = c.execute("SELECT COUNT(*) n FROM yt_channels WHERE enabled=1").fetchone()["n"]
@@ -557,6 +738,9 @@ async def guest_preview():
     c.close()
     return {"counts": {"kick": kc, "yt": yc, "tg": tc}, "live": [dict(r) for r in live]}
 
+# ═══════════════════════════════════════════════════════════
+# API — AUTH
+# ═══════════════════════════════════════════════════════════
 @app.post("/api/login")
 async def login(request: Request, response: Response, u: str = Form(...), p: str = Form(...)):
     u = u.strip()[:60]
@@ -597,27 +781,69 @@ async def logout(request: Request, response: Response):
 @app.get("/api/me")
 async def me(request: Request):
     u = auth(request)
-    if not u: return JSONResponse({"error": "غير مسجل", "auth": False}, 401)
-    return {"user": {"username": u["username"], "display": u["display"], "role": u["role"], "can_discord": u.get("can_discord", 0) == 1}, "limits": get_user_limits(u["username"], u["role"]), "usage": {"kick": limit_info(u["username"], "kick", u["role"])["used"], "yt": limit_info(u["username"], "yt", u["role"])["used"], "tg": limit_info(u["username"], "tg", u["role"])["used"]}, "tpl_kick": cfg("tpl_kick"), "tpl_yt": cfg("tpl_yt"), "tpl_discord": cfg("tpl_discord"), "tpl_twitter": cfg("tpl_twitter"), "tpl_youtube_dc": cfg("tpl_youtube_dc"), "site_name": cfg("site_name", SITE_NAME), "has_telegram": bool(TELEGRAM_TOKEN), "has_discord": bool(DISCORD_TOKEN), "has_push": push_available()}
+    if not u:
+        return JSONResponse({"error": "غير مسجل", "auth": False}, 401)
+    return {
+        "user": {"username": u["username"], "display": u["display"], "role": u["role"], "avatar": u.get("avatar", ""), "can_discord": u.get("can_discord", 0) == 1},
+        "limits": get_user_limits(u["username"], u["role"]),
+        "usage": {
+            "kick": limit_info(u["username"], "kick", u["role"])["used"],
+            "yt": limit_info(u["username"], "yt", u["role"])["used"],
+            "tg": limit_info(u["username"], "tg", u["role"])["used"]
+        },
+        "tpl_kick": cfg("tpl_kick"), "tpl_yt": cfg("tpl_yt"),
+        "tpl_discord": cfg("tpl_discord"), "tpl_twitter": cfg("tpl_twitter"), "tpl_youtube_dc": cfg("tpl_youtube_dc"),
+        "site_name": cfg("site_name", SITE_NAME),
+        "has_telegram": bool(TELEGRAM_TOKEN),
+        "has_discord": bool(DISCORD_TOKEN),
+        "has_push": push_available()
+    }
 
+@app.patch("/api/me/profile")
+async def update_profile(request: Request):
+    u = require_auth(request)
+    body = await request.json()
+    sets, vals = [], []
+    if "display" in body:
+        d = str(body["display"]).strip()[:60]
+        if d:
+            sets.append("display=?")
+            vals.append(d)
+    if "avatar" in body:
+        av = str(body["avatar"]).strip()[:500]
+        sets.append("avatar=?")
+        vals.append(av)
+    if not sets:
+        return {"ok": True}
+    vals.append(u["username"])
+    c = db()
+    c.execute(f"UPDATE users SET {', '.join(sets)} WHERE username=?", vals)
+    c.commit()
+    c.close()
+    return {"ok": True}
+
+# ═══════════════════════════════════════════════════════════
+# API — CHANNELS
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/channels/{kind}")
 async def list_channels(kind: str, request: Request):
     u = require_auth(request)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}.get(kind)
-    if not table: raise HTTPException(404)
+    if not table:
+        raise HTTPException(404)
     c = db()
     if u["role"] == "owner":
         rows = c.execute(f"SELECT * FROM {table} ORDER BY id DESC").fetchall()
     else:
         rows = c.execute(f"SELECT * FROM {table} WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
-    info = limit_info(u["username"], kind, u["role"])
-    return {"rows": [dict(r) for r in rows], "limits": info}
+    return {"rows": [dict(r) for r in rows], "limits": limit_info(u["username"], kind, u["role"])}
 
 @app.get("/api/channels/{kind}/suggestions")
 async def channel_suggestions(kind: str, request: Request):
     u = require_auth(request)
-    if kind not in ("kick", "yt", "tg"): raise HTTPException(404)
+    if kind not in ("kick", "yt", "tg"):
+        raise HTTPException(404)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}[kind]
     ic = {"kick": "slug", "yt": "channel_id", "tg": "chat_id"}[kind]
     c = db()
@@ -629,7 +855,8 @@ async def channel_suggestions(kind: str, request: Request):
 @app.post("/api/channels/{kind}")
 async def add_channel(kind: str, request: Request):
     u = require_auth(request)
-    if not rate_ok(f"add:{u['username']}", MAX_PER_MIN_CH): raise HTTPException(429, "عدد كبير من الإضافات")
+    if not rate_ok(f"add:{u['username']}", MAX_PER_MIN_CH):
+        raise HTTPException(429, "عدد كبير من الإضافات")
     body = await request.json()
     c = db()
     t = now()
@@ -643,8 +870,8 @@ async def add_channel(kind: str, request: Request):
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
         if not check_limit(u["username"], "kick", u["role"]):
             c.close()
-            info = limit_info(u["username"], "kick", u["role"])
-            return JSONResponse({"error": f"وصلت الحد الأقصى ({info['limit']}) لقنوات كيك"}, 400)
+            i = limit_info(u["username"], "kick", u["role"])
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({i['limit']})"}, 400)
         info = await kick_fetch(slug)
         c.execute("INSERT INTO kick_channels(slug,name,avatar,banner,msg,enabled,live,title,viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?)", (slug, (info or {}).get("name") or slug, (info or {}).get("avatar") or "", (info or {}).get("banner") or "", body.get("msg", "")[:1500], 1 if (info or {}).get("live") else 0, (info or {}).get("title") or "", (info or {}).get("viewers") or 0, (info or {}).get("thumb") or "", t, u["username"], t))
     elif kind == "yt":
@@ -658,8 +885,8 @@ async def add_channel(kind: str, request: Request):
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
         if not check_limit(u["username"], "yt", u["role"]):
             c.close()
-            info2 = limit_info(u["username"], "yt", u["role"])
-            return JSONResponse({"error": f"وصلت الحد الأقصى ({info2['limit']}) لقنوات يوتيوب"}, 400)
+            i = limit_info(u["username"], "yt", u["role"])
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({i['limit']})"}, 400)
         feed = await yt_feed(cid)
         last = feed[0]["id"] if feed else ""
         c.execute("INSERT INTO yt_channels(channel_id,handle,name,avatar,msg,enabled,last_video,last_check,added_by,created) VALUES(?,?,?,?,?,1,?,?,?,?)", (cid, "", info["name"] or cid, info.get("avatar") or "", body.get("msg", "")[:1500], last, t, u["username"], t))
@@ -674,9 +901,14 @@ async def add_channel(kind: str, request: Request):
             return JSONResponse({"error": "مضافة مسبقاً"}, 409)
         if not check_limit(u["username"], "tg", u["role"]):
             c.close()
-            info3 = limit_info(u["username"], "tg", u["role"])
-            return JSONResponse({"error": f"وصلت الحد الأقصى ({info3['limit']}) لقنوات تيليجرام"}, 400)
-        c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (cid, cid if cid.startswith("@") else "", body.get("name") or cid, "", u["username"], t))
+            i = limit_info(u["username"], "tg", u["role"])
+            return JSONResponse({"error": f"وصلت الحد الأقصى ({i['limit']})"}, 400)
+        info = await tg_get_chat_info(cid)
+        name = (info or {}).get("name") or body.get("name") or cid
+        uname = (info or {}).get("username") or ""
+        avatar = (info or {}).get("avatar") or ""
+        real_cid = (info or {}).get("chat_id") or cid
+        c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (real_cid, uname, name, avatar, u["username"], t))
     else:
         c.close()
         raise HTTPException(404)
@@ -687,19 +919,23 @@ async def add_channel(kind: str, request: Request):
 @app.post("/api/channels/{kind}/bulk-add")
 async def bulk_add_suggestions(kind: str, request: Request):
     u = require_auth(request)
-    if kind not in ("kick", "yt", "tg"): raise HTTPException(404)
+    if kind not in ("kick", "yt", "tg"):
+        raise HTTPException(404)
     body = await request.json()
     ids = body.get("ids") or []
-    if not isinstance(ids, list) or not ids: return JSONResponse({"error": "لا توجد قنوات"}, 400)
+    if not isinstance(ids, list) or not ids:
+        return JSONResponse({"error": "لا توجد قنوات"}, 400)
     ids = [int(x) for x in ids if str(x).isdigit()][:50]
-    if not ids: return JSONResponse({"error": "معرّفات غير صالحة"}, 400)
+    if not ids:
+        return JSONResponse({"error": "معرّفات غير صالحة"}, 400)
     info = limit_info(u["username"], kind, u["role"])
     if u["role"] != "owner" and info["remaining"] < len(ids):
-        return JSONResponse({"error": f"الحد المتبقي {info['remaining']} فقط — لا يمكن إضافة {len(ids)} قناة"}, 400)
+        return JSONResponse({"error": f"الحد المتبقي {info['remaining']} فقط"}, 400)
     c = db()
     rows = c.execute(f"SELECT * FROM default_channels WHERE id IN ({','.join('?' * len(ids))}) AND kind=? AND enabled=1", (*ids, kind)).fetchall()
     c.close()
-    if not rows: return JSONResponse({"error": "لا توجد قنوات"}, 404)
+    if not rows:
+        return JSONResponse({"error": "لا توجد قنوات"}, 404)
     added, failed, errors = 0, 0, []
     remaining = info["remaining"] if u["role"] != "owner" else 9999
     for row in rows:
@@ -733,11 +969,17 @@ async def bulk_add_suggestions(kind: str, request: Request):
                     failed += 1
                     errors.append(f"{row['name']}: مضافة مسبقاً")
                     continue
-                c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (row["identifier"], row["identifier"] if row["identifier"].startswith("@") else "", row["name"] or row["identifier"], row["avatar"] or "", u["username"], t))
+                tg_info = await tg_get_chat_info(row["identifier"])
+                name = (tg_info or {}).get("name") or row["name"] or row["identifier"]
+                uname = (tg_info or {}).get("username") or (row["identifier"] if row["identifier"].startswith("@") else "")
+                avatar = (tg_info or {}).get("avatar") or row["avatar"] or ""
+                real_cid = (tg_info or {}).get("chat_id") or row["identifier"]
+                c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,enabled,added_by,created) VALUES(?,?,?,?,1,?,?)", (real_cid, uname, name, avatar, u["username"], t))
             c.commit()
             c.close()
             added += 1
-            if u["role"] != "owner": remaining -= 1
+            if u["role"] != "owner":
+                remaining -= 1
         except Exception as e:
             failed += 1
             errors.append(f"{row['name']}: {str(e)[:60]}")
@@ -747,7 +989,8 @@ async def bulk_add_suggestions(kind: str, request: Request):
 async def del_channel(kind: str, cid: int, request: Request):
     u = require_auth(request)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}.get(kind)
-    if not table: raise HTTPException(404)
+    if not table:
+        raise HTTPException(404)
     c = db()
     row = c.execute(f"SELECT * FROM {table} WHERE id=?", (cid,)).fetchone()
     if not row:
@@ -765,7 +1008,8 @@ async def del_channel(kind: str, cid: int, request: Request):
 async def patch_channel(kind: str, cid: int, request: Request):
     u = require_auth(request)
     table = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels"}.get(kind)
-    if not table: raise HTTPException(404)
+    if not table:
+        raise HTTPException(404)
     body = await request.json()
     c = db()
     row = c.execute(f"SELECT * FROM {table} WHERE id=?", (cid,)).fetchone()
@@ -776,9 +1020,18 @@ async def patch_channel(kind: str, cid: int, request: Request):
         c.close()
         raise HTTPException(403)
     sets, vals = [], []
-    if "enabled" in body: sets.append("enabled=?"); vals.append(1 if body["enabled"] else 0)
-    if "msg" in body: sets.append("msg=?"); vals.append(str(body["msg"])[:1500])
-    if "name" in body: sets.append("name=?"); vals.append(str(body["name"])[:80])
+    if "enabled" in body:
+        sets.append("enabled=?")
+        vals.append(1 if body["enabled"] else 0)
+    if "msg" in body:
+        sets.append("msg=?")
+        vals.append(str(body["msg"])[:1500])
+    if "name" in body:
+        sets.append("name=?")
+        vals.append(str(body["name"])[:80])
+    if "avatar" in body and kind == "tg":
+        sets.append("avatar=?")
+        vals.append(str(body["avatar"])[:500])
     if sets:
         vals.append(cid)
         c.execute(f"UPDATE {table} SET {', '.join(sets)} WHERE id=?", vals)
@@ -786,10 +1039,47 @@ async def patch_channel(kind: str, cid: int, request: Request):
     c.close()
     return {"ok": True}
 
+@app.post("/api/channels/tg/{cid}/refresh")
+async def refresh_tg_channel(cid: int, request: Request):
+    u = require_auth(request)
+    c = db()
+    row = c.execute("SELECT * FROM tg_channels WHERE id=?", (cid,)).fetchone()
+    if not row:
+        c.close()
+        raise HTTPException(404)
+    if u["role"] != "owner" and row["added_by"] != u["username"]:
+        c.close()
+        raise HTTPException(403)
+    info = await tg_get_chat_info(row["chat_id"])
+    c.close()
+    if not info:
+        return JSONResponse({"error": "تعذّر جلب بيانات القناة"}, 400)
+    c = db()
+    c.execute("UPDATE tg_channels SET name=?, username=?, avatar=?, chat_id=? WHERE id=?", (info["name"], info["username"] or row["username"], info["avatar"] or row["avatar"], info["chat_id"], cid))
+    c.commit()
+    c.close()
+    return {"ok": True}
+
+# ═══════════════════════════════════════════════════════════
+# API — DISCORD
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/discord/channels")
 async def discord_available_channels(request: Request):
     require_discord_access(request)
-    return {"channels": _DISCORD_CHANNELS_CACHE, "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS, "auto_discovery": not bool(WATCH_CHANNELS), "guild_id": DISCORD_GUILD_ID}
+    return {
+        "channels": _DISCORD_CHANNELS_CACHE,
+        "guilds": _DISCORD_GUILDS_CACHE,
+        "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
+        "auto_discovery": not bool(WATCH_CHANNELS),
+        "guild_id": DISCORD_GUILD_ID,
+        "bot_ready": discord_client.is_ready() if discord_client else False
+    }
+
+@app.post("/api/discord/refresh")
+async def discord_refresh(request: Request):
+    require_discord_access(request)
+    _refresh_discord_cache()
+    return {"ok": True, "channels": len(_DISCORD_CHANNELS_CACHE), "guilds": len(_DISCORD_GUILDS_CACHE)}
 
 @app.get("/api/discord/feeds")
 async def list_feeds(request: Request):
@@ -797,20 +1087,31 @@ async def list_feeds(request: Request):
     c = db()
     rows = c.execute("SELECT * FROM discord_feeds WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
-    return {"rows": [dict(r) for r in rows], "known_channels": _DISCORD_CHANNELS_CACHE, "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS, "auto_discovery": not bool(WATCH_CHANNELS)}
+    return {
+        "rows": [dict(r) for r in rows],
+        "known_channels": _DISCORD_CHANNELS_CACHE,
+        "guilds": _DISCORD_GUILDS_CACHE,
+        "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
+        "auto_discovery": not bool(WATCH_CHANNELS),
+        "bot_ready": discord_client.is_ready() if discord_client else False
+    }
 
 @app.post("/api/discord/feeds")
 async def add_feed(request: Request):
     u = require_discord_access(request)
     body = await request.json()
     ch = str(body.get("channel_id") or "").strip()
-    if not ch or not ch.isdigit(): return JSONResponse({"error": "channel_id يجب أن يكون رقماً"}, 400)
-    if _DISCORD_CHANNELS_CACHE and ch not in _DISCORD_CHANNELS_CACHE: return JSONResponse({"error": "الروم غير موجود في السيرفر"}, 400)
-    if WATCH_CHANNELS and ch not in WATCH_CHANNELS: return JSONResponse({"error": "هذا الروم غير مُراقب"}, 400)
+    if not ch or not ch.isdigit():
+        return JSONResponse({"error": "channel_id يجب أن يكون رقماً"}, 400)
+    if ch not in _DISCORD_CHANNELS_CACHE and (not WATCH_CHANNELS or ch not in WATCH_CHANNELS):
+        if not _DISCORD_CHANNELS_CACHE:
+            return JSONResponse({"error": "البوت لم يكتشف الرومات بعد — اضغط تحديث أو انتظر"}, 400)
+        return JSONResponse({"error": "الروم غير موجود في السيرفر"}, 400)
     tpl = str(body.get("template") or "")[:2000]
     name = str(body.get("channel_name") or "")[:100]
     source = str(body.get("source_type") or "generic")[:20]
-    if not name and ch in _DISCORD_CHANNELS_CACHE: name = _DISCORD_CHANNELS_CACHE[ch]["name"]
+    if not name and ch in _DISCORD_CHANNELS_CACHE:
+        name = _DISCORD_CHANNELS_CACHE[ch]["name"]
     c = db()
     if c.execute("SELECT 1 FROM discord_feeds WHERE channel_id=? AND added_by=?", (ch, u["username"])).fetchone():
         c.close()
@@ -833,8 +1134,12 @@ async def patch_feed(fid: int, request: Request):
         c.close()
         raise HTTPException(403)
     sets, vals = [], []
-    if "template" in body: sets.append("template=?"); vals.append(str(body["template"])[:2000])
-    if "enabled" in body: sets.append("enabled=?"); vals.append(1 if body["enabled"] else 0)
+    if "template" in body:
+        sets.append("template=?")
+        vals.append(str(body["template"])[:2000])
+    if "enabled" in body:
+        sets.append("enabled=?")
+        vals.append(1 if body["enabled"] else 0)
     if sets:
         vals.append(fid)
         c.execute(f"UPDATE discord_feeds SET {', '.join(sets)} WHERE id=?", vals)
@@ -858,6 +1163,9 @@ async def del_feed(fid: int, request: Request):
     c.close()
     return {"ok": True}
 
+# ═══════════════════════════════════════════════════════════
+# API — NOTIFICATIONS
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/notifs")
 async def notifs(request: Request):
     u = require_auth(request)
@@ -888,14 +1196,20 @@ async def notifs_clear(request: Request):
     c.close()
     return {"ok": True}
 
+# ═══════════════════════════════════════════════════════════
+# API — SUGGESTIONS
+# ═══════════════════════════════════════════════════════════
 @app.post("/api/suggestions")
 async def submit_suggestion(request: Request):
     u = require_auth(request)
     body = await request.json()
     text = (body.get("text") or "").strip()
-    if not text: return JSONResponse({"error": "النص فارغ"}, 400)
-    if len(text) > 1000: return JSONResponse({"error": "الحد 1000 حرف"}, 400)
-    if not rate_ok(f"sug:{u['username']}", max_per_min=3): return JSONResponse({"error": "عدد كبير من الاقتراحات"}, 429)
+    if not text:
+        return JSONResponse({"error": "النص فارغ"}, 400)
+    if len(text) > 1000:
+        return JSONResponse({"error": "الحد 1000 حرف"}, 400)
+    if not rate_ok(f"sug:{u['username']}", max_per_min=3):
+        return JSONResponse({"error": "عدد كبير من الاقتراحات"}, 429)
     c = db()
     c.execute("INSERT INTO suggestions(username,text,is_read,ts) VALUES(?,?,0,?)", (u["username"], text[:1000], now()))
     c.commit()
@@ -931,21 +1245,27 @@ async def admin_del_suggestion(sid: int, request: Request):
     c.close()
     return {"ok": True}
 
+# ═══════════════════════════════════════════════════════════
+# API — PUSH
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/push/key")
 async def push_key():
-    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 404)
+    if not push_available():
+        return JSONResponse({"error": "Push غير مفعّل"}, 404)
     return {"key": VAPID_PUBLIC}
 
 @app.post("/api/push/subscribe")
 async def push_subscribe(request: Request):
     u = require_auth(request)
-    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 400)
+    if not push_available():
+        return JSONResponse({"error": "Push غير مفعّل"}, 400)
     body = await request.json()
     endpoint = body.get("endpoint") or ""
     keys = body.get("keys") or {}
     p256dh = keys.get("p256dh") or ""
     auth_key = keys.get("auth") or ""
-    if not endpoint or not p256dh or not auth_key: return JSONResponse({"error": "بيانات ناقصة"}, 400)
+    if not endpoint or not p256dh or not auth_key:
+        return JSONResponse({"error": "بيانات ناقصة"}, 400)
     c = db()
     c.execute("INSERT INTO push_subs(username,endpoint,p256dh,auth,ts) VALUES(?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET username=excluded.username,p256dh=excluded.p256dh,auth=excluded.auth,ts=excluded.ts", (u["username"], endpoint[:600], p256dh[:200], auth_key[:200], now()))
     c.commit()
@@ -965,22 +1285,31 @@ async def push_unsubscribe(request: Request):
 @app.post("/api/push/test")
 async def push_test(request: Request):
     u = require_auth(request)
-    if not push_available(): return JSONResponse({"error": "Push غير مفعّل"}, 400)
+    if not push_available():
+        return JSONResponse({"error": "Push غير مفعّل"}, 400)
     sent = await push_send_to_user(u["username"], "تجربة الإشعارات", "إذا وصلتك هذي، فالإشعارات تعمل ✅", "", "/", "test")
-    if sent == 0: return JSONResponse({"error": "لا يوجد اشتراك فعّال"}, 404)
+    if sent == 0:
+        return JSONResponse({"error": "لا يوجد اشتراك فعّال"}, 404)
     return {"ok": True, "sent": sent}
 
+# ═══════════════════════════════════════════════════════════
+# API — UPLOAD / IMAGES
+# ═══════════════════════════════════════════════════════════
 @app.post("/api/upload")
 async def upload_image(request: Request):
     u = require_auth(request)
-    if not rate_ok(f"upload:{u['username']}", max_per_min=5): return JSONResponse({"error": "عدد كبير من الرفع"}, 429)
+    if not rate_ok(f"upload:{u['username']}", max_per_min=5):
+        return JSONResponse({"error": "عدد كبير من الرفع"}, 429)
     form = await request.form()
     file = form.get("file")
-    if not file: return JSONResponse({"error": "لم يُرفع ملف"}, 400)
+    if not file:
+        return JSONResponse({"error": "لم يُرفع ملف"}, 400)
     content = await file.read()
-    if len(content) > MAX_IMAGE_SIZE: return JSONResponse({"error": "الحجم أكبر من 2MB"}, 413)
+    if len(content) > MAX_IMAGE_SIZE:
+        return JSONResponse({"error": "الحجم أكبر من 2MB"}, 413)
     mime = file.content_type or "image/png"
-    if not mime.startswith("image/"): return JSONResponse({"error": "يجب أن يكون صورة"}, 400)
+    if not mime.startswith("image/"):
+        return JSONResponse({"error": "يجب أن يكون صورة"}, 400)
     img_id = secrets.token_urlsafe(16)
     c = db()
     c.execute("INSERT INTO images(id,mime,data,size,uploaded_by,created) VALUES(?,?,?,?,?,?)", (img_id, mime, content, len(content), u["username"], now()))
@@ -990,28 +1319,73 @@ async def upload_image(request: Request):
 
 @app.get("/api/image/{img_id}")
 async def get_image(img_id: str):
-    if not re.match(r"^[A-Za-z0-9_-]{10,40}$", img_id): raise HTTPException(400, "معرّف غير صالح")
+    if not re.match(r"^[A-Za-z0-9_-]{10,40}$", img_id):
+        raise HTTPException(400, "معرّف غير صالح")
     c = db()
     row = c.execute("SELECT mime, data FROM images WHERE id=?", (img_id,)).fetchone()
     c.close()
-    if not row: raise HTTPException(404, "غير موجودة")
+    if not row:
+        raise HTTPException(404, "غير موجودة")
     return FastResponse(content=row["data"], media_type=row["mime"], headers={"cache-control": "public, max-age=31536000, immutable"})
 
+# ═══════════════════════════════════════════════════════════
+# API — SETTINGS
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/settings")
 async def get_settings(request: Request):
     require_auth(request)
-    keys = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text", "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc", "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg", "guest_mode", "guest_blur"]
+    keys = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text",
+            "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc",
+            "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg",
+            "guest_mode", "guest_blur",
+            "site_theme", "site_logo", "site_c1", "site_c2", "site_ac"]
     return {k: cfg(k) for k in keys}
 
 @app.post("/api/settings")
 async def save_settings(request: Request):
     require_owner(request)
     body = await request.json()
-    allowed = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text", "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc", "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg", "guest_mode", "guest_blur"]
+    allowed = ["site_name", "site_sub", "hero_title", "hero_accent", "hero_text",
+               "tpl_kick", "tpl_yt", "tpl_discord", "tpl_twitter", "tpl_youtube_dc",
+               "btn_kick", "btn_yt", "lim_kick", "lim_yt", "lim_tg",
+               "guest_mode", "guest_blur",
+               "site_theme", "site_logo", "site_c1", "site_c2", "site_ac"]
     for k in allowed:
-        if k in body: set_cfg(k, str(body[k])[:2000])
+        if k in body:
+            set_cfg(k, str(body[k])[:2000])
     return {"ok": True}
 
+@app.post("/api/admin/site-logo")
+async def admin_site_logo(request: Request):
+    require_owner(request)
+    form = await request.form()
+    file = form.get("file")
+    if not file:
+        return JSONResponse({"error": "لم يُرفع ملف"}, 400)
+    content = await file.read()
+    if len(content) > 512000:
+        return JSONResponse({"error": "الحجم أكبر من 500KB"}, 413)
+    mime = file.content_type or "image/png"
+    if not mime.startswith("image/"):
+        return JSONResponse({"error": "يجب أن يكون صورة"}, 400)
+    img_id = secrets.token_urlsafe(16)
+    c = db()
+    c.execute("INSERT INTO images(id,mime,data,size,uploaded_by,created) VALUES(?,?,?,?,?,?)", (img_id, mime, content, len(content), "site_logo", now()))
+    c.commit()
+    c.close()
+    url = f"/api/image/{img_id}"
+    set_cfg("site_logo", url)
+    return {"ok": True, "url": url}
+
+@app.delete("/api/admin/site-logo")
+async def admin_site_logo_del(request: Request):
+    require_owner(request)
+    set_cfg("site_logo", "")
+    return {"ok": True}
+
+# ═══════════════════════════════════════════════════════════
+# API — ADMIN DEFAULTS
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/default-channels")
 async def list_default_channels(request: Request):
     require_owner(request)
@@ -1029,9 +1403,11 @@ async def add_default_channel(request: Request):
     require_owner(request)
     body = await request.json()
     kind = body.get("kind")
-    if kind not in ("kick", "yt", "tg"): return JSONResponse({"error": "نوع غير صالح"}, 400)
+    if kind not in ("kick", "yt", "tg"):
+        return JSONResponse({"error": "نوع غير صالح"}, 400)
     raw = (body.get("identifier") or "").strip()
-    if not raw: return JSONResponse({"error": "المعرّف مطلوب"}, 400)
+    if not raw:
+        return JSONResponse({"error": "المعرّف مطلوب"}, 400)
     if kind == "kick":
         ident = re.sub(r"[^a-z0-9_-]", "", raw.lower().replace("@", ""))
         name = body.get("name") or ident
@@ -1042,15 +1418,20 @@ async def add_default_channel(request: Request):
             avatar = info["avatar"]
     elif kind == "yt":
         info = await yt_resolve(raw)
-        if not info: return JSONResponse({"error": "تعذّر التعرف على القناة"}, 400)
+        if not info:
+            return JSONResponse({"error": "تعذّر التعرف على القناة"}, 400)
         ident = info["channel_id"]
         name = info["name"] or ident
         avatar = info.get("avatar") or ""
     else:
         ident = norm_chat(raw)
-        if not ident: return JSONResponse({"error": "معرّف غير صالح"}, 400)
-        name = body.get("name") or ident
-        avatar = ""
+        if not ident:
+            return JSONResponse({"error": "معرّف غير صالح"}, 400)
+        info = await tg_get_chat_info(ident)
+        name = body.get("name") or (info or {}).get("name") or ident
+        avatar = (info or {}).get("avatar") or ""
+        if info and info.get("chat_id"):
+            ident = info["chat_id"]
     c = db()
     if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?", (kind, ident)).fetchone():
         c.close()
@@ -1065,11 +1446,14 @@ async def add_default_channels_bulk(request: Request):
     require_owner(request)
     body = await request.json()
     kind = body.get("kind")
-    if kind not in ("kick", "yt", "tg"): return JSONResponse({"error": "نوع غير صالح"}, 400)
+    if kind not in ("kick", "yt", "tg"):
+        return JSONResponse({"error": "نوع غير صالح"}, 400)
     text = (body.get("text") or "").strip()
-    if not text: return JSONResponse({"error": "لا يوجد نص"}, 400)
+    if not text:
+        return JSONResponse({"error": "لا يوجد نص"}, 400)
     lines = [l.strip() for l in text.split("\n") if l.strip()][:100]
-    if not lines: return JSONResponse({"error": "لا توجد أسطر"}, 400)
+    if not lines:
+        return JSONResponse({"error": "لا توجد أسطر"}, 400)
     added, failed, errors = 0, 0, []
     for line in lines:
         try:
@@ -1103,8 +1487,11 @@ async def add_default_channels_bulk(request: Request):
                     failed += 1
                     errors.append(f"{raw}: معرّف غير صالح")
                     continue
-                name = custom_name or ident
-                avatar = ""
+                info = await tg_get_chat_info(ident)
+                name = custom_name or (info or {}).get("name") or ident
+                avatar = (info or {}).get("avatar") or ""
+                if info and info.get("chat_id"):
+                    ident = info["chat_id"]
             c = db()
             if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?", (kind, ident)).fetchone():
                 c.close()
@@ -1135,8 +1522,12 @@ async def patch_default_channel(cid: int, request: Request):
     body = await request.json()
     c = db()
     sets, vals = [], []
-    if "enabled" in body: sets.append("enabled=?"); vals.append(1 if body["enabled"] else 0)
-    if "name" in body: sets.append("name=?"); vals.append(str(body["name"])[:80])
+    if "enabled" in body:
+        sets.append("enabled=?")
+        vals.append(1 if body["enabled"] else 0)
+    if "name" in body:
+        sets.append("name=?")
+        vals.append(str(body["name"])[:80])
     if sets:
         vals.append(cid)
         c.execute(f"UPDATE default_channels SET {', '.join(sets)} WHERE id=?", vals)
@@ -1144,11 +1535,14 @@ async def patch_default_channel(cid: int, request: Request):
     c.close()
     return {"ok": True}
 
+# ═══════════════════════════════════════════════════════════
+# API — ADMIN USERS
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/users")
 async def admin_users(request: Request):
     require_owner(request)
     c = db()
-    rows = c.execute("SELECT id, username, display, role, active, banned, lim_kick, lim_yt, lim_tg, can_discord, created, last_login FROM users ORDER BY id").fetchall()
+    rows = c.execute("SELECT id, username, display, avatar, role, active, banned, lim_kick, lim_yt, lim_tg, can_discord, created, last_login FROM users ORDER BY id").fetchall()
     c.close()
     return {"rows": [dict(r) for r in rows]}
 
@@ -1158,9 +1552,12 @@ async def admin_add_user(request: Request):
     body = await request.json()
     un = (body.get("username") or "").strip()
     pw = str(body.get("password") or "")
-    if not re.match(r"^[A-Za-z0-9_.-]{3,30}$", un): return JSONResponse({"error": "اسم غير صالح"}, 400)
-    if len(pw) < 6: return JSONResponse({"error": "كلمة المرور 6+"}, 400)
-    if un.lower() == ADMIN_USERNAME.lower(): return JSONResponse({"error": "محجوز"}, 400)
+    if not re.match(r"^[A-Za-z0-9_.-]{3,30}$", un):
+        return JSONResponse({"error": "اسم غير صالح"}, 400)
+    if len(pw) < 6:
+        return JSONResponse({"error": "كلمة المرور 6+"}, 400)
+    if un.lower() == ADMIN_USERNAME.lower():
+        return JSONResponse({"error": "محجوز"}, 400)
     c = db()
     if c.execute("SELECT 1 FROM users WHERE lower(username)=lower(?)", (un,)).fetchone():
         c.close()
@@ -1186,26 +1583,34 @@ async def admin_patch_user(uid: int, request: Request):
     sets, vals = [], []
     opt = lambda v: (None if v in ("", None) else max(0, min(9999, int(v))))
     if "banned" in body and not is_self and not is_admin_acc:
-        sets.append("banned=?"); vals.append(1 if body["banned"] else 0)
+        sets.append("banned=?")
+        vals.append(1 if body["banned"] else 0)
     if "active" in body and not is_self and not is_admin_acc:
-        sets.append("active=?"); vals.append(1 if body["active"] else 0)
+        sets.append("active=?")
+        vals.append(1 if body["active"] else 0)
     if "role" in body and not is_admin_acc:
-        sets.append("role=?"); vals.append("owner" if body["role"] == "owner" else "user")
+        sets.append("role=?")
+        vals.append("owner" if body["role"] == "owner" else "user")
     if "display" in body:
-        sets.append("display=?"); vals.append(str(body["display"])[:60] or row["username"])
+        sets.append("display=?")
+        vals.append(str(body["display"])[:60] or row["username"])
     for k in ("lim_kick", "lim_yt", "lim_tg"):
         if k in body:
-            sets.append(f"{k}=?"); vals.append(opt(body[k]))
+            sets.append(f"{k}=?")
+            vals.append(opt(body[k]))
     if "can_discord" in body:
-        sets.append("can_discord=?"); vals.append(1 if body["can_discord"] else 0)
+        sets.append("can_discord=?")
+        vals.append(1 if body["can_discord"] else 0)
     pw_changed = False
     if body.get("password"):
         if len(str(body["password"])) < 6:
             c.close()
             return JSONResponse({"error": "كلمة المرور 6+"}, 400)
         salt = secrets.token_hex(16)
-        sets.append("pass_hash=?"); vals.append(hash_pw(str(body["password"]), salt))
-        sets.append("salt=?"); vals.append(salt)
+        sets.append("pass_hash=?")
+        vals.append(hash_pw(str(body["password"]), salt))
+        sets.append("salt=?")
+        vals.append(salt)
         pw_changed = True
     if sets:
         vals.append(uid)
@@ -1237,11 +1642,27 @@ async def admin_del_user(uid: int, request: Request):
     c.close()
     return {"ok": True}
 
+# ═══════════════════════════════════════════════════════════
+# API — ADMIN STATS + SECURITY
+# ═══════════════════════════════════════════════════════════
 @app.get("/api/admin/stats")
 async def admin_stats(request: Request):
     require_owner(request)
     c = db()
-    stats = {"users_total": c.execute("SELECT COUNT(*) n FROM users").fetchone()["n"], "users_active": c.execute("SELECT COUNT(*) n FROM users WHERE active=1 AND banned=0").fetchone()["n"], "users_banned": c.execute("SELECT COUNT(*) n FROM users WHERE banned=1").fetchone()["n"], "kick_total": c.execute("SELECT COUNT(*) n FROM kick_channels").fetchone()["n"], "kick_live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE live=1").fetchone()["n"], "yt_total": c.execute("SELECT COUNT(*) n FROM yt_channels").fetchone()["n"], "tg_total": c.execute("SELECT COUNT(*) n FROM tg_channels").fetchone()["n"], "feeds_total": c.execute("SELECT COUNT(*) n FROM discord_feeds").fetchone()["n"], "notifs_total": c.execute("SELECT COUNT(*) n FROM notifs").fetchone()["n"], "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"], "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"], "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"]}
+    stats = {
+        "users_total": c.execute("SELECT COUNT(*) n FROM users").fetchone()["n"],
+        "users_active": c.execute("SELECT COUNT(*) n FROM users WHERE active=1 AND banned=0").fetchone()["n"],
+        "users_banned": c.execute("SELECT COUNT(*) n FROM users WHERE banned=1").fetchone()["n"],
+        "kick_total": c.execute("SELECT COUNT(*) n FROM kick_channels").fetchone()["n"],
+        "kick_live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE live=1").fetchone()["n"],
+        "yt_total": c.execute("SELECT COUNT(*) n FROM yt_channels").fetchone()["n"],
+        "tg_total": c.execute("SELECT COUNT(*) n FROM tg_channels").fetchone()["n"],
+        "feeds_total": c.execute("SELECT COUNT(*) n FROM discord_feeds").fetchone()["n"],
+        "notifs_total": c.execute("SELECT COUNT(*) n FROM notifs").fetchone()["n"],
+        "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"],
+        "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"],
+        "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"],
+    }
     c.close()
     stats["discord_ready"] = discord_client.is_ready() if discord_client else False
     stats["discord_guilds"] = len(discord_client.guilds) if discord_client and discord_client.is_ready() else 0
@@ -1261,6 +1682,9 @@ async def admin_security(request: Request):
     c.close()
     return {"rows": [dict(r) for r in rows]}
 
+# ═══════════════════════════════════════════════════════════
+# ROOT + MANIFEST + SW + HEALTH
+# ═══════════════════════════════════════════════════════════
 @app.get("/", response_class=HTMLResponse)
 async def index():
     try:
@@ -1271,35 +1695,54 @@ async def index():
 
 @app.get("/manifest.json")
 async def manifest():
-    return JSONResponse({"name": cfg("site_name", SITE_NAME), "short_name": cfg("site_name", SITE_NAME)[:12], "start_url": "/", "display": "standalone", "background_color": "#030508", "theme_color": "#030508", "dir": "rtl", "lang": "ar"})
+    theme = get_site_theme()
+    logo = cfg("site_logo", "")
+    icons = [{"src": logo or "/favicon.ico", "sizes": "192x192 512x512", "type": "image/png", "purpose": "any"}]
+    return JSONResponse({
+        "name": cfg("site_name", SITE_NAME),
+        "short_name": cfg("site_name", SITE_NAME)[:12],
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": theme["c1"],
+        "theme_color": theme["c1"],
+        "dir": "rtl",
+        "lang": "ar",
+        "icons": icons
+    })
 
 @app.get("/sw.js")
 async def sw():
-    js = """
-self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-self.addEventListener('push', e => {
-  let d = {};
-  try { d = e.data.json(); } catch (x) { d = { title: 'إشعار جديد', body: e.data ? e.data.text() : '' }; }
-  const o = { body: d.body || '', icon: d.icon || '/favicon.ico', badge: d.icon || '/favicon.ico', image: d.image || undefined, tag: d.tag || undefined, renotify: !!d.tag, dir: 'rtl', lang: 'ar', data: { url: d.url || '/' } };
-  e.waitUntil(Promise.all([self.registration.showNotification(d.title || 'إشعار جديد', o), self.clients.matchAll({ type: 'window' }).then(cs => cs.forEach(c => c.postMessage({ t: 'push' })))]));
-});
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || '/';
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-    const same = cs.find(c => new URL(c.url).origin === location.origin);
-    if (url.startsWith('/') && same) return same.focus();
-    return self.clients.openWindow(url);
-  }));
-});
-"""
+    js = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('push',e=>{let d={};try{d=e.data.json();}catch(x){d={title:'إشعار جديد',body:e.data?e.data.text():''};}const o={body:d.body||'',icon:d.icon||'/favicon.ico',badge:d.icon||'/favicon.ico',image:d.image||undefined,tag:d.tag||undefined,renotify:!!d.tag,dir:'rtl',lang:'ar',data:{url:d.url||'/'}};e.waitUntil(Promise.all([self.registration.showNotification(d.title||'إشعار جديد',o),self.clients.matchAll({type:'window'}).then(cs=>cs.forEach(c=>c.postMessage({t:'push'})))]));});self.addEventListener('notificationclick',e=>{e.notification.close();const url=(e.notification.data&&e.notification.data.url)||'/';e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const same=cs.find(c=>new URL(c.url).origin===location.origin);if(url.startsWith('/')&&same)return same.focus();return self.clients.openWindow(url);}));});"
     return FastResponse(content=js, media_type="application/javascript", headers={"cache-control": "no-cache"})
+
+@app.get("/favicon.ico")
+async def favicon():
+    logo = cfg("site_logo", "")
+    if logo and logo.startswith("/api/image/"):
+        img_id = logo.replace("/api/image/", "")
+        c = db()
+        row = c.execute("SELECT mime, data FROM images WHERE id=?", (img_id,)).fetchone()
+        c.close()
+        if row:
+            return FastResponse(content=row["data"], media_type=row["mime"])
+    return FastResponse(content=b"", status_code=204)
 
 @app.get("/health")
 async def health():
-    return {"ok": True, "discord_ready": discord_client.is_ready() if discord_client else False, "discord_channels": len(_DISCORD_CHANNELS_CACHE), "auto_discovery": not bool(WATCH_CHANNELS), "watching": len(WATCH_CHANNELS), "push_enabled": push_available(), "telegram_enabled": bool(TELEGRAM_TOKEN)}
+    return {
+        "ok": True,
+        "discord_ready": discord_client.is_ready() if discord_client else False,
+        "discord_channels": len(_DISCORD_CHANNELS_CACHE),
+        "discord_guilds": len(_DISCORD_GUILDS_CACHE),
+        "auto_discovery": not bool(WATCH_CHANNELS),
+        "watching": len(WATCH_CHANNELS),
+        "push_enabled": push_available(),
+        "telegram_enabled": bool(TELEGRAM_TOKEN)
+    }
 
+# ═══════════════════════════════════════════════════════════
+# RUN
+# ═══════════════════════════════════════════════════════════
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))

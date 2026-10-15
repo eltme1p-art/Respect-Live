@@ -160,13 +160,27 @@ CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 def init_db():
     c = db()
     c.executescript(SCHEMA)
-    if not c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone():
-        salt = secrets.token_hex(16)
+    # 🔐 مزامنة حساب الأدمن مع المتغيرات في كل تشغيل
+    salt = secrets.token_hex(16)
+    new_hash = hash_pw(ADMIN_PASSWORD, salt)
+    existing = c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone()
+    if not existing:
+        # إنشاء أول مرة
         c.execute(
             "INSERT INTO users(username,display,pass_hash,salt,role,active,banned,created) "
             "VALUES(?,?,?,?,'owner',1,0,?)",
-            (ADMIN_USERNAME, ADMIN_USERNAME, hash_pw(ADMIN_PASSWORD, salt), salt, now()),
+            (ADMIN_USERNAME, ADMIN_USERNAME, new_hash, salt, now()),
         )
+        print(f"[DB] ✅ تم إنشاء حساب الأدمن: {ADMIN_USERNAME}")
+    else:
+        # 🆕 مزامنة كلمة المرور والدور في كل Redeploy
+        c.execute(
+            "UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0 "
+            "WHERE username=?",
+            (new_hash, salt, ADMIN_USERNAME),
+        )
+        print(f"[DB] 🔄 تم تحديث بيانات الأدمن: {ADMIN_USERNAME}")
+    # الإعدادات الافتراضية
     defaults = {
         "site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL",
         "hero_title": "مراقبة", "hero_accent": "القنوات.",

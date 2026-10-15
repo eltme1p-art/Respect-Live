@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#030508">
 <title>Respect Live</title>
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230b55ea'%3E%3Cpath d='M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z'/%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -42,7 +42,8 @@ img{display:block;max-width:100%}
 #splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 40%,rgba(var(--blue-rgb),.20),transparent 62%),var(--bg);transition:opacity .75s var(--ease),transform .75s var(--ease)}
 #splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
 .sp-wrap{display:flex;flex-direction:column;align-items:center;gap:26px}
-.sp-logo{width:104px;height:104px;border-radius:28px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.5);animation:spGlow 2.4s ease-in-out infinite}
+.sp-logo{width:104px;height:104px;border-radius:28px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.5);animation:spGlow 2.4s ease-in-out infinite;overflow:hidden}
+.sp-logo img{width:100%;height:100%;object-fit:cover}
 .sp-logo svg{width:52px;height:52px}
 @keyframes spGlow{0%,100%{box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.45)}50%{box-shadow:0 0 0 26px rgba(var(--blue-rgb),0),0 20px 60px rgba(var(--blue-rgb),.6)}}
 .sp-dots{display:flex;gap:9px}
@@ -58,7 +59,8 @@ img{display:block;max-width:100%}
 .top{position:sticky;top:0;z-index:50;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 14px;display:flex;align-items:center;gap:12px;background:linear-gradient(rgba(3,5,8,.94) 60%,rgba(3,5,8,0));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid transparent;transition:border-color .3s ease,background .3s ease}
 .top.scrolled{border-bottom-color:var(--line);background:linear-gradient(rgba(3,5,8,.97) 90%,rgba(3,5,8,.85))}
 .brand{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
-.brand-logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 16px rgba(var(--blue-rgb),.42)}
+.brand-logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 16px rgba(var(--blue-rgb),.42);overflow:hidden}
+.brand-logo img{width:100%;height:100%;object-fit:cover}
 .brand-logo svg{width:22px;height:22px;color:#fff}
 .brand-txt{min-width:0}
 .brand-name{font-family:var(--font-en);font-size:15px;font-weight:900;letter-spacing:2px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -70,7 +72,8 @@ img{display:block;max-width:100%}
 .hdr-btn:active{transform:scale(.95)}
 .hdr-btn svg{width:19px;height:19px}
 .hdr-btn .badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:900;display:grid;place-items:center;border:2px solid var(--bg);font-family:var(--font-en);line-height:1}
-.avatar-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:15px;cursor:pointer;position:relative;flex-shrink:0;box-shadow:0 0 16px rgba(var(--blue-rgb),.42);transition:.22s var(--ease-soft)}
+.avatar-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:15px;cursor:pointer;position:relative;flex-shrink:0;box-shadow:0 0 16px rgba(var(--blue-rgb),.42);transition:.22s var(--ease-soft);overflow:hidden}
+.avatar-btn img{width:100%;height:100%;object-fit:cover}
 .avatar-btn:hover{transform:scale(1.06)}
 .avatar-btn:active{transform:scale(.95)}
 .avatar-btn .st{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
@@ -87,7 +90,8 @@ img{display:block;max-width:100%}
 .login-page{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 20px;position:relative;animation:pageIn .6s var(--ease) both}
 .login-card{position:relative;width:min(430px,100%);padding:38px 30px 32px;background:var(--card);border:1px solid var(--line-2);border-radius:26px;box-shadow:var(--shadow-lg),0 0 80px rgba(var(--blue-rgb),.10)}
 .login-card::before{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);box-shadow:var(--glow);border-radius:2px}
-.login-logo{width:92px;height:92px;border-radius:26px;margin:0 auto 20px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.45);animation:spGlow 2.6s infinite}
+.login-logo{width:92px;height:92px;border-radius:26px;margin:0 auto 20px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.45);animation:spGlow 2.6s infinite;overflow:hidden}
+.login-logo img{width:100%;height:100%;object-fit:cover}
 .login-logo svg{width:46px;height:46px}
 .login-head{text-align:center;margin-bottom:28px}
 .login-head h1{font-family:var(--font-en);font-size:22px;letter-spacing:3px;font-weight:900;margin-bottom:8px}
@@ -104,6 +108,9 @@ textarea{resize:vertical;min-height:110px;line-height:1.7}
 select{cursor:pointer;background-image:none}
 select option{background:var(--panel);color:var(--text)}
 input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20px;height:20px;min-height:auto;padding:0;accent-color:var(--blue);cursor:pointer;display:inline-block;vertical-align:middle}
+input[type="color"]{-webkit-appearance:none;appearance:none;border:none;width:100%;height:52px;background:transparent;cursor:pointer;border-radius:14px;overflow:hidden;padding:0}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:4px}
+input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);border-radius:10px}
 .err{color:#f87171;font-size:12.5px;text-align:center;min-height:20px;margin-top:12px;font-weight:700}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:14px;background:rgba(255,255,255,.04);border:1.5px solid var(--line-2);color:var(--text);font-size:13.5px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.22s var(--ease-soft);position:relative;overflow:hidden;min-height:48px}
 .btn:hover{transform:translateY(-1px);border-color:var(--blue)}
@@ -117,13 +124,21 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .btn.sm{padding:9px 14px;font-size:12px;border-radius:11px;min-height:auto}
 .btn.wide{width:100%;padding:15px}
 .btn svg{width:15px;height:15px;flex-shrink:0}
-.hero{padding:38px var(--pad) 30px;text-align:center;position:relative;animation:pageIn .55s var(--ease) both}
+.hero{padding:42px var(--pad) 32px;text-align:center;position:relative;animation:pageIn .55s var(--ease) both}
 .hero-lbl{font-family:var(--font-en);font-size:11px;font-weight:900;letter-spacing:4px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:9px}
 .hero-lbl span{color:var(--blue);font-size:14px;text-shadow:var(--glow-sm)}
 .hero h1{font-family:var(--font-en);font-size:clamp(36px,9vw,64px);line-height:.92;letter-spacing:4px;font-weight:900;margin:22px 0 14px}
 .hero h1 span{color:var(--blue);display:inline-block;transform:skewX(-8deg);text-shadow:var(--glow)}
-.hero p{color:var(--muted);font-size:13.5px;max-width:540px;margin:0 auto;line-height:1.85;font-weight:500}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:24px var(--pad);animation:pageIn .6s var(--ease) .05s both}
+.hero p{color:var(--muted);font-size:13.5px;max-width:560px;margin:0 auto;line-height:1.85;font-weight:500}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px var(--pad);animation:pageIn .6s var(--ease) .1s both}
+@media(max-width:640px){.features{grid-template-columns:1fr}}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 18px;text-align:center;transition:.28s var(--ease-soft);position:relative;overflow:hidden}
+.feat:hover{transform:translateY(-3px);border-color:var(--blue-line);box-shadow:0 12px 34px rgba(var(--blue-rgb),.14)}
+.feat-ico{width:56px;height:56px;border-radius:16px;background:rgba(var(--blue-rgb),.12);border:1px solid var(--blue-line);display:grid;place-items:center;color:var(--blue);margin:0 auto 14px}
+.feat-ico svg{width:26px;height:26px}
+.feat b{display:block;font-size:15px;font-weight:900;margin-bottom:6px}
+.feat p{color:var(--muted);font-size:12.5px;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:24px var(--pad);animation:pageIn .6s var(--ease) .15s both}
 .stats .s{background:var(--panel);padding:18px 8px;text-align:center;transition:.24s var(--ease-soft)}
 .stats .s:hover{background:rgba(var(--blue-rgb),.06)}
 .stats .s b{display:block;font-family:var(--font-en);font-size:26px;font-weight:900;line-height:1;color:var(--text)}
@@ -223,10 +238,15 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .sug-toolbar button:hover{background:rgba(var(--blue-rgb),.12)}
 .acc-menu{position:fixed;top:calc(72px + env(safe-area-inset-top));left:var(--pad);min-width:300px;max-width:calc(100vw - 2 * var(--pad));background:var(--card);border:1px solid var(--blue-line);border-radius:20px;box-shadow:0 32px 64px rgba(0,0,0,.6),0 0 60px rgba(var(--blue-rgb),.15);padding:8px;z-index:1500;opacity:0;transform:translateY(-12px) scale(.96);transition:.26s var(--ease-soft);pointer-events:none;max-height:calc(100vh - 100px);overflow-y:auto}
 .acc-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.acc-head{padding:16px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px}
-.acc-head .nm{font-size:16px;font-weight:900;margin-bottom:4px}
+.acc-head{padding:16px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px;display:flex;gap:12px;align-items:center}
+.acc-head .av-btn{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:18px;flex-shrink:0;overflow:hidden;cursor:pointer;position:relative}
+.acc-head .av-btn img{width:100%;height:100%;object-fit:cover}
+.acc-head .av-btn:hover::after{content:"تغيير";position:absolute;inset:0;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:900;display:grid;place-items:center;border-radius:50%}
+.acc-head .if{flex:1;min-width:0}
+.acc-head .nm{font-size:15px;font-weight:900;margin-bottom:3px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.acc-head .nm:hover{color:var(--blue)}
 .acc-head .mt{font-size:11.5px;color:var(--muted);font-family:var(--font-en);letter-spacing:1px}
-.acc-head .stats-mini{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.acc-head .stats-mini{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
 .acc-head .stats-mini span{font-size:11px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
 .acc-head .stats-mini b{color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:13px}
 .acc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:800;color:var(--text);transition:.2s var(--ease-soft);cursor:pointer;width:100%;text-align:right;background:transparent;position:relative}
@@ -267,6 +287,18 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .img-preview-box img{max-height:160px;margin:0 auto 10px;border-radius:10px;border:1px solid var(--line);object-fit:contain}
 .img-preview-box.empty{padding:26px 14px;color:var(--muted-2);font-size:12.5px}
 .tpl-preview{margin-top:10px;padding:14px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text-2);min-height:60px}
+.tpl-preview b,.tpl-preview strong{color:var(--text);font-weight:900}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px}
+.theme-item{border:2px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:.22s var(--ease-soft);font-weight:900;font-size:12px;color:#fff;min-height:80px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+.theme-item:hover{transform:translateY(-2px)}
+.theme-item.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(var(--blue-rgb),.25),0 8px 22px rgba(var(--blue-rgb),.30)}
+.theme-item i{display:block;width:26px;height:6px;border-radius:9px;margin:0 auto}
+.discord-ch-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);margin-bottom:6px}
+.discord-ch-item .ic{width:34px;height:34px;border-radius:10px;background:rgba(var(--blue-rgb),.12);border:1px solid var(--blue-line);display:grid;place-items:center;color:var(--blue);flex-shrink:0}
+.discord-ch-item .ic svg{width:18px;height:18px}
+.discord-ch-item .if{flex:1;min-width:0}
+.discord-ch-item b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.discord-ch-item small{display:block;font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--font-en)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -278,7 +310,9 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 
 <div id="splash">
   <div class="sp-wrap">
-    <div class="sp-logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg></div>
+    <div class="sp-logo" id="spLogo">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>
+    </div>
     <div class="sp-dots"><i></i><i></i><i></i></div>
     <div class="sp-foot" id="spFoot">STREAM MONITOR</div>
   </div>
@@ -287,60 +321,38 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 <div id="app"></div>
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toasts" id="toasts"></div>
-
 <script>
 'use strict';
 
 /* ═══════════════════════════════════════════════════════════
-   SERVICE WORKER — Web Push + PWA
+   ICONS
    ═══════════════════════════════════════════════════════════ */
-const SW_JS = `
-self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-self.addEventListener('push', e => {
-  let d = {};
-  try { d = e.data.json(); } catch (x) { d = { title: 'إشعار جديد', body: e.data ? e.data.text() : '' }; }
-  const o = {
-    body: d.body || '',
-    icon: d.icon || '/favicon.ico',
-    badge: d.icon || '/favicon.ico',
-    image: d.image || undefined,
-    tag: d.tag || undefined,
-    renotify: !!d.tag,
-    dir: 'rtl',
-    lang: 'ar',
-    data: { url: d.url || '/' }
-  };
-  e.waitUntil(Promise.all([
-    self.registration.showNotification(d.title || 'إشعار جديد', o),
-    self.clients.matchAll({ type: 'window' }).then(cs => cs.forEach(c => c.postMessage({ t: 'push' })))
-  ]));
-});
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || '/';
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-    const same = cs.find(c => new URL(c.url).origin === location.origin);
-    if (url.startsWith('/') && same) return same.focus();
-    return self.clients.openWindow(url);
-  }));
-});
-`;
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {
-    // نستخدم blob URL كبديل
-    try {
-      const blob = new Blob([SW_JS], { type: 'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-    } catch (e) {}
-  });
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data && e.data.t === 'push') {
-      loadNotifs().then(() => { if (S.view === 'notifs') renderView(); updateBadge(); });
-    }
-  });
-}
+const IC = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
+  kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
+  yt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6c.3 1 1.1 1.8 2 2 1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4c1-.3 1.8-1 2-2 .5-1.8.5-5.6.5-5.6zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>',
+  tg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.05 3.1 2.44 10.66c-1.03.4-1.02 1.83.01 2.21l4.76 1.76 1.83 5.85c.28.9 1.42 1.13 2.02.4l2.4-2.94 5.06 3.72c.66.48 1.6.1 1.76-.7l3.02-15.6c.18-.94-.75-1.7-1.25-1.06z"/></svg>',
+  dc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 2.2 17 17 0 0 0-15-.1A18 18 0 0 1 8.8 3.4L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.6 9-.2 13.6.2 18a19.8 19.8 0 0 0 6 3l1.3-1.7a13 13 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4a13 13 0 0 1-2 1l1.3 1.7a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.7-3.5-13.6zM8.5 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  logo:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/><path d="M20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  palette:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+};
 
 /* ═══════════════════════════════════════════════════════════
    UTILS
@@ -405,64 +417,92 @@ function modal(opts) {
     if (cBtn) cBtn.onclick = () => close(opts.input ? null : false);
     m.onclick = e => { if (e.target === m) close(opts.input ? null : false); };
     if (opts.input) setTimeout(() => { const i = $('#__mi'); if (i) i.focus(); }, 200);
-    if (opts.onReady) setTimeout(opts.onReady, 50);
+    if (opts.onReady) setTimeout(opts.onReady, 60);
   });
 }
 const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد', sub: msg, danger, okText:'تأكيد' });
-
-const IC = {
-  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
-  kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
-  yt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6c.3 1 1.1 1.8 2 2 1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4c1-.3 1.8-1 2-2 .5-1.8.5-5.6.5-5.6zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>',
-  tg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.05 3.1 2.44 10.66c-1.03.4-1.02 1.83.01 2.21l4.76 1.76 1.83 5.85c.28.9 1.42 1.13 2.02.4l2.4-2.94 5.06 3.72c.66.48 1.6.1 1.76-.7l3.02-15.6c.18-.94-.75-1.7-1.25-1.06z"/></svg>',
-  dc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 2.2 17 17 0 0 0-15-.1A18 18 0 0 1 8.8 3.4L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.6 9-.2 13.6.2 18a19.8 19.8 0 0 0 6 3l1.3-1.7a13 13 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4a13 13 0 0 1-2 1l1.3 1.7a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.7-3.5-13.6zM8.5 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>',
-  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
-  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
-  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
-  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
-  logo:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>',
-  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/><path d="M20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
-  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
-  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-};
 
 /* ═══════════════════════════════════════════════════════════
    STATE
    ═══════════════════════════════════════════════════════════ */
 const S = {
-  boot: {},
-  me: null,
-  guest: false,
-  view: 'home',
+  boot: {}, me: null, guest: false, view: 'home',
   channels: { kick: [], yt: [], tg: [] },
-  limits: {
-    kick: { used:0, limit:10, remaining:10 },
-    yt:   { used:0, limit:5,  remaining:5  },
-    tg:   { used:0, limit:3,  remaining:3  }
-  },
-  feeds: [],
-  knownChannels: {},
-  watching: [],
-  autoDiscovery: false,
-  notifs: [],
-  unread: 0,
-  settings: {},
+  limits: { kick: {used:0,limit:10,remaining:10}, yt: {used:0,limit:5,remaining:5}, tg: {used:0,limit:3,remaining:3} },
+  feeds: [], knownChannels: {}, knownGuilds: {}, watching: [], autoDiscovery: false,
+  botReady: false,
+  notifs: [], unread: 0, settings: {},
   admin: { users: [], defaults: [], suggestions: [], stats: {}, sec: [], tab: 'stats' },
-  preview: null,
-  pushEnabled: false,
+  preview: null, pushEnabled: false,
+  themes: [],
 };
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
 const isLogged = () => !!(S.me && S.me.user);
 const canDiscord = () => isLogged() && (isOwner() || S.me.user.can_discord);
+
+function applyTheme(theme) {
+  if (!theme) return;
+  const root = document.documentElement.style;
+  if (theme.c1) root.setProperty('--bg', theme.c1);
+  if (theme.c2) root.setProperty('--panel', theme.c2);
+  if (theme.ac) {
+    root.setProperty('--blue', theme.ac);
+    root.setProperty('--blue2', theme.ac);
+    const hex = theme.ac.replace('#','');
+    const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+    root.setProperty('--blue-rgb', `${r},${g},${b}`);
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta && theme.c1) meta.setAttribute('content', theme.c1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SERVICE WORKER + PUSH
+   ═══════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.t === 'push') { loadNotifs().then(() => { if (S.view === 'notifs') renderView(); updateBadge(); }); }
+  });
+}
+
+async function checkPushStatus() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) { S.pushEnabled = false; return; }
+  try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); S.pushEnabled = !!sub; }
+  catch (e) { S.pushEnabled = false; }
+}
+function urlB64ToU8(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  s += '='.repeat((4 - s.length % 4) % 4);
+  const raw = atob(s); const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+async function enablePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return toast('المتصفح لا يدعم الإشعارات', 'bad');
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return toast('تم رفض الإذن', 'bad');
+    const reg = await navigator.serviceWorker.ready;
+    const keyRes = await api('/api/push/key');
+    if (!keyRes.key) return toast('Push غير مفعّل من السيرفر', 'bad');
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(keyRes.key) });
+    await api('/api/push/subscribe', { method:'POST', body: sub.toJSON() });
+    S.pushEnabled = true; toast('تم تفعيل الإشعارات', 'ok'); openAccountMenu();
+  } catch (e) { toast(e.message || 'فشل تفعيل الإشعارات', 'bad'); }
+}
+async function disablePush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) { await api('/api/push/unsubscribe', { method:'POST', body: { endpoint: sub.endpoint } }); await sub.unsubscribe(); }
+    S.pushEnabled = false; toast('تم إيقاف الإشعارات', 'ok'); openAccountMenu();
+  } catch (e) { toast(e.message || 'فشل الإيقاف', 'bad'); }
+}
+async function testPush() {
+  try { const r = await api('/api/push/test', { method:'POST' }); toast('أُرسل ' + (r.sent || 0) + ' إشعار تجريبي', 'ok'); }
+  catch (e) { toast(e.message, 'bad'); }
+}
 
 /* ═══════════════════════════════════════════════════════════
    BOOT
@@ -472,8 +512,10 @@ async function boot() {
     const b = await api('/api/boot');
     S.boot = b;
     document.title = b.site_name || 'Respect Live';
-    const sf = $('#spFoot');
-    if (sf) sf.textContent = (b.site_sub || 'STREAM MONITOR').toUpperCase();
+    const sf = $('#spFoot'); if (sf) sf.textContent = (b.site_sub || 'STREAM MONITOR').toUpperCase();
+    const sp = $('#spLogo');
+    if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
+    if (b.theme) applyTheme(b.theme);
   } catch (e) {
     S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14 };
   }
@@ -481,15 +523,12 @@ async function boot() {
     const me = await api('/api/me');
     S.me = me;
     await loadAll();
-    checkPushStatus().then(() => renderApp());
+    await checkPushStatus();
+    renderApp();
   } catch (e) {
     S.guest = true;
-    if (S.boot.guest_mode) {
-      await loadPreview();
-      renderApp();
-    } else {
-      renderAuth();
-    }
+    if (S.boot.guest_mode) { await loadPreview(); renderApp(); }
+    else { renderAuth(); }
   }
   setTimeout(() => {
     const sp = $('#splash');
@@ -498,10 +537,7 @@ async function boot() {
 }
 
 async function loadAll() {
-  await Promise.all([
-    loadChannels('kick'), loadChannels('yt'), loadChannels('tg'),
-    loadNotifs(), loadSettings()
-  ]);
+  await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadNotifs(), loadSettings()]);
   if (canDiscord()) await loadFeeds();
 }
 async function loadPreview() {
@@ -521,107 +557,33 @@ async function loadFeeds() {
     const r = await api('/api/discord/feeds');
     S.feeds = r.rows || [];
     S.knownChannels = r.known_channels || {};
+    S.knownGuilds = r.guilds || {};
     S.watching = r.watching || [];
     S.autoDiscovery = !!r.auto_discovery;
-  } catch (e) { S.feeds = []; S.knownChannels = {}; S.watching = []; }
+    S.botReady = !!r.bot_ready;
+  } catch (e) { S.feeds = []; S.knownChannels = {}; S.knownGuilds = {}; }
 }
 async function loadNotifs() {
-  try {
-    const r = await api('/api/notifs');
-    S.notifs = r.rows || [];
-    S.unread = r.unread || 0;
-    updateBadge();
-  } catch (e) { S.notifs = []; S.unread = 0; }
+  try { const r = await api('/api/notifs'); S.notifs = r.rows || []; S.unread = r.unread || 0; updateBadge(); }
+  catch (e) { S.notifs = []; S.unread = 0; }
 }
 async function loadSettings() {
-  try { S.settings = await api('/api/settings'); }
-  catch (e) { S.settings = {}; }
+  try { S.settings = await api('/api/settings'); } catch (e) { S.settings = {}; }
 }
 function updateBadge() {
-  const b = $('#notifBadge');
-  if (!b) return;
-  if (S.unread > 0) {
-    b.textContent = S.unread > 99 ? '99+' : S.unread;
-    b.style.display = 'grid';
-  } else {
-    b.style.display = 'none';
-  }
+  const b = $('#notifBadge'); if (!b) return;
+  if (S.unread > 0) { b.textContent = S.unread > 99 ? '99+' : S.unread; b.style.display = 'grid'; }
+  else b.style.display = 'none';
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WEB PUSH
-   ═══════════════════════════════════════════════════════════ */
-async function checkPushStatus() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    S.pushEnabled = false;
-    return;
-  }
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    S.pushEnabled = !!sub;
-  } catch (e) { S.pushEnabled = false; }
-}
-
-function urlB64ToU8(s) {
-  s = s.replace(/-/g, '+').replace(/_/g, '/');
-  s += '='.repeat((4 - s.length % 4) % 4);
-  const raw = atob(s);
-  const out = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
-}
-
-async function enablePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return toast('المتصفح لا يدعم الإشعارات', 'bad');
-  }
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return toast('تم رفض الإذن', 'bad');
-    const reg = await navigator.serviceWorker.ready;
-    const keyRes = await api('/api/push/key');
-    if (!keyRes.key) return toast('Push غير مفعّل من السيرفر', 'bad');
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlB64ToU8(keyRes.key)
-    });
-    await api('/api/push/subscribe', { method:'POST', body: sub.toJSON() });
-    S.pushEnabled = true;
-    toast('تم تفعيل الإشعارات', 'ok');
-    openAccountMenu();
-  } catch (e) { toast(e.message || 'فشل تفعيل الإشعارات', 'bad'); }
-}
-
-async function disablePush() {
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    if (sub) {
-      await api('/api/push/unsubscribe', { method:'POST', body: { endpoint: sub.endpoint } });
-      await sub.unsubscribe();
-    }
-    S.pushEnabled = false;
-    toast('تم إيقاف الإشعارات', 'ok');
-    openAccountMenu();
-  } catch (e) { toast(e.message || 'فشل الإيقاف', 'bad'); }
-}
-
-async function testPush() {
-  try {
-    const r = await api('/api/push/test', { method:'POST' });
-    toast('أُرسل ' + (r.sent || 0) + ' إشعار تجريبي', 'ok');
-  } catch (e) { toast(e.message, 'bad'); }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   AUTH PAGE
+   AUTH
    ═══════════════════════════════════════════════════════════ */
 function renderAuth() {
   $('#app').innerHTML = `
     <div class="login-page">
       <div class="login-card">
-        <div class="login-logo">${IC.logo}</div>
+        <div class="login-logo">${S.boot.site_logo ? '<img src="'+esc(S.boot.site_logo)+'">' : IC.logo}</div>
         <div class="login-head">
           <h1>RESPECT <span>LIVE</span></h1>
           <p>سجّل دخولك للوصول إلى لوحتك</p>
@@ -634,16 +596,12 @@ function renderAuth() {
           <button class="btn pri wide" type="submit" id="authBtn" style="margin-top:8px">دخول</button>
           <div class="err" id="authErr"></div>
         </form>
-        ${S.boot.guest_mode ? `
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);text-align:center">
-            <button type="button" id="skipBtn" class="btn ghost wide">${IC.eye} تصفح كزائر</button>
-          </div>` : ''}
+        ${S.boot.guest_mode ? `<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);text-align:center"><button type="button" id="skipBtn" class="btn ghost wide">${IC.eye} تصفح كزائر</button></div>` : ''}
       </div>
     </div>`;
   const form = $('#authForm'), btn = $('#authBtn'), err = $('#authErr');
   form.onsubmit = async (e) => {
-    e.preventDefault();
-    err.textContent = ''; btn.disabled = true;
+    e.preventDefault(); err.textContent = ''; btn.disabled = true;
     try {
       const fd = new FormData();
       fd.append('u', form.u.value.trim());
@@ -652,11 +610,7 @@ function renderAuth() {
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || j.detail || 'فشل الدخول');
       location.reload();
-    } catch (e2) {
-      err.textContent = e2.message;
-      toast(e2.message, 'bad');
-      btn.disabled = false;
-    }
+    } catch (e2) { err.textContent = e2.message; toast(e2.message, 'bad'); btn.disabled = false; }
   };
   const skip = $('#skipBtn');
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
@@ -667,74 +621,58 @@ function renderAuth() {
    ═══════════════════════════════════════════════════════════ */
 function renderApp() {
   const name = (S.boot.site_name || 'Respect Live').split(' ');
-  const brandHTML = name.length >= 2
-    ? esc(name[0]).toUpperCase() + ' <span>' + esc(name.slice(1).join(' ')).toUpperCase() + '</span>'
-    : '<span>' + esc(name[0]).toUpperCase() + '</span>';
+  const brandHTML = name.length >= 2 ? esc(name[0]).toUpperCase() + ' <span>' + esc(name.slice(1).join(' ')).toUpperCase() + '</span>' : '<span>' + esc(name[0]).toUpperCase() + '</span>';
+  const logoHTML = S.boot.site_logo ? `<img src="${esc(S.boot.site_logo)}" alt="">` : IC.logo;
+  const userAvatar = S.me && S.me.user && S.me.user.avatar;
   const avatarHTML = isLogged()
-    ? '<div class="avatar-btn" id="accBtn" role="button">' + esc(S.me.user.username.charAt(0).toUpperCase()) + '<div class="st"></div></div>'
+    ? '<div class="avatar-btn" id="accBtn" role="button">' + (userAvatar ? '<img src="'+esc(userAvatar)+'" alt="">' : esc(S.me.user.username.charAt(0).toUpperCase())) + '<div class="st"></div></div>'
     : '<div class="avatar-btn guest" id="accBtn" role="button">' + IC.user + '</div>';
   const showDcTab = canDiscord();
 
   $('#app').innerHTML = `
     <div class="top" id="top">
       <div class="brand">
-        <div class="brand-logo">${IC.logo}</div>
+        <div class="brand-logo">${logoHTML}</div>
         <div class="brand-txt">
           <div class="brand-name">${brandHTML}</div>
           <div class="brand-sub">${esc((S.boot.site_sub || 'STREAM MONITOR').toUpperCase())}</div>
         </div>
       </div>
       <div class="hdr-acts">
-        ${isLogged() ? `<button class="hdr-btn" id="notifBtn" aria-label="الإشعارات">
-          ${IC.bell}
-          <span class="badge" id="notifBadge" style="${S.unread > 0 ? '' : 'display:none'}">${S.unread > 99 ? '99+' : S.unread}</span>
-        </button>` : ''}
+        ${isLogged() ? `<button class="hdr-btn" id="notifBtn" aria-label="الإشعارات">${IC.bell}<span class="badge" id="notifBadge" style="${S.unread > 0 ? '' : 'display:none'}">${S.unread > 99 ? '99+' : S.unread}</span></button>` : ''}
         ${avatarHTML}
       </div>
     </div>
-    ${S.guest ? `
-      <div class="guest-banner">
-        <div class="gb-ico">${IC.eye}</div>
-        <div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل وإدارة قنواتك</small></div>
-        <button class="btn pri sm" id="loginNow">تسجيل الدخول</button>
-      </div>` : ''}
+    ${S.guest ? `<div class="guest-banner"><div class="gb-ico">${IC.eye}</div><div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل وإدارة قنواتك</small></div><button class="btn pri sm" id="loginNow">تسجيل الدخول</button></div>` : ''}
     <div id="view"></div>
     <div class="tabbar">
       <button data-v="home" class="${S.view==='home'?'on':''}" aria-label="الرئيسية">${IC.home}</button>
       <button data-v="kick" class="${S.view==='kick'?'on':''}" aria-label="كيك">${IC.kick}</button>
       <button data-v="yt" class="${S.view==='yt'?'on':''}" aria-label="يوتيوب">${IC.yt}</button>
       <button data-v="tg" class="${S.view==='tg'?'on':''}" aria-label="تيليجرام">${IC.tg}</button>
-      ${showDcTab
-        ? `<button data-v="dc" class="${S.view==='dc'?'on':''}" aria-label="ديسكورد">${IC.dc}</button>`
-        : `<button data-v="acc" aria-label="حسابي">${IC.user}</button>`}
+      ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}" aria-label="ديسكورد">${IC.dc}</button>` : `<button data-v="acc" aria-label="حسابي">${IC.user}</button>`}
     </div>`;
 
   $$('[data-v]').forEach(b => { b.onclick = () => { S.view = b.dataset.v; renderApp(); }; });
   const ab = $('#accBtn'); if (ab) ab.onclick = openAccountMenu;
   const nb = $('#notifBtn'); if (nb) nb.onclick = () => { S.view = 'notifs'; renderApp(); };
   const ln = $('#loginNow'); if (ln) ln.onclick = () => { S.guest = false; renderAuth(); };
-  window.addEventListener('scroll', () => {
-    const t = $('#top'); if (t) t.classList.toggle('scrolled', window.scrollY > 8);
-  }, { passive: true });
+  window.addEventListener('scroll', () => { const t = $('#top'); if (t) t.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
   renderView();
 }
 
 function renderView() {
-  const v = $('#view');
-  if (!v) return;
+  const v = $('#view'); if (!v) return;
   if (S.view === 'home') return viewHome(v);
   if (S.view === 'notifs') return viewNotifs(v);
-  if (S.view === 'dc') {
-    if (!canDiscord()) { S.view = 'home'; return renderView(); }
-    return viewDiscord(v);
-  }
+  if (S.view === 'dc') { if (!canDiscord()) { S.view = 'home'; return renderView(); } return viewDiscord(v); }
   if (S.view === 'acc') return openAccountMenu();
   if (S.view === 'admin') return openAdmin();
   return viewChannels(v, S.view);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HOME
+   HOME — مع features محسّنة
    ═══════════════════════════════════════════════════════════ */
 function viewHome(v) {
   const counts = isLogged()
@@ -747,12 +685,32 @@ function viewHome(v) {
       <h1>${esc((S.boot.hero_title||'مراقبة').toUpperCase())} <span>${esc(S.boot.hero_accent||'القنوات.')}</span></h1>
       <p>${esc(S.boot.hero_text||'تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.')}</p>
     </div>
+
     <div class="stats">
       <div class="s"><b class="blue">${counts.kick}</b><small>KICK</small></div>
       <div class="s"><b>${counts.yt}</b><small>YOUTUBE</small></div>
       <div class="s"><b>${counts.tg}</b><small>TELEGRAM</small></div>
       <div class="s"><b>${isLogged()?counts.dc:(S.boot.discord_watching||0)}</b><small>DISCORD</small></div>
     </div>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-ico">${IC.kick}</div>
+        <b>مراقبة كيك</b>
+        <p>فحص تلقائي كل 90 ثانية، إشعار فوري عند بدء البث</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico">${IC.yt}</div>
+        <b>متابعة يوتيوب</b>
+        <p>اكتشاف الفيديوهات الجديدة خلال دقائق من نشرها</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico">${IC.dc}</div>
+        <b>جسر ديسكورد</b>
+        <p>رسائل تويتر ويوتيوب من ديسكورد → تيليجرام مباشرة</p>
+      </div>
+    </div>
+
     ${!isLogged() ? `
       <div class="sec">
         <div class="lock-cover" style="position:relative;background:var(--card);border:1px solid var(--line);padding:48px 24px;border-radius:var(--r);text-align:center">
@@ -761,7 +719,8 @@ function viewHome(v) {
           <p style="color:var(--muted);font-size:13.5px;margin-bottom:20px">تواصل مع الإدارة للحصول على حساب</p>
           <button class="btn pri" id="ctaLogin">تسجيل الدخول</button>
         </div>
-      </div>` : ''}`;
+      </div>` : ''}
+  `;
   const btn = $('#ctaLogin');
   if (btn) btn.onclick = () => { S.guest = false; renderAuth(); };
 }
@@ -775,11 +734,7 @@ function limitBarHTML(kind) {
   let cls = 'limit-bar';
   if (pct >= 100) cls += ' full';
   else if (pct >= 80) cls += ' warn';
-  return {
-    html: `<div class="${cls}"><b style="width:${pct}%"></b></div>`,
-    text: `استخدمت ${l.used} من ${l.limit} — المتبقي ${l.remaining}`,
-    isFull: l.remaining <= 0
-  };
+  return { html: `<div class="${cls}"><b style="width:${pct}%"></b></div>`, text: `استخدمت ${l.used} من ${l.limit} — المتبقي ${l.remaining}`, isFull: l.remaining <= 0 };
 }
 
 function viewChannels(v, kind) {
@@ -793,14 +748,7 @@ function viewChannels(v, kind) {
         <div class="sec-title">${titleMap[kind]} <span>.</span></div>
         ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull ? 'disabled' : ''}>${IC.plus} إضافة</button>` : ''}
       </div>
-      ${isLogged() ? `
-        <div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800">
-            <span>الحدود</span>
-            <span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span>
-          </div>
-          ${lim.html}
-        </div>` : ''}
+      ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
       <div id="cList"></div>
     </div>`;
 
@@ -821,8 +769,7 @@ function viewChannels(v, kind) {
     rows.forEach(r => grid.appendChild(chCard(kind, r)));
     list.appendChild(grid);
   }
-  const ab = $('#addBtn');
-  if (ab && !lim.isFull) ab.onclick = () => openAddChannel(kind);
+  const ab = $('#addBtn'); if (ab && !lim.isFull) ab.onclick = () => openAddChannel(kind);
 }
 
 function chCard(kind, r) {
@@ -832,10 +779,7 @@ function chCard(kind, r) {
       <div class="lock-blur" style="padding:14px">
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
           <div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div>
-          <div style="flex:1">
-            <div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div>
-            <div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div>
-          </div>
+          <div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div>
         </div>
         <div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div>
       </div>
@@ -843,50 +787,29 @@ function chCard(kind, r) {
         <div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div>
         <h3>سجّل دخولك</h3>
         <p>لرؤية تفاصيل هذه القناة</p>
-        <button class="btn pri sm" id="glk_${kind}_${r.id}">دخول سريع</button>
       </div>`;
-    setTimeout(() => {
-      const b = $('#glk_' + kind + '_' + r.id);
-      if (b) b.onclick = () => { S.guest = false; renderAuth(); };
-    }, 50);
     return card;
   }
-
   let slug = '', title = '';
   if (kind === 'kick') { slug = '@' + (r.slug||''); title = r.name || r.slug || ''; }
   else if (kind === 'yt') { slug = r.channel_id||''; title = r.name || r.channel_id || ''; }
-  else { slug = r.chat_id||''; title = r.name || r.chat_id || ''; }
-
-  const liveBadge = kind === 'kick' && r.live && r.enabled
-    ? '<span class="ch-badge live">مباشر</span>'
-    : (!r.enabled ? '<span class="ch-badge off">موقوف</span>' : '');
+  else { slug = r.username || r.chat_id || ''; title = r.name || r.chat_id || ''; }
+  const liveBadge = kind === 'kick' && r.live && r.enabled ? '<span class="ch-badge live">مباشر</span>' : (!r.enabled ? '<span class="ch-badge off">موقوف</span>' : '');
   const cover = r.banner || r.avatar || '';
-  const avatarHTML = r.avatar
-    ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">`
-    : `<div class="ph">${IC[kind]}</div>`;
-
+  const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
   card.innerHTML = `
-    <div class="ch-cover">
-      ${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}
-      ${liveBadge}
-    </div>
-    <div class="ch-head">
-      ${avatarHTML}
-      <div class="ch-info">
-        <b>${esc(title)}</b>
-        <small>${esc(slug)}</small>
-      </div>
-    </div>
+    <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}</div>
+    <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
     ${kind === 'kick' && r.live && r.title ? `<div class="ch-live"><div>${esc(r.title)}</div><span>${r.viewers||0} 👁</span></div>` : ''}
     ${r.msg ? `<div class="ch-note">${esc(stripTags(r.msg))}</div>` : ''}
     <div class="ch-acts">
       ${kind === 'kick' ? `<a class="btn sm" href="https://kick.com/${esc(r.slug)}" target="_blank" rel="noopener">${IC.play} مشاهدة</a>` : ''}
       ${kind === 'yt' ? `<a class="btn sm" href="https://youtube.com/channel/${esc(r.channel_id)}" target="_blank" rel="noopener">${IC.play} زيارة</a>` : ''}
       ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="edit">${IC.edit} رسالة</button>` : ''}
+      ${kind === 'tg' ? `<button class="btn sm ghost" data-act="refresh">${IC.refresh} تحديث</button>` : ''}
       <button class="btn sm ghost" data-act="toggle">${r.enabled?'إيقاف':'تفعيل'}</button>
       <button class="btn sm danger" data-act="del">${IC.trash}</button>
     </div>`;
-
   card.querySelectorAll('[data-act]').forEach(b => {
     b.onclick = async (e) => {
       e.stopPropagation();
@@ -894,21 +817,16 @@ function chCard(kind, r) {
       if (act === 'del') {
         const ok = await dlgConfirm('حذف هذه القناة نهائياً؟', 'حذف قناة', true);
         if (!ok) return;
-        try {
-          await api('/api/channels/' + kind + '/' + r.id, { method:'DELETE' });
-          toast('تم الحذف', 'ok');
-          await loadChannels(kind);
-          renderApp();
-        } catch (e2) { toast(e2.message, 'bad'); }
+        try { await api('/api/channels/' + kind + '/' + r.id, { method:'DELETE' }); toast('تم الحذف', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
       } else if (act === 'toggle') {
-        try {
-          await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { enabled: !r.enabled } });
-          toast(r.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok');
-          await loadChannels(kind);
-          renderApp();
-        } catch (e2) { toast(e2.message, 'bad'); }
+        try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { enabled: !r.enabled } }); toast(r.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
       } else if (act === 'edit') {
         await editChannelMsg(kind, r);
+      } else if (act === 'refresh') {
+        try { await api('/api/channels/tg/' + r.id + '/refresh', { method:'POST' }); toast('تم التحديث', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
       }
     };
   });
@@ -916,32 +834,24 @@ function chCard(kind, r) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   EDIT CHANNEL MSG + IMAGE
+   EDIT CHANNEL MSG
    ═══════════════════════════════════════════════════════════ */
 async function editChannelMsg(kind, r) {
   const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
   const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
-
   let uploadedImage = curImg ? curImg[1] : '';
+  const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || '');
 
   const html = `
-    <label class="fld">
-      <span>نص الرسالة</span>
-      <textarea id="__msg" rows="6">${esc(curMsg)}</textarea>
-    </label>
+    <label class="fld"><span>نص الرسالة</span>
+      <textarea id="__msg" rows="6" placeholder="اتركه فارغاً لاستخدام القالب العام">${esc(curMsg)}</textarea></label>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:12px">
       <span class="mu" style="font-size:11.5px">المتغيرات:</span>
-      <span class="pill">{name}</span>
-      <span class="pill">{title}</span>
-      <span class="pill">{url}</span>
+      <span class="pill">{name}</span><span class="pill">{title}</span><span class="pill">{url}</span>
     </div>
-    <label class="fld" style="margin-top:6px">
-      <span>صورة مرفقة (اختياري)</span>
-    </label>
+    <label class="fld" style="margin-top:6px"><span>صورة مرفقة (اختياري)</span></label>
     <div class="img-preview-box ${uploadedImage ? '' : 'empty'}" id="__imgBox">
-      ${uploadedImage
-        ? `<img src="${esc(uploadedImage)}" alt="" id="__imgPrev">`
-        : '<div id="__imgEmpty">لا توجد صورة</div>'}
+      ${uploadedImage ? `<img src="${esc(uploadedImage)}" alt="">` : '<div>لا توجد صورة</div>'}
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
       <button type="button" class="btn sm" id="__upBtn">${IC.camera} رفع صورة</button>
@@ -950,65 +860,49 @@ async function editChannelMsg(kind, r) {
     </div>
     <div class="tpl-preview" id="__tplPrev"></div>`;
 
-  const r2 = await modal({
+  await modal({
     title:'تخصيص رسالة الإشعار',
     sub:'اتركها فارغة لاستخدام القالب العام',
-    html,
-    okText:'حفظ',
-    wide: true,
+    html, okText:'حفظ', wide: true,
     onReady: () => {
-      const ta = $('#__msg');
-      const prev = $('#__tplPrev');
-      const updatePrev = () => {
-        const tpl = ta.value.trim() || (kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || ''));
+      const ta = $('#__msg'), prev = $('#__tplPrev');
+      const update = () => {
+        const tpl = ta.value.trim() || defaultTpl;
         const sample = tpl
           .replace(/\{name\}/g, r.name || 'اسم القناة')
           .replace(/\{title\}/g, kind === 'kick' ? 'عنوان البث' : 'عنوان الفيديو')
           .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : 'https://youtube.com/watch?v=...');
-        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + esc(sample).replace(/\n/g, '<br>');
+        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + sample.replace(/\n/g, '<br>');
       };
-      ta.oninput = updatePrev;
-      updatePrev();
-
+      ta.oninput = update; update();
       $('#__upBtn').onclick = () => $('#__upFile').click();
       $('#__upFile').onchange = async (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
+        const f = e.target.files[0]; if (!f) return;
         if (f.size > 2 * 1024 * 1024) return toast('الحجم أكبر من 2MB', 'bad');
-        const fd = new FormData();
-        fd.append('file', f);
+        const fd = new FormData(); fd.append('file', f);
         try {
           const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
           const j = await res.json();
           if (!res.ok) throw new Error(j.error || 'فشل الرفع');
           uploadedImage = j.url;
-          const box = $('#__imgBox');
-          box.classList.remove('empty');
-          box.innerHTML = `<img src="${esc(uploadedImage)}" alt="" id="__imgPrev">`;
+          const box = $('#__imgBox'); box.classList.remove('empty');
+          box.innerHTML = `<img src="${esc(uploadedImage)}" alt="">`;
           toast('تم رفع الصورة', 'ok');
         } catch (err) { toast(err.message, 'bad'); }
       };
       $('#__clrBtn').onclick = () => {
         uploadedImage = '';
-        const box = $('#__imgBox');
-        box.classList.add('empty');
-        box.innerHTML = '<div id="__imgEmpty">لا توجد صورة</div>';
+        const box = $('#__imgBox'); box.classList.add('empty');
+        box.innerHTML = '<div>لا توجد صورة</div>';
       };
     }
+  }).then(async (r2) => {
+    if (r2 === null || r2 === false) return;
+    let finalMsg = ($('#__msg')?.value || '').trim();
+    if (uploadedImage) finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
+    try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { msg: finalMsg } }); toast('تم الحفظ', 'ok'); await loadChannels(kind); renderApp(); }
+    catch (e) { toast(e.message, 'bad'); }
   });
-  if (r2 === null || r2 === false) return;
-
-  let finalMsg = ($('#__msg')?.value || '').trim();
-  if (uploadedImage) {
-    finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
-  }
-
-  try {
-    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { msg: finalMsg } });
-    toast('تم الحفظ', 'ok');
-    await loadChannels(kind);
-    renderApp();
-  } catch (e) { toast(e.message, 'bad'); }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1017,8 +911,7 @@ async function editChannelMsg(kind, r) {
 async function openAddChannel(kind) {
   if (!isLogged()) return;
   let suggestions = [];
-  try { const r = await api('/api/channels/' + kind + '/suggestions'); suggestions = r.rows || []; }
-  catch (e) {}
+  try { const r = await api('/api/channels/' + kind + '/suggestions'); suggestions = r.rows || []; } catch (e) {}
 
   const lim = S.limits[kind] || { used:0, limit:10, remaining:10 };
   const labels = {
@@ -1033,28 +926,17 @@ async function openAddChannel(kind) {
       <div class="sug-grid" id="sugGrid">
         ${suggestions.map(s => `
           <div class="sug-item" data-id="${s.id}">
-            <div class="av">${s.avatar
-              ? `<img src="${esc(s.avatar)}" onerror="this.remove()">`
-              : esc((s.name||'?').charAt(0).toUpperCase())}</div>
-            <div class="if">
-              <b>${esc(s.name || s.identifier)}</b>
-              <small>${esc(s.identifier)}</small>
-            </div>
+            <div class="av">${s.avatar ? `<img src="${esc(s.avatar)}" onerror="this.remove()">` : esc((s.name||'?').charAt(0).toUpperCase())}</div>
+            <div class="if"><b>${esc(s.name || s.identifier)}</b><small>${esc(s.identifier)}</small></div>
             <div class="ck">${IC.check}</div>
           </div>`).join('')}
       </div>
-      <div class="sug-toolbar">
-        <span id="sugCount">0 محددة</span>
-        <button type="button" id="sugToggleAll">تحديد الكل</button>
-      </div>
+      <div class="sug-toolbar"><span id="sugCount">0 محددة</span><button type="button" id="sugToggleAll">تحديد الكل</button></div>
     </div>` : '';
 
   const html = `
     <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:12px;font-size:12.5px;font-weight:800">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span>حدودك</span>
-        <span style="color:var(--blue);font-family:var(--font-en)">${lim.used} / ${lim.limit}</span>
-      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>حدودك</span><span style="color:var(--blue);font-family:var(--font-en)">${lim.used} / ${lim.limit}</span></div>
       <div class="limit-bar"><b style="width:${lim.limit > 0 ? Math.min(100, (lim.used/lim.limit)*100) : 0}%"></b></div>
       <div style="text-align:center;margin-top:8px;color:var(--muted);font-size:11.5px">المتبقي: ${lim.remaining}</div>
     </div>
@@ -1064,13 +946,8 @@ async function openAddChannel(kind) {
       <input type="text" id="__cn" placeholder="اسم مختصر"></label>
     ${sugHTML}`;
 
-  const result = await modal({
-    title: labels.title, html,
-    okText: 'إضافة', cancelText: 'إلغاء',
-    wide: suggestions.length > 0
-  });
+  const result = await modal({ title: labels.title, html, okText: 'إضافة', cancelText: 'إلغاء', wide: suggestions.length > 0 });
   if (result === false || result === null) return;
-
   const val = ($('#__ci')?.value || '').trim();
   const customName = ($('#__cn')?.value || '').trim();
 
@@ -1079,26 +956,19 @@ async function openAddChannel(kind) {
     if (ids.length > 0) {
       try {
         const r = await api('/api/channels/' + kind + '/bulk-add', { method:'POST', body: { ids } });
-        const added = r.added || 0;
-        const failed = r.failed || 0;
+        const added = r.added || 0; const failed = r.failed || 0;
         toast('تمت إضافة ' + added + ' قناة' + (failed ? ' — فشل ' + failed : ''), failed && !added ? 'bad' : 'ok');
         if (r.errors && r.errors.length) setTimeout(() => toast(r.errors[0], ''), 500);
-        await loadChannels(kind);
-        renderApp();
-        return;
+        await loadChannels(kind); renderApp(); return;
       } catch (e) { toast(e.message, 'bad'); return; }
     }
   }
-
   if (!val) return toast('اكتب القيمة أو اختر من المقترحات', 'bad');
   try {
-    const body = kind === 'kick' ? { slug: val, msg: '' }
-               : kind === 'yt'   ? { channel_id: val, name: customName }
-                                 : { chat_id: val, name: customName };
+    const body = kind === 'kick' ? { slug: val, msg: '' } : kind === 'yt' ? { channel_id: val, name: customName } : { chat_id: val, name: customName };
     await api('/api/channels/' + kind, { method:'POST', body });
     toast('تمت الإضافة', 'ok');
-    await loadChannels(kind);
-    renderApp();
+    await loadChannels(kind); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
 
@@ -1106,51 +976,76 @@ async function openAddChannel(kind) {
    DISCORD
    ═══════════════════════════════════════════════════════════ */
 function viewDiscord(v) {
-  const autoBadge = S.autoDiscovery
-    ? '<span class="pill ok">' + IC.check + ' اكتشاف تلقائي</span>'
-    : '<span class="pill warn">قائمة محددة يدوياً</span>';
   const chsCount = Object.keys(S.knownChannels).length;
+  const guildsCount = Object.keys(S.knownGuilds).length;
+  const botBadge = S.botReady ? '<span class="pill ok">'+IC.check+' البوت متصل</span>' : '<span class="pill bad">البوت غير متصل</span>';
+  const autoBadge = S.autoDiscovery ? '<span class="pill ok">اكتشاف تلقائي</span>' : '<span class="pill warn">قائمة يدوية</span>';
 
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
         <div class="sec-title">ديسكورد <span>.</span></div>
-        <button class="btn pri sm" id="addFeedBtn">${IC.plus} ربط روم</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn sm" id="refreshChBtn">${IC.refresh} تحديث الرومات</button>
+          <button class="btn pri sm" id="addFeedBtn">${IC.plus} ربط روم</button>
+        </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        ${autoBadge}
+        ${botBadge} ${autoBadge}
         <span class="pill">${IC.dc} ${chsCount} روم متاح</span>
         <span class="pill">${S.feeds.length} ربط نشط</span>
+        ${guildsCount ? `<span class="pill">${guildsCount} سيرفر</span>` : ''}
       </div>
+      ${!S.botReady ? `
+        <div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
+          <b style="color:var(--red)">⚠️ البوت غير متصل</b><br>
+          تأكد من:<br>
+          • <b>DISCORD_BOT_TOKEN</b> مضبوط في Variables<br>
+          • البوت مضاف للسيرفر<br>
+          • Message Content Intent مفعّل في Discord Developer Portal
+        </div>` : ''}
+      ${S.botReady && chsCount === 0 ? `
+        <div style="padding:14px 16px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
+          <b style="color:var(--orange)">⚠️ لم يتم اكتشاف أي روم بعد</b><br>
+          تأكد من:<br>
+          • <b>DISCORD_GUILD_ID</b> صحيح في Variables<br>
+          • البوت عضو في السيرفر<br>
+          • ثم اضغط "تحديث الرومات"
+        </div>` : ''}
       ${chsCount > 0 ? `
         <details style="margin-bottom:16px;padding:12px 14px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px">
           <summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">عرض الرومات المتاحة (${chsCount})</summary>
-          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
-            ${Object.entries(S.knownChannels).map(([id, info]) =>
-              `<span class="pill" style="font-size:10.5px">#${esc(info.name)}</span>`
-            ).join('')}
-          </div>
+          <div style="margin-top:12px">${Object.entries(S.knownChannels).map(([id, info]) => `<div class="discord-ch-item"><div class="ic">${IC.dc}</div><div class="if"><b>#${esc(info.name)}</b><small>${esc(info.guild||'')} · ${esc(id)}</small></div></div>`).join('')}</div>
         </details>` : ''}
       ${S.feeds.length ? `<div id="feedsList"></div>` : `
         <div class="empty">
           <div class="em-icon">${IC.dc}</div>
           <h3>لا توجد رومات مربوطة</h3>
           <p>اربط روم ديسكورد ليستقبل رسائله على قنوات تيليجرام</p>
-          <button class="btn pri" id="emptyAddFeed">${IC.plus} ربط روم</button>
+          ${chsCount ? `<button class="btn pri" id="emptyAddFeed">${IC.plus} ربط روم</button>` : ''}
         </div>`}
     </div>`;
 
   const emptyBtn = $('#emptyAddFeed'); if (emptyBtn) emptyBtn.onclick = openAddFeed;
   const addBtn = $('#addFeedBtn'); if (addBtn) addBtn.onclick = openAddFeed;
+  const rBtn = $('#refreshChBtn');
+  if (rBtn) rBtn.onclick = async () => {
+    rBtn.disabled = true;
+    try {
+      const r = await api('/api/discord/refresh', { method:'POST' });
+      toast('تم التحديث — ' + (r.channels || 0) + ' روم في ' + (r.guilds || 0) + ' سيرفر', 'ok');
+      await loadFeeds();
+      renderApp();
+    } catch (e) { toast(e.message, 'bad'); }
+    rBtn.disabled = false;
+  };
 
   const list = $('#feedsList');
   if (list) {
     S.feeds.forEach(f => {
       const card = el('div', 'ch');
       const name = (S.knownChannels[f.channel_id]?.name) || f.channel_name || f.channel_id;
-      const sourceLabel = f.source_type === 'twitter' ? 'تويتر'
-                        : f.source_type === 'youtube' ? 'يوتيوب'
-                        : 'عام';
+      const sourceLabel = f.source_type === 'twitter' ? 'تويتر' : f.source_type === 'youtube' ? 'يوتيوب' : 'عام';
       card.innerHTML = `
         <div style="padding:18px">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
@@ -1172,24 +1067,13 @@ function viewDiscord(v) {
         b.onclick = async () => {
           const act = b.dataset.fa;
           if (act === 'del') {
-            const ok = await dlgConfirm('حذف هذا الربط؟', 'تأكيد', true);
-            if (!ok) return;
-            try {
-              await api('/api/discord/feeds/' + f.id, { method:'DELETE' });
-              toast('تم الحذف', 'ok');
-              await loadFeeds();
-              renderApp();
-            } catch (e) { toast(e.message, 'bad'); }
+            const ok = await dlgConfirm('حذف هذا الربط؟', 'تأكيد', true); if (!ok) return;
+            try { await api('/api/discord/feeds/' + f.id, { method:'DELETE' }); toast('تم الحذف', 'ok'); await loadFeeds(); renderApp(); }
+            catch (e) { toast(e.message, 'bad'); }
           } else if (act === 'toggle') {
-            try {
-              await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { enabled: !f.enabled } });
-              toast(f.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok');
-              await loadFeeds();
-              renderApp();
-            } catch (e) { toast(e.message, 'bad'); }
-          } else if (act === 'edit') {
-            await editFeedTemplate(f);
-          }
+            try { await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { enabled: !f.enabled } }); toast(f.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok'); await loadFeeds(); renderApp(); }
+            catch (e) { toast(e.message, 'bad'); }
+          } else if (act === 'edit') { await editFeedTemplate(f); }
         };
       });
       list.appendChild(card);
@@ -1199,46 +1083,27 @@ function viewDiscord(v) {
 
 async function editFeedTemplate(f) {
   const html = `
-    <label class="fld">
-      <span>القالب</span>
-      <textarea id="__tp" rows="6">${esc(f.template || '')}</textarea>
-    </label>
+    <label class="fld"><span>القالب</span><textarea id="__tp" rows="6">${esc(f.template || '')}</textarea></label>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:10px">
       <span class="mu" style="font-size:11.5px">المتغيرات:</span>
-      <span class="pill">{author}</span>
-      <span class="pill">{content}</span>
-      <span class="pill">{channel}</span>
-      <span class="pill">{source}</span>
+      <span class="pill">{author}</span><span class="pill">{content}</span><span class="pill">{title}</span><span class="pill">{description}</span><span class="pill">{channel}</span><span class="pill">{source}</span>
     </div>
     <div class="tpl-preview" id="__tplPrev"></div>`;
   const r = await modal({
-    title:'تعديل القالب',
-    sub:'اتركه فارغاً لاستخدام القالب الافتراضي',
-    html,
-    okText:'حفظ',
+    title:'تعديل القالب', sub:'اتركه فارغاً لاستخدام القالب الافتراضي', html, okText:'حفظ',
     onReady: () => {
-      const ta = $('#__tp');
-      const prev = $('#__tplPrev');
+      const ta = $('#__tp'), prev = $('#__tplPrev');
       const update = () => {
-        const tpl = ta.value.trim() || (S.settings.tpl_discord || '<b>{author}</b>\n{content}');
-        const sample = tpl
-          .replace(/\{author\}/g, 'اسم الحساب')
-          .replace(/\{content\}/g, 'محتوى الرسالة')
-          .replace(/\{channel\}/g, 'twitter')
-          .replace(/\{source\}/g, 'twitter');
-        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + esc(sample).replace(/\n/g, '<br>');
+        const tpl = ta.value.trim() || (S.settings.tpl_twitter || '<b>{author}</b>\n\n{content}');
+        const sample = tpl.replace(/\{author\}/g, 'DRB7H').replace(/\{content\}/g, '🔥🔥 كحتوى التغريدة').replace(/\{title\}/g, 'اسم المقطع').replace(/\{description\}/g, 'وصف').replace(/\{channel\}/g, 'twitter').replace(/\{source\}/g, 'twitter');
+        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en);letter-spacing:1px">PREVIEW</div>' + sample.replace(/\n/g, '<br>');
       };
-      ta.oninput = update;
-      update();
+      ta.oninput = update; update();
     }
   });
   if (r === null || r === false) return;
-  try {
-    await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { template: $('#__tp').value } });
-    toast('تم الحفظ', 'ok');
-    await loadFeeds();
-    renderApp();
-  } catch (e) { toast(e.message, 'bad'); }
+  try { await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: { template: $('#__tp').value } }); toast('تم الحفظ', 'ok'); await loadFeeds(); renderApp(); }
+  catch (e) { toast(e.message, 'bad'); }
 }
 
 async function openAddFeed() {
@@ -1249,24 +1114,18 @@ async function openAddFeed() {
   if (!chs.length) {
     return modal({
       title:'لا توجد رومات متاحة',
-      sub:'البوت لم يكتشف رومات بعد.\n\nتأكد من:\n• DISCORD_GUILD_ID صحيح في متغيرات البيئة\n• البوت مضاف للسيرفر\n• Message Content Intent مُفعّل في Discord Developer Portal',
+      sub:'البوت لم يكتشف رومات بعد.\n\nتأكد من:\n• DISCORD_GUILD_ID صحيح في Variables\n• البوت مضاف للسيرفر\n• Message Content Intent مفعّل\n\nثم اضغط "تحديث الرومات"',
       okText:'حسناً', cancel:false
     });
   }
-
   const linked = new Set(S.feeds.map(f => f.channel_id));
   const available = chs.filter(([id]) => !linked.has(id));
-
-  if (!available.length) {
-    return modal({ title:'كل الرومات مربوطة', sub:'ربطت كل الرومات المتاحة بالفعل', okText:'حسناً', cancel:false });
-  }
+  if (!available.length) return modal({ title:'كل الرومات مربوطة', sub:'ربطت كل الرومات المتاحة بالفعل', okText:'حسناً', cancel:false });
 
   const html = `
     <label class="fld"><span>اختر الروم</span>
       <select id="__chList">
-        ${available.map(([id, info]) =>
-          `<option value="${esc(id)}">#${esc(info.name)} — ${esc(info.guild||'')}</option>`
-        ).join('')}
+        ${available.map(([id, info]) => `<option value="${esc(id)}">#${esc(info.name)} — ${esc(info.guild||'')}</option>`).join('')}
       </select>
     </label>
     <label class="fld"><span>نوع المصدر (يساعد في اختيار القالب)</span>
@@ -1277,28 +1136,16 @@ async function openAddFeed() {
       </select>
     </label>
     <label class="fld"><span>قالب مخصص (اختياري)</span>
-      <textarea id="__tpl" rows="4" placeholder="<b>{author}</b>&#10;{content}"></textarea>
+      <textarea id="__tpl" rows="4" placeholder="<b>{author}</b>&#10;&#10;{content}"></textarea>
     </label>
-    <div class="mu" style="font-size:12px;margin-top:-6px">المتغيرات: {author} {content} {channel} {source}</div>`;
-
-  const r = await modal({
-    title:'ربط روم ديسكورد',
-    sub:'كل رسالة جديدة في الروم تُرسل لقنواتك على تيليجرام',
-    html, okText:'ربط'
-  });
+    <div class="mu" style="font-size:12px;margin-top:-6px">المتغيرات: {author} {content} {title} {description} {channel} {source}</div>`;
+  const r = await modal({ title:'ربط روم ديسكورد', sub:'كل رسالة جديدة في الروم تُرسل لقنواتك على تيليجرام', html, okText:'ربط' });
   if (!r) return;
   const cid = $('#__chList').value;
   if (!cid) return toast('اختر الروم', 'bad');
   try {
-    await api('/api/discord/feeds', { method:'POST', body: {
-      channel_id: cid,
-      channel_name: known[cid]?.name || '',
-      template: $('#__tpl').value.trim(),
-      source_type: $('#__src').value
-    }});
-    toast('تم الربط', 'ok');
-    await loadFeeds();
-    renderApp();
+    await api('/api/discord/feeds', { method:'POST', body: { channel_id: cid, channel_name: known[cid]?.name || '', template: $('#__tpl').value.trim(), source_type: $('#__src').value } });
+    toast('تم الربط', 'ok'); await loadFeeds(); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
 
@@ -1310,55 +1157,20 @@ function viewNotifs(v) {
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
         <div class="sec-title">الإشعارات <span>.</span></div>
-        ${S.notifs.length ? `
-          <div style="display:flex;gap:7px">
-            <button class="btn sm ghost" id="readAll">قرأت الكل</button>
-            <button class="btn sm danger" id="clearAll">مسح</button>
-          </div>` : ''}
+        ${S.notifs.length ? `<div style="display:flex;gap:7px"><button class="btn sm ghost" id="readAll">قرأت الكل</button><button class="btn sm danger" id="clearAll">مسح</button></div>` : ''}
       </div>
       <div id="ntList"></div>
     </div>`;
   const l = $('#ntList');
-  if (!S.notifs.length) {
-    l.innerHTML = `
-      <div class="empty">
-        <div class="em-icon">${IC.bell}</div>
-        <h3>لا توجد إشعارات</h3>
-        <p>ستظهر هنا إشعارات البث والفيديو</p>
-      </div>`;
-    return;
-  }
+  if (!S.notifs.length) { l.innerHTML = `<div class="empty"><div class="em-icon">${IC.bell}</div><h3>لا توجد إشعارات</h3><p>ستظهر هنا إشعارات البث والفيديو</p></div>`; return; }
   S.notifs.forEach(n => {
     const c = el('div', 'notif' + (n.is_read ? '' : ' un'));
-    c.innerHTML = `
-      ${n.image ? `<img src="${esc(n.image)}" alt="" onerror="this.remove()">` : ''}
-      <div class="nt-b">
-        <b>${esc(n.title||'')}</b>
-        ${n.body ? `<p>${esc(n.body)}</p>` : ''}
-        ${n.btn_text && n.btn_url ? `<a class="btn sm pri" href="${esc(n.btn_url)}" target="_blank" rel="noopener" style="margin-top:10px">${esc(n.btn_text)}</a>` : ''}
-        <div class="nt-t">${fmtTime(n.ts)}</div>
-      </div>`;
-    if (!n.is_read) {
-      c.onclick = async () => {
-        try {
-          await api('/api/notifs/read-all', { method:'POST' });
-          await loadNotifs();
-          renderApp();
-        } catch (e) {}
-      };
-    }
+    c.innerHTML = `${n.image ? `<img src="${esc(n.image)}" alt="" onerror="this.remove()">` : ''}<div class="nt-b"><b>${esc(n.title||'')}</b>${n.body ? `<p>${esc(n.body)}</p>` : ''}${n.btn_text && n.btn_url ? `<a class="btn sm pri" href="${esc(n.btn_url)}" target="_blank" rel="noopener" style="margin-top:10px">${esc(n.btn_text)}</a>` : ''}<div class="nt-t">${fmtTime(n.ts)}</div></div>`;
+    if (!n.is_read) c.onclick = async () => { try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
     l.appendChild(c);
   });
-  const ra = $('#readAll');
-  if (ra) ra.onclick = async () => {
-    try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {}
-  };
-  const ca = $('#clearAll');
-  if (ca) ca.onclick = async () => {
-    const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true);
-    if (!ok) return;
-    try { await api('/api/notifs/clear', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {}
-  };
+  const ra = $('#readAll'); if (ra) ra.onclick = async () => { try { await api('/api/notifs/read-all', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
+  const ca = $('#clearAll'); if (ca) ca.onclick = async () => { const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true); if (!ok) return; try { await api('/api/notifs/clear', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1370,25 +1182,23 @@ function openAccountMenu() {
   const m = el('div', 'acc-menu'); m.id = 'accMenu';
   const u = S.me.user;
   const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg;
-
-  const pushBadge = S.pushEnabled
-    ? '<span class="badge-mini ok">مفعّل</span>'
-    : '<span class="badge-mini off">معطل</span>';
+  const pushBadge = S.pushEnabled ? '<span class="badge-mini ok">مفعّل</span>' : '<span class="badge-mini off">معطل</span>';
+  const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc(u.username.charAt(0).toUpperCase());
 
   m.innerHTML = `
     <div class="acc-head">
-      <div class="nm">${esc(u.display || u.username)}</div>
-      <div class="mt">@${esc(u.username)} · ${u.role==='owner'?'الإدارة':'مستخدم'}</div>
-      <div class="stats-mini">
-        <span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span>
-        <span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span>
-        <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
+      <div class="av-btn" id="accAvatar" title="تغيير الصورة">${avHTML}</div>
+      <div class="if">
+        <div class="nm" id="accDisplay" title="تعديل الاسم">${esc(u.display || u.username)} <span style="color:var(--muted);font-size:11px">${IC.edit}</span></div>
+        <div class="mt">@${esc(u.username)} · ${u.role==='owner'?'الإدارة':'مستخدم'}</div>
+        <div class="stats-mini">
+          <span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span>
+          <span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span>
+          <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
+        </div>
       </div>
     </div>
-    <button class="acc-item" data-a="push">
-      ${IC.bell} إشعارات المتصفح
-      ${pushBadge}
-    </button>
+    <button class="acc-item" data-a="push">${IC.bell} إشعارات المتصفح ${pushBadge}</button>
     ${S.pushEnabled ? `<button class="acc-item" data-a="pushtest">${IC.send} اختبار الإشعارات</button>` : ''}
     <button class="acc-item" data-a="suggest">${IC.msg} إرسال اقتراح</button>
     ${isOwner() ? `<button class="acc-item" data-a="admin">${IC.shield} لوحة الإدارة</button>` : ''}
@@ -1397,6 +1207,9 @@ function openAccountMenu() {
 
   document.body.appendChild(m);
   requestAnimationFrame(() => m.classList.add('on'));
+
+  $('#accAvatar').onclick = () => changeProfileAvatar();
+  $('#accDisplay').onclick = () => changeProfileDisplay();
 
   m.querySelectorAll('[data-a]').forEach(b => {
     b.onclick = () => {
@@ -1409,75 +1222,88 @@ function openAccountMenu() {
     };
   });
   setTimeout(() => {
-    const close = e => {
-      if (!m.contains(e.target) && e.target.id !== 'accBtn' && !e.target.closest('#accBtn')) {
-        m.classList.remove('on');
-        setTimeout(() => m.remove(), 260);
-        document.removeEventListener('click', close);
-      }
-    };
+    const close = e => { if (!m.contains(e.target) && e.target.id !== 'accBtn' && !e.target.closest('#accBtn')) { m.classList.remove('on'); setTimeout(() => m.remove(), 260); document.removeEventListener('click', close); } };
     document.addEventListener('click', close);
   }, 60);
 }
 
+async function changeProfileAvatar() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return;
+    if (f.size > 2 * 1024 * 1024) return toast('الحجم أكبر من 2MB', 'bad');
+    const fd = new FormData(); fd.append('file', f);
+    try {
+      const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'فشل الرفع');
+      await api('/api/me/profile', { method:'PATCH', body: { avatar: j.url } });
+      S.me.user.avatar = j.url;
+      toast('تم تحديث الصورة', 'ok');
+      const old = $('#accMenu'); if (old) old.remove();
+      renderApp();
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+  inp.click();
+}
+
+async function changeProfileDisplay() {
+  const cur = S.me.user.display || S.me.user.username;
+  const nv = await modal({ title: 'تعديل الاسم المعروض', input: true, inputLabel: 'الاسم', inputValue: cur, okText: 'حفظ' });
+  if (nv === null || !nv.trim()) return;
+  try {
+    await api('/api/me/profile', { method:'PATCH', body: { display: nv.trim() } });
+    S.me.user.display = nv.trim();
+    toast('تم التحديث', 'ok');
+    const old = $('#accMenu'); if (old) old.remove();
+    renderApp();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
 async function doLogout() {
-  const ok = await dlgConfirm('هل تريد تسجيل الخروج؟', 'تأكيد', true);
-  if (!ok) return;
+  const ok = await dlgConfirm('هل تريد تسجيل الخروج؟', 'تأكيد', true); if (!ok) return;
   try { await api('/api/logout', { method:'POST' }); } catch (e) {}
   location.reload();
 }
 
 async function openSuggestion() {
   const r = await modal({
-    title:'إرسال اقتراح',
-    sub:'شاركنا رأيك أو اقتراحك — سيصل للإدارة مباشرة',
+    title:'إرسال اقتراح', sub:'شاركنا رأيك أو اقتراحك — سيصل للإدارة مباشرة',
     html:'<label class="fld"><span>نص الاقتراح</span><textarea id="__sg" rows="6" maxlength="1000" placeholder="اكتب اقتراحك هنا..."></textarea></label>',
     okText:'إرسال'
   });
   if (!r) return;
   const text = ($('#__sg')?.value || '').trim();
   if (!text) return toast('اكتب نص الاقتراح', 'bad');
-  try {
-    await api('/api/suggestions', { method:'POST', body: { text } });
-    toast('تم إرسال اقتراحك — شكراً لك', 'ok');
-  } catch (e) { toast(e.message, 'bad'); }
+  try { await api('/api/suggestions', { method:'POST', body: { text } }); toast('تم إرسال اقتراحك — شكراً لك', 'ok'); }
+  catch (e) { toast(e.message, 'bad'); }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ADMIN PANEL
+   ADMIN
    ═══════════════════════════════════════════════════════════ */
 async function openAdmin() {
   if (!isOwner()) { S.view = 'home'; return renderApp(); }
   await loadAdminData();
   renderAdmin();
 }
-
 async function loadAdminData() {
   try {
     const [users, defaults, stats, suggestions, sec] = await Promise.all([
-      api('/api/admin/users'),
-      api('/api/admin/default-channels'),
-      api('/api/admin/stats'),
-      api('/api/admin/suggestions'),
-      api('/api/admin/security'),
+      api('/api/admin/users'), api('/api/admin/default-channels'), api('/api/admin/stats'),
+      api('/api/admin/suggestions'), api('/api/admin/security')
     ]);
-    S.admin.users = users.rows || [];
-    S.admin.defaults = defaults.rows || [];
-    S.admin.stats = stats || {};
-    S.admin.suggestions = suggestions.rows || [];
-    S.admin.sec = sec.rows || [];
+    S.admin.users = users.rows || []; S.admin.defaults = defaults.rows || [];
+    S.admin.stats = stats || {}; S.admin.suggestions = suggestions.rows || []; S.admin.sec = sec.rows || [];
   } catch (e) { toast(e.message, 'bad'); }
 }
-
 function renderAdmin() {
   $('#app').innerHTML = `
     <div class="top">
       <div class="brand">
         <div class="brand-logo">${IC.shield}</div>
-        <div class="brand-txt">
-          <div class="brand-name">لوحة <span>الإدارة</span></div>
-          <div class="brand-sub">ADMIN PANEL</div>
-        </div>
+        <div class="brand-txt"><div class="brand-name">لوحة <span>الإدارة</span></div><div class="brand-sub">ADMIN PANEL</div></div>
       </div>
       <button class="hdr-btn" id="adBack">${IC.x}</button>
     </div>
@@ -1487,20 +1313,16 @@ function renderAdmin() {
       <button class="ad-tab ${S.admin.tab==='defaults'?'on':''}" data-t="defaults">القنوات الافتراضية</button>
       <button class="ad-tab ${S.admin.tab==='suggestions'?'on':''}" data-t="suggestions">الاقتراحات</button>
       <button class="ad-tab ${S.admin.tab==='sec'?'on':''}" data-t="sec">الأمان</button>
+      <button class="ad-tab ${S.admin.tab==='appearance'?'on':''}" data-t="appearance">المظهر</button>
       <button class="ad-tab ${S.admin.tab==='settings'?'on':''}" data-t="settings">الإعدادات</button>
     </div>
     <div id="adContent" class="sec" style="padding-top:16px"></div>
-    <div class="tabbar" style="justify-content:center">
-      <button id="adBack2">${IC.home}</button>
-    </div>`;
-  $('#adBack').onclick = backHome;
-  $('#adBack2').onclick = backHome;
+    <div class="tabbar" style="justify-content:center"><button id="adBack2">${IC.home}</button></div>`;
+  $('#adBack').onclick = backHome; $('#adBack2').onclick = backHome;
   $$('#adTabs .ad-tab').forEach(b => { b.onclick = () => { S.admin.tab = b.dataset.t; renderAdmin(); }; });
   renderAdminContent();
 }
-
 function backHome() { S.view = 'home'; renderApp(); }
-
 function renderAdminContent() {
   const c = $('#adContent'); if (!c) return;
   if (S.admin.tab === 'stats') return renderAdminStats(c);
@@ -1508,6 +1330,7 @@ function renderAdminContent() {
   if (S.admin.tab === 'defaults') return renderAdminDefaults(c);
   if (S.admin.tab === 'suggestions') return renderAdminSuggestions(c);
   if (S.admin.tab === 'sec') return renderAdminSec(c);
+  if (S.admin.tab === 'appearance') return renderAdminAppearance(c);
   if (S.admin.tab === 'settings') return renderAdminSettings(c);
 }
 
@@ -1556,17 +1379,17 @@ function renderAdminUsers(c) {
   S.admin.users.forEach(u => {
     const card = el('div', 'ad-user-card');
     const lk = u.lim_kick != null ? u.lim_kick : 'افتراضي';
-    const ly = u.lim_yt   != null ? u.lim_yt   : 'افتراضي';
-    const lt = u.lim_tg   != null ? u.lim_tg   : 'افتراضي';
+    const ly = u.lim_yt != null ? u.lim_yt : 'افتراضي';
+    const lt = u.lim_tg != null ? u.lim_tg : 'افتراضي';
+    const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc((u.display||u.username||'?').charAt(0).toUpperCase());
     card.innerHTML = `
       <div class="ad-user-head">
-        <div class="av">${esc((u.display||u.username||'?').charAt(0).toUpperCase())}</div>
+        <div class="av">${avHTML}</div>
         <div class="if">
           <b>${esc(u.display||u.username)}
             ${u.banned ? ' <span class="pill bad">محظور</span>' : ''}
             ${u.role==='owner' ? ' <span class="pill">إدارة</span>' : ''}
-            ${u.can_discord ? ' <span class="pill ok">' + IC.dc + '</span>' : ''}
-          </b>
+            ${u.can_discord ? ' <span class="pill ok">Discord</span>' : ''}</b>
           <small>@${esc(u.username)} · K:${lk} Y:${ly} T:${lt}</small>
         </div>
       </div>
@@ -1601,17 +1424,10 @@ async function adminAddUser() {
   if (!ok) return;
   try {
     await api('/api/admin/users', { method:'POST', body: {
-      username: $('#__un').value.trim(),
-      display: $('#__dn').value.trim(),
-      password: $('#__pw').value,
-      lim_kick: $('#__lk').value,
-      lim_yt: $('#__ly').value,
-      lim_tg: $('#__lt').value,
-      can_discord: $('#__cd').checked,
+      username: $('#__un').value.trim(), display: $('#__dn').value.trim(), password: $('#__pw').value,
+      lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value, can_discord: $('#__cd').checked,
     }});
-    toast('تم الإنشاء', 'ok');
-    await loadAdminData();
-    renderAdminContent();
+    toast('تم الإنشاء', 'ok'); await loadAdminData(); renderAdminContent();
   } catch (e) { toast(e.message, 'bad'); }
 }
 
@@ -1620,17 +1436,12 @@ async function adminUserAction(u, act) {
     const ok = await modal({
       title:'تعديل ' + u.username,
       html:`
-        <label class="fld"><span>الاسم المعروض</span>
-          <input type="text" id="__dn" value="${esc(u.display||'')}"></label>
-        <label class="fld"><span>كلمة مرور جديدة (اتركها فارغة)</span>
-          <input type="password" id="__pw"></label>
+        <label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label>
+        <label class="fld"><span>كلمة مرور جديدة (اتركها فارغة)</span><input type="password" id="__pw"></label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <label class="fld"><span>حد كيك</span>
-            <input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label>
-          <label class="fld"><span>حد يوتيوب</span>
-            <input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label>
-          <label class="fld"><span>حد تيليجرام</span>
-            <input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label>
+          <label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label>
+          <label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label>
+          <label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label>
         </div>
         <label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer">
           <input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> السماح بالوصول لصفحة ديسكورد
@@ -1640,33 +1451,19 @@ async function adminUserAction(u, act) {
     if (!ok) return;
     try {
       await api('/api/admin/users/' + u.id, { method:'PATCH', body: {
-        display: $('#__dn').value,
-        password: $('#__pw').value,
-        lim_kick: $('#__lk').value,
-        lim_yt: $('#__ly').value,
-        lim_tg: $('#__lt').value,
+        display: $('#__dn').value, password: $('#__pw').value,
+        lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
         can_discord: $('#__cd').checked,
       }});
-      toast('تم الحفظ', 'ok');
-      await loadAdminData();
-      renderAdminContent();
+      toast('تم الحفظ', 'ok'); await loadAdminData(); renderAdminContent();
     } catch (e) { toast(e.message, 'bad'); }
   } else if (act === 'ban') {
-    try {
-      await api('/api/admin/users/' + u.id, { method:'PATCH', body: { banned: !u.banned } });
-      toast('تم', 'ok');
-      await loadAdminData();
-      renderAdminContent();
-    } catch (e) { toast(e.message, 'bad'); }
+    try { await api('/api/admin/users/' + u.id, { method:'PATCH', body: { banned: !u.banned } }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); }
+    catch (e) { toast(e.message, 'bad'); }
   } else if (act === 'del') {
-    const ok = await dlgConfirm('حذف المستخدم وكل بياناته؟', 'تأكيد', true);
-    if (!ok) return;
-    try {
-      await api('/api/admin/users/' + u.id, { method:'DELETE' });
-      toast('تم الحذف', 'ok');
-      await loadAdminData();
-      renderAdminContent();
-    } catch (e) { toast(e.message, 'bad'); }
+    const ok = await dlgConfirm('حذف المستخدم وكل بياناته؟', 'تأكيد', true); if (!ok) return;
+    try { await api('/api/admin/users/' + u.id, { method:'DELETE' }); toast('تم الحذف', 'ok'); await loadAdminData(); renderAdminContent(); }
+    catch (e) { toast(e.message, 'bad'); }
   }
 }
 
@@ -1674,7 +1471,6 @@ function renderAdminDefaults(c) {
   const groups = { kick: [], yt: [], tg: [] };
   S.admin.defaults.forEach(d => { if (groups[d.kind]) groups[d.kind].push(d); });
   const kindLabel = k => k === 'kick' ? 'كيك' : k === 'yt' ? 'يوتيوب' : 'تيليجرام';
-
   c.innerHTML = `
     <div class="sec-h">
       <div class="sec-title">القنوات الافتراضية <span>(${S.admin.defaults.length})</span></div>
@@ -1686,16 +1482,8 @@ function renderAdminDefaults(c) {
     <div class="sh-sub">هذي القنوات تظهر للمستخدمين كمقترحات — يختارون ويضيفون دفعة واحدة</div>
     ${['kick','yt','tg'].map(kind => {
       const list = groups[kind];
-      return `
-        <div class="ad-user-card">
-          <div style="font-weight:900;font-size:14.5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-            <span>${kindLabel(kind)}</span>
-            <span class="pill">${list.length}</span>
-          </div>
-          ${list.length ? `<div id="adDef_${kind}"></div>` : '<div class="mu" style="font-size:12.5px;text-align:center;padding:12px">لا توجد قنوات</div>'}
-        </div>`;
+      return `<div class="ad-user-card"><div style="font-weight:900;font-size:14.5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span>${kindLabel(kind)}</span><span class="pill">${list.length}</span></div>${list.length ? `<div id="adDef_${kind}"></div>` : '<div class="mu" style="font-size:12.5px;text-align:center;padding:12px">لا توجد قنوات</div>'}</div>`;
     }).join('')}`;
-
   ['kick','yt','tg'].forEach(kind => {
     const box = $('#adDef_' + kind); if (!box) return;
     groups[kind].forEach(d => {
@@ -1719,130 +1507,63 @@ function renderAdminDefaults(c) {
         b.onclick = async () => {
           const act = b.dataset.da;
           if (act === 'del') {
-            const ok = await dlgConfirm('حذف القناة الافتراضية؟', 'تأكيد', true);
-            if (!ok) return;
-            try {
-              await api('/api/admin/default-channels/' + d.id, { method:'DELETE' });
-              toast('تم', 'ok');
-              await loadAdminData();
-              renderAdminContent();
-            } catch (e) { toast(e.message, 'bad'); }
+            const ok = await dlgConfirm('حذف القناة الافتراضية؟', 'تأكيد', true); if (!ok) return;
+            try { await api('/api/admin/default-channels/' + d.id, { method:'DELETE' }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); }
+            catch (e) { toast(e.message, 'bad'); }
           } else if (act === 'toggle') {
-            try {
-              await api('/api/admin/default-channels/' + d.id, { method:'PATCH', body: { enabled: !d.enabled } });
-              await loadAdminData();
-              renderAdminContent();
-            } catch (e) { toast(e.message, 'bad'); }
+            try { await api('/api/admin/default-channels/' + d.id, { method:'PATCH', body: { enabled: !d.enabled } }); await loadAdminData(); renderAdminContent(); }
+            catch (e) { toast(e.message, 'bad'); }
           } else if (act === 'edit') {
-            const nv = await modal({
-              title:'تعديل الاسم',
-              input: true,
-              inputLabel: 'الاسم المعروض',
-              inputValue: d.name || '',
-              okText:'حفظ'
-            });
+            const nv = await modal({ title:'تعديل الاسم', input: true, inputLabel: 'الاسم المعروض', inputValue: d.name || '', okText:'حفظ' });
             if (nv === null || nv === '') return;
-            try {
-              await api('/api/admin/default-channels/' + d.id, { method:'PATCH', body: { name: nv } });
-              toast('تم', 'ok');
-              await loadAdminData();
-              renderAdminContent();
-            } catch (e) { toast(e.message, 'bad'); }
+            try { await api('/api/admin/default-channels/' + d.id, { method:'PATCH', body: { name: nv } }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); }
+            catch (e) { toast(e.message, 'bad'); }
           }
         };
       });
       box.appendChild(row);
     });
   });
-
   $('#adBulkAdd').onclick = async () => {
     const html = `
-      <label class="fld"><span>النوع</span>
-        <select id="__bkind">
-          <option value="kick">كيك</option>
-          <option value="yt">يوتيوب</option>
-          <option value="tg">تيليجرام</option>
-        </select>
-      </label>
-      <label class="fld">
-        <span>القنوات (سطر لكل قناة)</span>
-        <textarea id="__btext" rows="10" placeholder="xqc&#10;kaicenat&#10;trainwreckstv | اسم مخصص"></textarea>
-      </label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px;line-height:1.8">
-        • كيك: slug<br>
-        • يوتيوب: @handle أو UC...<br>
-        • تيليجرام: @username<br>
-        • (اختياري): identifier | اسم مخصص
-      </div>`;
+      <label class="fld"><span>النوع</span><select id="__bkind"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="tg">تيليجرام</option></select></label>
+      <label class="fld"><span>القنوات (سطر لكل قناة)</span><textarea id="__btext" rows="10" placeholder="xqc&#10;kaicenat&#10;trainwreckstv | اسم مخصص"></textarea></label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;line-height:1.8">• كيك: slug<br>• يوتيوب: @handle أو UC...<br>• تيليجرام: @username<br>• (اختياري): identifier | اسم مخصص</div>`;
     const r = await modal({ title:'إضافة جماعية', html, okText:'إضافة' });
     if (!r) return;
-    const kind = $('#__bkind').value;
-    const text = $('#__btext').value;
+    const kind = $('#__bkind').value, text = $('#__btext').value;
     if (!text.trim()) return toast('اكتب قنوات', 'bad');
     try {
       const res = await api('/api/admin/default-channels/bulk', { method:'POST', body: { kind, text } });
-      const added = res.added || 0;
-      const failed = res.failed || 0;
+      const added = res.added || 0, failed = res.failed || 0;
       toast('تمت إضافة ' + added + (failed ? ' — فشل ' + failed : ''), failed && !added ? 'bad' : 'ok');
       if (res.errors && res.errors.length) setTimeout(() => toast(res.errors[0], ''), 500);
-      await loadAdminData();
-      renderAdminContent();
+      await loadAdminData(); renderAdminContent();
     } catch (e) { toast(e.message, 'bad'); }
   };
-
   $('#adAddDef').onclick = async () => {
     const ok = await modal({
       title:'إضافة قناة افتراضية',
-      html:`
-        <label class="fld"><span>النوع</span>
-          <select id="__kd">
-            <option value="kick">كيك</option>
-            <option value="yt">يوتيوب</option>
-            <option value="tg">تيليجرام</option>
-          </select>
-        </label>
-        <label class="fld"><span>المعرّف</span>
-          <input type="text" id="__id" placeholder="xqc أو UC... أو @channel"></label>
-        <label class="fld"><span>الاسم المعروض (اختياري)</span>
-          <input type="text" id="__nm"></label>`,
+      html:`<label class="fld"><span>النوع</span><select id="__kd"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="tg">تيليجرام</option></select></label><label class="fld"><span>المعرّف</span><input type="text" id="__id" placeholder="xqc أو UC... أو @channel"></label><label class="fld"><span>الاسم المعروض (اختياري)</span><input type="text" id="__nm"></label>`,
       okText:'إضافة'
     });
     if (!ok) return;
-    try {
-      await api('/api/admin/default-channels', { method:'POST', body: {
-        kind: $('#__kd').value,
-        identifier: $('#__id').value.trim(),
-        name: $('#__nm').value.trim(),
-      }});
-      toast('تمت الإضافة', 'ok');
-      await loadAdminData();
-      renderAdminContent();
-    } catch (e) { toast(e.message, 'bad'); }
+    try { await api('/api/admin/default-channels', { method:'POST', body: { kind: $('#__kd').value, identifier: $('#__id').value.trim(), name: $('#__nm').value.trim() } }); toast('تمت الإضافة', 'ok'); await loadAdminData(); renderAdminContent(); }
+    catch (e) { toast(e.message, 'bad'); }
   };
 }
 
 function renderAdminSuggestions(c) {
   const rows = S.admin.suggestions || [];
-  c.innerHTML = `
-    <div class="sec-h"><div class="sec-title">الاقتراحات <span>(${rows.length})</span></div></div>
-    ${rows.length ? '<div id="sugList"></div>' : `
-      <div class="empty">
-        <div class="em-icon">${IC.msg}</div>
-        <h3>لا توجد اقتراحات</h3>
-        <p>ستظهر هنا اقتراحات المستخدمين</p>
-      </div>`}`;
-  const list = $('#sugList');
-  if (!list) return;
+  c.innerHTML = `<div class="sec-h"><div class="sec-title">الاقتراحات <span>(${rows.length})</span></div></div>${rows.length ? '<div id="sugList"></div>' : `<div class="empty"><div class="em-icon">${IC.msg}</div><h3>لا توجد اقتراحات</h3><p>ستظهر هنا اقتراحات المستخدمين</p></div>`}`;
+  const list = $('#sugList'); if (!list) return;
   rows.forEach(s => {
     const card = el('div', 'ad-user-card');
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="av" style="width:36px;height:36px;font-size:14px">${esc((s.username||'؟').charAt(0).toUpperCase())}</div>
-          <div>
-            <b style="font-size:13.5px">${esc(s.username||'زائر')}</b>
-            <div style="font-size:10.5px;color:var(--muted);font-family:var(--font-en);margin-top:2px">${fmtTime(s.ts)}</div>
-          </div>
+          <div><b style="font-size:13.5px">${esc(s.username||'زائر')}</b><div style="font-size:10.5px;color:var(--muted);font-family:var(--font-en);margin-top:2px">${fmtTime(s.ts)}</div></div>
         </div>
         ${!s.is_read ? '<span class="pill warn">جديد</span>' : ''}
       </div>
@@ -1855,20 +1576,12 @@ function renderAdminSuggestions(c) {
       b.onclick = async () => {
         const act = b.dataset.sa;
         if (act === 'del') {
-          const ok = await dlgConfirm('حذف هذا الاقتراح؟', 'تأكيد', true);
-          if (!ok) return;
-          try {
-            await api('/api/admin/suggestions/' + s.id, { method:'DELETE' });
-            toast('تم', 'ok');
-            await loadAdminData();
-            renderAdminContent();
-          } catch (e) { toast(e.message, 'bad'); }
+          const ok = await dlgConfirm('حذف هذا الاقتراح؟', 'تأكيد', true); if (!ok) return;
+          try { await api('/api/admin/suggestions/' + s.id, { method:'DELETE' }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); }
+          catch (e) { toast(e.message, 'bad'); }
         } else if (act === 'toggle') {
-          try {
-            await api('/api/admin/suggestions/' + s.id, { method:'PATCH', body: { is_read: !s.is_read } });
-            await loadAdminData();
-            renderAdminContent();
-          } catch (e) { toast(e.message, 'bad'); }
+          try { await api('/api/admin/suggestions/' + s.id, { method:'PATCH', body: { is_read: !s.is_read } }); await loadAdminData(); renderAdminContent(); }
+          catch (e) { toast(e.message, 'bad'); }
         }
       };
     });
@@ -1894,22 +1607,137 @@ function renderAdminSec(c) {
   if (!rows.length) { list.innerHTML = '<div class="empty"><h3>لا يوجد سجل بعد</h3></div>'; return; }
   rows.forEach(r => {
     const card = el('div', 'ad-user-card');
-    const cls = r.action === 'login_ok' ? 'ok'
-              : (r.action.indexOf('fail') !== -1 || r.action.indexOf('banned') !== -1) ? 'bad'
-              : 'warn';
-    card.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <div>
-          <div style="font-weight:900;font-size:13px">${esc(r.action)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">@${esc(r.username||'-')} · ${esc(r.ip||'-')}</div>
-        </div>
-        <span class="pill ${cls}">${fmtTime(r.ts)}</span>
-      </div>
-      ${r.detail ? `<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(r.detail)}</div>` : ''}`;
+    const cls = r.action === 'login_ok' ? 'ok' : (r.action.indexOf('fail') !== -1 || r.action.indexOf('banned') !== -1) ? 'bad' : 'warn';
+    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><div style="font-weight:900;font-size:13px">${esc(r.action)}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">@${esc(r.username||'-')} · ${esc(r.ip||'-')}</div></div><span class="pill ${cls}">${fmtTime(r.ts)}</span></div>${r.detail ? `<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(r.detail)}</div>` : ''}`;
     list.appendChild(card);
   });
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — المظهر (Logo + Themes)
+   ═══════════════════════════════════════════════════════════ */
+async function renderAdminAppearance(c) {
+  await loadSettings();
+  const s = S.settings;
+  const currentTheme = s.site_theme || 'default';
+  const themeDefs = [
+    { id:'default', n:'الافتراضي', c1:'#030508', c2:'#0a0f18', ac:'#0b55ea' },
+    { id:'saudi', n:'اليوم الوطني', c1:'#033a20', c2:'#0b7a3e', ac:'#ffffff' },
+    { id:'founding', n:'يوم التأسيس', c1:'#3a290b', c2:'#0b5c3a', ac:'#e6b85c' },
+    { id:'ramadan', n:'رمضان', c1:'#0a1733', c2:'#1d3a6e', ac:'#f5c04a' },
+    { id:'fitr', n:'عيد الفطر', c1:'#0d3434', c2:'#1d6b57', ac:'#ffd166' },
+    { id:'adha', n:'عيد الأضحى', c1:'#2a1a0a', c2:'#6a4720', ac:'#f0b84d' },
+  ];
+  c.innerHTML = `
+    <div class="sec-h"><div class="sec-title">المظهر <span>.</span></div></div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">شعار الموقع</div>
+      <div class="img-preview-box ${s.site_logo ? '' : 'empty'}" id="__logoBox" style="max-width:200px;margin:0 auto 14px">
+        ${s.site_logo ? `<img src="${esc(s.site_logo)}" alt="">` : '<div>لا يوجد شعار</div>'}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn sm" id="__logoUp">${IC.upload} رفع شعار</button>
+        <button class="btn sm ghost" id="__logoDel">${IC.x} حذف</button>
+        <input type="file" id="__logoFile" accept="image/*" style="display:none">
+      </div>
+      <div class="mu" style="font-size:11.5px;text-align:center;margin-top:10px">الحجم الموصى به: أقل من 500KB · PNG أو SVG</div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الثيمات الجاهزة</div>
+      <div class="theme-grid" id="__themes">
+        ${themeDefs.map(t => `
+          <div class="theme-item ${currentTheme === t.id ? 'on' : ''}" data-tid="${t.id}" style="background:linear-gradient(135deg,${t.c1},${t.c2})">
+            <i style="background:${t.ac}"></i>
+            <div>${esc(t.n)}</div>
+          </div>`).join('')}
+        <div class="theme-item ${currentTheme === 'custom' ? 'on' : ''}" data-tid="custom" style="background:linear-gradient(135deg,#1a2030,#0a0d16)">
+          <i style="background:#f4f6fa"></i>
+          <div>مخصص</div>
+        </div>
+      </div>
+    </div>
+    <div class="ad-user-card" id="__customBox" style="display:${currentTheme === 'custom' ? 'block' : 'none'}">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">ألوان مخصصة</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <label class="fld"><span>الخلفية</span><input type="color" id="__c1" value="${esc(s.site_c1 || '#030508')}"></label>
+        <label class="fld"><span>البطاقات</span><input type="color" id="__c2" value="${esc(s.site_c2 || '#0a0f18')}"></label>
+        <label class="fld"><span>المميز</span><input type="color" id="__ac" value="${esc(s.site_ac || '#0b55ea')}"></label>
+      </div>
+      <div style="margin-top:16px;padding:22px;border-radius:16px;text-align:center" id="__preview" style="background:linear-gradient(135deg,${esc(s.site_c1||'#030508')},${esc(s.site_c2||'#0a0f18')})">
+        <div style="font-family:var(--font-en);font-size:26px;font-weight:900;letter-spacing:3px;color:${esc(s.site_ac||'#0b55ea')};margin-bottom:6px">RESPECT LIVE</div>
+        <div style="color:${esc(s.site_ac||'#0b55ea')};opacity:.7;font-size:13px">معاينة مباشرة</div>
+      </div>
+      <button class="btn pri wide" id="__saveCustom" style="margin-top:14px">${IC.check} حفظ الألوان</button>
+    </div>`;
+
+  // Logo
+  $('#__logoUp').onclick = () => $('#__logoFile').click();
+  $('#__logoFile').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    if (f.size > 500 * 1024) return toast('الحجم أكبر من 500KB', 'bad');
+    const fd = new FormData(); fd.append('file', f);
+    try {
+      const res = await fetch('/api/admin/site-logo', { method:'POST', body: fd, credentials:'include' });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'فشل الرفع');
+      S.boot.site_logo = j.url;
+      toast('تم رفع الشعار', 'ok');
+      renderAdminAppearance(c);
+    } catch (err) { toast(err.message, 'bad'); }
+  };
+  $('#__logoDel').onclick = async () => {
+    const ok = await dlgConfirm('حذف الشعار؟', 'تأكيد', true); if (!ok) return;
+    try { await api('/api/admin/site-logo', { method:'DELETE' }); S.boot.site_logo = ''; toast('تم الحذف', 'ok'); renderAdminAppearance(c); }
+    catch (e) { toast(e.message, 'bad'); }
+  };
+
+  // Themes
+  $$('#__themes .theme-item').forEach(item => {
+    item.onclick = async () => {
+      const tid = item.dataset.tid;
+      try {
+        await api('/api/settings', { method:'POST', body: { site_theme: tid } });
+        S.settings.site_theme = tid;
+        S.boot.theme = { id: tid };
+        if (tid === 'custom') {
+          applyTheme({ c1: s.site_c1 || '#030508', c2: s.site_c2 || '#0a0f18', ac: s.site_ac || '#0b55ea' });
+        } else {
+          const t = themeDefs.find(x => x.id === tid);
+          if (t) applyTheme(t);
+        }
+        toast('تم تطبيق الثيم', 'ok');
+        renderAdminAppearance(c);
+      } catch (e) { toast(e.message, 'bad'); }
+    };
+  });
+
+  // Live color preview
+  const updatePreview = () => {
+    const p = $('#__preview');
+    const c1 = $('#__c1').value, c2 = $('#__c2').value, ac = $('#__ac').value;
+    p.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+    p.querySelector('div:first-child').style.color = ac;
+    p.querySelector('div:last-child').style.color = ac;
+  };
+  ['__c1','__c2','__ac'].forEach(id => { const el = $('#'+id); if (el) el.oninput = updatePreview; });
+
+  const sc = $('#__saveCustom');
+  if (sc) sc.onclick = async () => {
+    try {
+      await api('/api/settings', { method:'POST', body: { site_c1: $('#__c1').value, site_c2: $('#__c2').value, site_ac: $('#__ac').value, site_theme: 'custom' } });
+      S.settings.site_c1 = $('#__c1').value;
+      S.settings.site_c2 = $('#__c2').value;
+      S.settings.site_ac = $('#__ac').value;
+      S.settings.site_theme = 'custom';
+      applyTheme({ c1: $('#__c1').value, c2: $('#__c2').value, ac: $('#__ac').value });
+      toast('تم الحفظ والتطبيق', 'ok');
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — Settings
+   ═══════════════════════════════════════════════════════════ */
 async function renderAdminSettings(c) {
   await loadSettings();
   const s = S.settings || {};
@@ -1924,15 +1752,16 @@ async function renderAdminSettings(c) {
       <label class="fld"><span>نص الهيرو</span><textarea id="__hx" rows="2">${esc(s.hero_text||'')}</textarea></label>
     </div>
     <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">القوالب</div>
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">قوالب الإشعارات</div>
       <label class="fld"><span>قالب كيك</span><textarea id="__tk" rows="3">${esc(s.tpl_kick||'')}</textarea></label>
       <label class="fld"><span>قالب يوتيوب</span><textarea id="__ty" rows="3">${esc(s.tpl_yt||'')}</textarea></label>
       <label class="fld"><span>قالب ديسكورد (عام)</span><textarea id="__td" rows="3">${esc(s.tpl_discord||'')}</textarea></label>
       <label class="fld"><span>قالب تويتر من ديسكورد</span><textarea id="__tt" rows="3">${esc(s.tpl_twitter||'')}</textarea></label>
       <label class="fld"><span>قالب يوتيوب من ديسكورد</span><textarea id="__tyc" rows="3">${esc(s.tpl_youtube_dc||'')}</textarea></label>
+      <div class="mu" style="font-size:11.5px;margin-top:-4px">المتغيرات: {author} {content} {title} {description} {url} {channel} {source}</div>
     </div>
     <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود العامة وإعدادات الزوار</div>
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود وإعدادات الزوار</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${esc(s.lim_kick||'10')}"></label>
         <label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${esc(s.lim_yt||'5')}"></label>
@@ -1946,29 +1775,23 @@ async function renderAdminSettings(c) {
   $('#adSaveSettings').onclick = async () => {
     try {
       await api('/api/settings', { method:'POST', body: {
-        site_name: $('#__sn').value,
-        site_sub: $('#__ss').value,
-        hero_title: $('#__ht').value,
-        hero_accent: $('#__ha').value,
-        hero_text: $('#__hx').value,
-        tpl_kick: $('#__tk').value,
-        tpl_yt: $('#__ty').value,
-        tpl_discord: $('#__td').value,
-        tpl_twitter: $('#__tt').value,
-        tpl_youtube_dc: $('#__tyc').value,
-        lim_kick: $('#__lk').value,
-        lim_yt: $('#__ly').value,
-        lim_tg: $('#__lt').value,
+        site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value,
+        hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
+        tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value,
+        tpl_discord: $('#__td').value, tpl_twitter: $('#__tt').value, tpl_youtube_dc: $('#__tyc').value,
+        lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
         guest_mode: $('#__gm').checked ? '1' : '0',
       }});
       toast('تم الحفظ', 'ok');
       await loadSettings();
+      S.boot.site_name = $('#__sn').value;
+      S.boot.site_sub = $('#__ss').value;
     } catch (e) { toast(e.message, 'bad'); }
   };
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Event delegation للاقتراحات
+   Event Delegation للاقتراحات
    ═══════════════════════════════════════════════════════════ */
 document.addEventListener('click', e => {
   const item = e.target.closest('.sug-item');
@@ -1995,15 +1818,9 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════
-   Keyboard shortcuts
-   ═══════════════════════════════════════════════════════════ */
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') {
-    const m = $('#modal');
-    if (m && m.classList.contains('on')) m.classList.remove('on');
-  }
+  if (e.key === 'Escape') { const m = $('#modal'); if (m && m.classList.contains('on')) m.classList.remove('on'); }
 });
 
 boot();

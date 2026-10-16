@@ -382,6 +382,20 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
 .ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
 .ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
+/* 🆕 Discord mode badges */
+.dc-mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.dc-mode-card{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.02);flex:1;min-width:140px;text-align:center}
+.dc-mode-card .dc-label{font-family:var(--font-en);font-size:10px;font-weight:900;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px}
+.dc-mode-card .dc-val{font-family:var(--font-en);font-size:16px;font-weight:900;letter-spacing:1px}
+.dc-mode-card.self-bot{background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(99,102,241,.06));border-color:rgba(139,92,246,.35)}
+.dc-mode-card.self-bot .dc-val{color:var(--purple);text-shadow:0 0 12px rgba(139,92,246,.5)}
+.dc-mode-card.bot{background:linear-gradient(135deg,rgba(88,101,242,.12),rgba(71,82,196,.06));border-color:rgba(88,101,242,.35)}
+.dc-mode-card.bot .dc-val{color:#8b9dff;text-shadow:0 0 12px rgba(88,101,242,.5)}
+.dc-mode-card.disabled{background:rgba(124,135,153,.06);border-color:rgba(124,135,153,.25)}
+.dc-mode-card.disabled .dc-val{color:var(--muted)}
+.dc-mode-card.failed{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35)}
+.dc-mode-card.failed .dc-val{color:var(--red);text-shadow:0 0 12px rgba(239,68,68,.5)}
+.dc-mode-card .dc-sub{font-size:10.5px;color:var(--muted);margin-top:4px}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -418,8 +432,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toasts" id="toasts"></div>
 
-<!-- ❗ الجزء 2 (JavaScript) يوضع هنا -->
-  <script>
+<script>
 'use strict';
 
 /* ═══════════════════════════════════════════════════════════
@@ -479,6 +492,17 @@ const fmtTime = ts => {
   if (d < 604800) return 'قبل ' + Math.floor(d/86400) + ' يوم';
   return new Date(ts*1000).toLocaleDateString('ar-EG');
 };
+
+// 🆕 Helper: اسم وضع الديسكورد
+function discordModeLabel(mode) {
+  const m = {
+    'self-bot': { label: 'SELF-BOT', sub: 'توكن شخصي', cls: 'self-bot' },
+    'bot':      { label: 'BOT', sub: 'بوت رسمي', cls: 'bot' },
+    'disabled': { label: 'DISABLED', sub: 'معطّل', cls: 'disabled' },
+    'failed':   { label: 'FAILED', sub: 'فشل الاتصال', cls: 'failed' },
+  };
+  return m[mode] || { label: (mode || 'UNKNOWN').toUpperCase(), sub: '', cls: 'disabled' };
+}
 
 async function api(path, opts={}) {
   const o = { credentials:'include', method: opts.method || 'GET', headers: {} };
@@ -544,6 +568,9 @@ const S = {
   preview: null, pushEnabled: false,
   homeStats: null, maintenance: false,
   aiStatus: { available: false, model: '', source: 'none' },
+  // 🆕 حالة ديسكورد الموسعة
+  discordMode: 'disabled',
+  discordEnabled: true,
 };
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
@@ -633,6 +660,9 @@ async function boot() {
     const b = await api('/api/boot');
     S.boot = b;
     S.maintenance = !!b.maintenance;
+    // 🆕
+    if (b.discord_mode) S.discordMode = b.discord_mode;
+    if (typeof b.discord_enabled === 'boolean') S.discordEnabled = b.discord_enabled;
     document.title = b.site_name || 'Respect Live';
     const sf = $('#spFoot'); if (sf) sf.textContent = (b.site_sub || 'STREAM MONITOR').toUpperCase();
     const sp = $('#spLogo');
@@ -644,6 +674,9 @@ async function boot() {
   try {
     const me = await api('/api/me');
     S.me = me;
+    // 🆕
+    if (me.discord_mode) S.discordMode = me.discord_mode;
+    if (typeof me.discord_enabled === 'boolean') S.discordEnabled = me.discord_enabled;
     if (S.maintenance && S.me.user.role !== 'owner') {
       setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
       showMaintenance(S.boot.maintenance_text); return;
@@ -694,6 +727,9 @@ async function loadFeeds() {
     S.botReady = !!r.bot_ready;
     S.botInfo = r.bot_info || {};
     S.myTgs = r.my_tgs || [];
+    // 🆕
+    if (r.discord_mode) S.discordMode = r.discord_mode;
+    if (typeof r.discord_enabled === 'boolean') S.discordEnabled = r.discord_enabled;
   } catch (e) { S.feeds = []; S.knownChannels = {}; S.knownGuilds = {}; }
 }
 async function loadBots() {
@@ -1214,6 +1250,10 @@ function viewDiscord(v) {
   const botBadge = S.botReady ? '<span class="pill ok">'+IC.check+' البوت متصل</span>' : '<span class="pill bad">غير متصل</span>';
   const autoBadge = S.autoDiscovery ? '<span class="pill ok">اكتشاف تلقائي</span>' : '<span class="pill warn">يدوي</span>';
   const botName = S.botInfo.name || S.boot.bot_name_custom || 'Respect Live';
+  // 🆕 الوضع
+  const modeInfo = discordModeLabel(S.discordMode);
+  const enableBadge = S.discordEnabled ? '<span class="pill ok">مفعّل</span>' : '<span class="pill bad">معطّل من النظام</span>';
+
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
@@ -1223,6 +1263,26 @@ function viewDiscord(v) {
           <button class="btn pri sm" id="addFeedBtn">${IC.plus} ربط روم</button>
         </div>
       </div>
+
+      <!-- 🆕 شارات الحالة -->
+      <div class="dc-mode-row">
+        <div class="dc-mode-card ${modeInfo.cls}">
+          <div class="dc-label">DISCORD MODE</div>
+          <div class="dc-val">${esc(modeInfo.label)}</div>
+          <div class="dc-sub">${esc(modeInfo.sub)}</div>
+        </div>
+        <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}">
+          <div class="dc-label">ENABLED</div>
+          <div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div>
+          <div class="dc-sub">${S.discordEnabled?'يعمل':'متوقف'}</div>
+        </div>
+        <div class="dc-mode-card ${S.botReady?'bot':'failed'}">
+          <div class="dc-label">CONNECTED</div>
+          <div class="dc-val">${S.botReady?'YES':'NO'}</div>
+          <div class="dc-sub">${S.botReady?chsCount+' روم':'غير متصل'}</div>
+        </div>
+      </div>
+
       <div class="ad-user-card" style="margin-bottom:14px">
         <div class="ad-user-head">
           <div class="av" style="background:linear-gradient(135deg,#5865f2,#4752c4)">${S.botInfo.avatar ? `<img src="${esc(S.botInfo.avatar)}" onerror="this.remove()">` : IC.dc}</div>
@@ -1231,11 +1291,11 @@ function viewDiscord(v) {
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        ${botBadge} ${autoBadge}
+        ${botBadge} ${autoBadge} ${enableBadge}
         <span class="pill">${IC.dc} ${chsCount} روم</span>
         <span class="pill">${S.feeds.length} ربط</span>
       </div>
-      ${!S.botReady ? `<div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8"><b style="color:var(--red)">⚠️ البوت غير متصل</b><br>تأكد من DISCORD_BOT_TOKEN</div>` : ''}
+      ${!S.botReady ? `<div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8"><b style="color:var(--red)">⚠️ البوت غير متصل</b><br>${!S.discordEnabled ? 'البوت معطّل — اضبط <code>DISCORD_ENABLE=1</code> في .env' : (S.discordMode === 'failed' ? 'فشل الاتصال — تأكد من التوكن والمكتبات' : 'تأكد من DISCORD_BOT_TOKEN')}</div>` : ''}
       ${chsCount > 0 ? `<details style="margin-bottom:16px;padding:12px 14px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">الرومات المتاحة (${chsCount})</summary><div style="margin-top:12px">${Object.entries(S.knownChannels).map(([id, info]) => `<div class="discord-ch-item"><div class="ic">${IC.dc}</div><div class="if"><b>#${esc(info.name)}</b><small>${esc(info.guild||'')} · ${esc(id)}</small></div></div>`).join('')}</div></details>` : ''}
       ${S.feeds.length ? `<div id="feedsList"></div>` : `<div class="empty"><div class="em-icon">${IC.dc}</div><h3>لا توجد رومات مربوطة</h3><p>اربط روم ديسكورد</p>${chsCount ? `<button class="btn pri" id="emptyAddFeed">${IC.plus} ربط</button>` : ''}</div>`}
     </div>`;
@@ -1484,7 +1544,6 @@ async function editFeed(f) {
   const useOrig = $('#__useOrig')?.checked ? 1 : 0;
   const useAi = $('#__useAi')?.checked ? 1 : 0;
   const aiPrompt = ($('#__aiPrompt')?.value || '').trim();
-  // Collect final keyword rules (may include empty ones)
   const finalRules = keywordRules.filter(rule => rule.keywords && rule.keywords.length > 0 && rule.image);
   try {
     await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: {
@@ -1722,6 +1781,9 @@ async function loadAdminData() {
     ]);
     S.admin.users = users.rows || []; S.admin.defaults = defaults.rows || [];
     S.admin.stats = stats || {}; S.admin.suggestions = suggestions.rows || []; S.admin.sec = sec.rows || [];
+    // 🆕
+    if (S.admin.stats.discord_mode) S.discordMode = S.admin.stats.discord_mode;
+    if (typeof S.admin.stats.discord_enabled === 'boolean') S.discordEnabled = S.admin.stats.discord_enabled;
   } catch (e) { toast(e.message, 'bad'); }
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
 }
@@ -1767,6 +1829,7 @@ function renderAdminContent() {
 
 function renderAdminStats(c) {
   const s = S.admin.stats;
+  const modeInfo = discordModeLabel(S.discordMode);
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الإحصائيات <span>.</span></div></div>
     <div class="stats" style="margin:0 0 20px">
@@ -1775,6 +1838,26 @@ function renderAdminStats(c) {
       <div class="s"><b>${s.yt_total||0}</b><small>يوتيوب</small></div>
       <div class="s"><b>${s.tg_total||0}</b><small>تيليجرام</small></div>
     </div>
+
+    <!-- 🆕 بطاقات وضع الديسكورد -->
+    <div class="dc-mode-row" style="margin-bottom:20px">
+      <div class="dc-mode-card ${modeInfo.cls}">
+        <div class="dc-label">DISCORD MODE</div>
+        <div class="dc-val">${esc(modeInfo.label)}</div>
+        <div class="dc-sub">${esc(modeInfo.sub)}</div>
+      </div>
+      <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}">
+        <div class="dc-label">DISCORD ENABLE</div>
+        <div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div>
+        <div class="dc-sub">${S.discordEnabled?'يعمل':'متوقف'}</div>
+      </div>
+      <div class="dc-mode-card ${s.bot_info?.name?'bot':'disabled'}">
+        <div class="dc-label">BOT</div>
+        <div class="dc-val">${s.bot_info?.name ? esc(s.bot_info.name.slice(0,10)) : 'N/A'}</div>
+        <div class="dc-sub">${s.bot_ready?'متصل':'غير متصل'}</div>
+      </div>
+    </div>
+
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:15px;margin-bottom:10px">الخدمات</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -1795,6 +1878,8 @@ function renderAdminStats(c) {
         اشتراكات Push: <b>${s.push_subs||0}</b><br>
         اقتراحات: <b style="color:var(--orange)">${s.suggestions_unread||0}</b><br>
         ${s.bot_info?.name ? 'اسم البوت: <b>'+esc(s.bot_info.name)+'</b><br>' : ''}
+        وضع الديسكورد: <b style="color:var(--blue)">${esc(modeInfo.label)}</b><br>
+        تفعيل الديسكورد: <b style="color:${S.discordEnabled?'var(--green)':'var(--red)'}">${S.discordEnabled?'مفعّل':'معطّل'}</b>
       </div>
     </div>`;
 }
@@ -2187,8 +2272,47 @@ async function renderAdminSystem(c) {
   await loadSettings();
   const s = S.settings || {};
   const isMnt = s.maintenance === '1';
+  // 🆕
+  const modeInfo = discordModeLabel(S.discordMode);
+  const selfBot = S.discordMode === 'self-bot';
+  const isBot = S.discordMode === 'bot';
+  const isDisabled = S.discordMode === 'disabled';
+  const isFailed = S.discordMode === 'failed';
+
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">النظام <span>.</span></div></div>
+
+    <!-- 🆕 قسم وضع الديسكورد -->
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:12px">${IC.dc} حالة الديسكورد</div>
+      <div class="dc-mode-row" style="margin-bottom:14px">
+        <div class="dc-mode-card ${modeInfo.cls}">
+          <div class="dc-label">MODE</div>
+          <div class="dc-val">${esc(modeInfo.label)}</div>
+          <div class="dc-sub">${esc(modeInfo.sub)}</div>
+        </div>
+        <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}">
+          <div class="dc-label">ENABLED</div>
+          <div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div>
+          <div class="dc-sub">DISCORD_ENABLE</div>
+        </div>
+        <div class="dc-mode-card ${S.botReady?'bot':'failed'}">
+          <div class="dc-label">READY</div>
+          <div class="dc-val">${S.botReady?'YES':'NO'}</div>
+          <div class="dc-sub">${S.botReady?'متصل':'غير متصل'}</div>
+        </div>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
+        <div>🔹 <b style="color:var(--purple)">Self-Bot:</b> يستخدم توكنك الشخصي — يقرأ كل الرسائل</div>
+        <div>🔹 <b style="color:#8b9dff">Bot:</b> بوت رسمي — قد لا يقرأ رسائل البوتات</div>
+        <div>🔹 <b style="color:var(--muted)">Disabled:</b> معطّل من <code>.env</code> (DISCORD_ENABLE=0)</div>
+        <div>🔹 <b style="color:var(--red)">Failed:</b> فشل — تحقق من التوكن والمكتبات</div>
+      </div>
+      ${isDisabled ? `<div style="padding:10px 14px;background:rgba(124,135,153,.10);border:1px solid rgba(124,135,153,.3);border-radius:10px;font-size:12.5px;margin-top:10px">💡 لتشغيله: <code>DISCORD_ENABLE=1</code> في <code>.env</code> ثم أعد التشغيل</div>` : ''}
+      ${isFailed ? `<div style="padding:10px 14px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12.5px;margin-top:10px">⚠️ تحقق من: <code>DISCORD_BOT_TOKEN</code> + ثبّت <code>discord.py-self</code> إذا تريد Self-Bot</div>` : ''}
+      ${selfBot ? `<div style="padding:10px 14px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:12.5px;margin-top:10px;color:var(--purple)">⚠️ Self-Bot مخالف لشروط ديسكورد — الحساب معرّض للحظر</div>` : ''}
+    </div>
+
     <div class="ad-user-card" style="${isMnt ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)' : ''}">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:8px;display:flex;align-items:center;gap:10px">${IC.wrench} وضع الصيانة ${isMnt ? '<span class="pill bad">مفعّل</span>' : '<span class="pill ok">معطّل</span>'}</div>
       <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">الزوار والمستخدمون يشوفون شاشة "صيانة" — الأدمن فقط يدخل.</div>

@@ -179,6 +179,7 @@ def log_sec(username, action, detail="", ip=""):
     try:
         c = db()
         c.execute("INSERT INTO security_log(ts,username,action,detail,ip) VALUES(?,?,?,?,?)", (now(), username or "anon", action[:60], detail[:300], ip[:60]))
+        c.execute("DELETE FROM security_log WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn FROM security_log) WHERE rn > 5000)")
         c.commit()
         c.close()
     except Exception:
@@ -629,7 +630,15 @@ async def groq_rewrite(text, ai_prompt="", model=None):
             r = await c.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"authorization": f"Bearer {key}", "content-type": "application/json"},
-                json={"model": model, "messages": [{"role": "system", "content": system}, {"role": "user", "content": text[:4000]}], "temperature": 0.4, "max_tokens": 1024},
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": text[:4000]},
+                    ],
+                    "temperature": 0.4,
+                    "max_tokens": 1024,
+                },
             )
             if r.status_code != 200:
                 print(f"[Groq] {r.status_code} {r.text[:200]}")
@@ -639,8 +648,7 @@ async def groq_rewrite(text, ai_prompt="", model=None):
     except Exception as e:
         print(f"[Groq] {e}")
         return None
-
-# ═══════════════════════════════════════════════════════════
+        # ═══════════════════════════════════════════════════════════
 # DISCORD BOT — SELF-BOT + BOT MODE
 # ═══════════════════════════════════════════════════════════
 discord_client = None
@@ -860,7 +868,8 @@ if discord_client:
             asyncio.create_task(push_send_to_user(owner, data["author_no_at"] or "رسالة ديسكورد", strip_html_simple(text)[:200], final_image, room_url, "discord"))
             for tg in tgs:
                 await tg_send(tg["chat_id"], text, final_image, btn_text, room_url)
-                # ═══════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════
 # JOBS
 # ═══════════════════════════════════════════════════════════
 async def job_kick():
@@ -966,6 +975,9 @@ async def job_cleanup():
     c.execute("DELETE FROM discord_seen WHERE ts<?", (now() - 7 * 86400,))
     c.execute("DELETE FROM sessions WHERE expires<?", (now(),))
     c.execute("DELETE FROM rate_limits WHERE ts<?", (now() - 3600,))
+    c.execute("DELETE FROM security_log WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY id DESC) rn FROM security_log) WHERE rn > 5000)")
+    c.execute("DELETE FROM recent_videos WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY added_by ORDER BY ts DESC) rn FROM recent_videos) WHERE rn > 12)")
+    c.execute("DELETE FROM notifs WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY username ORDER BY ts DESC) rn FROM notifs) WHERE rn > 60)")
     c.execute("DELETE FROM suggestions WHERE ts<?", (now() - 90 * 86400,))
     c.commit()
     c.close()
@@ -1074,7 +1086,7 @@ async def login(request: Request, response: Response, u: str = Form(...), p: str
     c.commit()
     c.close()
     log_sec(u, "login_ok", "", ip)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax")
+    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False)
     return {"ok": True, "user": {"username": row["username"], "role": row["role"]}}
 
 @app.post("/api/logout")

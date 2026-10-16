@@ -1,19 +1,15 @@
-"""Respect Live — Self-Bot Discord + Multi-Channel Monitor"""
+"""Respect Live — Self-Bot + Multi-Channel + TG Verification"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
-from typing import Optional
 import httpx
 import discord
 from fastapi import FastAPI, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, Response as FastResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
-
 load_dotenv()
 
-# ═══════════════════════════════════════════════════════════
-# CONFIG
-# ═══════════════════════════════════════════════════════════
+# ═══ CONFIG ═══
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 SESSION_SECRET = os.getenv("SESSION_SECRET", secrets.token_hex(32))
@@ -35,6 +31,12 @@ MAX_PER_MIN_CH = 15
 BATCH_KICK = 30
 BATCH_YT = 30
 MAX_IMAGE_SIZE = 2 * 1024 * 1024
+VERIFY_TTL = 600  # 10 دقائق لصلاحية التوثيق
+
+# Public URL (لـ webhook تيليجرام)
+PUBLIC_URL = os.getenv("PUBLIC_URL", "").strip().rstrip("/")
+if not PUBLIC_URL and os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+    PUBLIC_URL = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN').strip().rstrip('/')}"
 
 THEMES = [
     {"id":"default","n":"الافتراضي","c1":"#030508","c2":"#0a0f18","ac":"#0b55ea"},
@@ -45,9 +47,7 @@ THEMES = [
     {"id":"adha","n":"عيد الأضحى","c1":"#2a1a0a","c2":"#6a4720","ac":"#f0b84d"},
 ]
 
-# ═══════════════════════════════════════════════════════════
-# DATABASE
-# ═══════════════════════════════════════════════════════════
+# ═══ DATABASE ═══
 def db():
     c = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     c.row_factory = sqlite3.Row
@@ -65,10 +65,14 @@ CREATE TABLE IF NOT EXISTS kick_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, 
 CREATE INDEX IF NOT EXISTS idx_kick_by ON kick_channels(added_by);
 CREATE TABLE IF NOT EXISTS yt_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, handle TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', msg TEXT DEFAULT '', btn_text TEXT DEFAULT '', enabled INTEGER DEFAULT 1, auto_send INTEGER DEFAULT 1, last_video TEXT DEFAULT '', last_check INTEGER DEFAULT 0, added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_yt_by ON yt_channels(added_by);
-CREATE TABLE IF NOT EXISTS tg_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id, added_by));
+CREATE TABLE IF NOT EXISTS tg_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', enabled INTEGER DEFAULT 1, verified INTEGER DEFAULT 0, owner_tg_id TEXT DEFAULT '', owner_tg_username TEXT DEFAULT '', added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id));
 CREATE INDEX IF NOT EXISTS idx_tg_by ON tg_channels(added_by);
-CREATE TABLE IF NOT EXISTS discord_feeds (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '', guild_id TEXT DEFAULT '', template TEXT DEFAULT '', btn_text TEXT DEFAULT 'عرض الروم', source_type TEXT DEFAULT 'generic', target_tg_ids TEXT DEFAULT '', enabled INTEGER DEFAULT 1, use_original INTEGER DEFAULT 1, ignore_bots TEXT DEFAULT '', keyword_rules TEXT DEFAULT '', fixed_image TEXT DEFAULT '', room_url TEXT DEFAULT '', use_ai INTEGER DEFAULT 0, ai_prompt TEXT DEFAULT '', added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
-CREATE INDEX IF NOT EXISTS idx_df_by ON discord_feeds(added_by);
+CREATE INDEX IF NOT EXISTS idx_tg_chat ON tg_channels(chat_id);
+CREATE TABLE IF NOT EXISTS tg_verifications (id INTEGER PRIMARY KEY AUTOINCREMENT, site_username TEXT NOT NULL, tg_username TEXT NOT NULL, tg_user_id TEXT DEFAULT '', tg_chat_id TEXT DEFAULT '', tg_chat_name TEXT DEFAULT '', tg_chat_avatar TEXT DEFAULT '', code TEXT DEFAULT '', status TEXT DEFAULT 'pending', tg_msg_id INTEGER DEFAULT 0, created INTEGER, expires INTEGER);
+CREATE INDEX IF NOT EXISTS idx_tgv_status ON tg_verifications(status, expires);
+CREATE TABLE IF NOT EXISTS feed_subs (id INTEGER PRIMARY KEY AUTOINCREMENT, feed_id INTEGER NOT NULL, tg_channel_id INTEGER NOT NULL, username TEXT NOT NULL, enabled INTEGER DEFAULT 1, created INTEGER, UNIQUE(feed_id, tg_channel_id));
+CREATE INDEX IF NOT EXISTS idx_fs_feed ON feed_subs(feed_id, enabled);
+CREATE TABLE IF NOT EXISTS discord_feeds (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '', guild_id TEXT DEFAULT '', template TEXT DEFAULT '', btn_text TEXT DEFAULT 'عرض الروم', source_type TEXT DEFAULT 'generic', target_tg_ids TEXT DEFAULT '', enabled INTEGER DEFAULT 1, use_original INTEGER DEFAULT 1, ignore_bots TEXT DEFAULT '', keyword_rules TEXT DEFAULT '', fixed_image TEXT DEFAULT '', room_url TEXT DEFAULT '', use_ai INTEGER DEFAULT 0, ai_prompt TEXT DEFAULT '', added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id));
 CREATE INDEX IF NOT EXISTS idx_df_ch ON discord_feeds(channel_id, enabled);
 CREATE TABLE IF NOT EXISTS discord_seen (message_id TEXT PRIMARY KEY, ts INTEGER);
 CREATE INDEX IF NOT EXISTS idx_ds_ts ON discord_seen(ts);
@@ -95,6 +99,9 @@ def init_db():
         ("yt_channels", "auto_send", "INTEGER DEFAULT 1"),
         ("yt_channels", "banner", "TEXT DEFAULT ''"),
         ("tg_channels", "banner", "TEXT DEFAULT ''"),
+        ("tg_channels", "verified", "INTEGER DEFAULT 0"),
+        ("tg_channels", "owner_tg_id", "TEXT DEFAULT ''"),
+        ("tg_channels", "owner_tg_username", "TEXT DEFAULT ''"),
         ("discord_feeds", "btn_text", "TEXT DEFAULT 'عرض الروم'"),
         ("discord_feeds", "target_tg_ids", "TEXT DEFAULT ''"),
         ("discord_feeds", "guild_id", "TEXT DEFAULT ''"),
@@ -116,10 +123,8 @@ def init_db():
     h = hash_pw(ADMIN_PASSWORD, salt)
     if not c.execute("SELECT 1 FROM users WHERE username=?", (ADMIN_USERNAME,)).fetchone():
         c.execute("INSERT INTO users(username,display,pass_hash,salt,role,active,banned,can_discord,created) VALUES(?,?,?,?,'owner',1,0,1,?)", (ADMIN_USERNAME, ADMIN_USERNAME, h, salt, now()))
-        print(f"[DB] Admin created: {ADMIN_USERNAME}")
     else:
         c.execute("UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0, can_discord=1 WHERE username=?", (h, salt, ADMIN_USERNAME))
-        print("[DB] Admin synced")
     defaults = {
         "site_name": SITE_NAME, "site_sub": "STREAM MONITOR",
         "hero_title": "مراقبة", "hero_accent": "القنوات.",
@@ -141,7 +146,28 @@ def init_db():
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
-    c.commit()
+    # ترحيل: فعّل verified على القنوات القديمة
+    if cfg("tg_verify_migration", "") != "done":
+        try:
+            c.execute("UPDATE tg_channels SET verified=1 WHERE verified=0")
+            c.commit()
+        except: pass
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('tg_verify_migration','done')")
+        c.commit()
+    # ترحيل: انسخ target_tg_ids القديمة إلى feed_subs
+    if cfg("feed_subs_migration", "") != "done":
+        try:
+            feeds = c.execute("SELECT id, added_by, target_tg_ids FROM discord_feeds").fetchall()
+            for f in feeds:
+                try:
+                    tids = json.loads(f["target_tg_ids"] or "[]")
+                    for tid in tids:
+                        c.execute("INSERT OR IGNORE INTO feed_subs(feed_id, tg_channel_id, username, enabled, created) VALUES(?,?,?,1,?)", (f["id"], int(tid), f["added_by"], now()))
+                except: pass
+            c.commit()
+        except: pass
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('feed_subs_migration','done')")
+        c.commit()
     c.close()
     print("[DB] Ready")
 
@@ -181,9 +207,7 @@ def rate_ok(key, max_per_min=MAX_PER_MIN_TG):
     if len(lst) >= max_per_min: return False
     lst.append(t); return True
 
-# ═══════════════════════════════════════════════════════════
-# AUTH
-# ═══════════════════════════════════════════════════════════
+# ═══ AUTH ═══
 def auth(request):
     tok = request.cookies.get("rl_sid")
     if not tok or len(tok) > 200: return None
@@ -245,9 +269,7 @@ def limit_info(username, kind, role):
     c.close()
     return {"used": used, "limit": limit, "remaining": max(0, limit - used)}
 
-# ═══════════════════════════════════════════════════════════
-# TELEGRAM
-# ═══════════════════════════════════════════════════════════
+# ═══ TELEGRAM ═══
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
@@ -298,7 +320,7 @@ async def tg_get_chat_info(chat_id):
     photo = chat.get("photo") or {}
     photo_id = photo.get("big_file_id") or photo.get("small_file_id") or ""
     avatar = await tg_save_photo(photo_id) if photo_id else ""
-    return {"name":name,"username":username,"avatar":avatar,"chat_id":str(chat.get("id",chat_id))}
+    return {"name":name,"username":username,"avatar":avatar,"chat_id":str(chat.get("id",chat_id)),"type":chat.get("type","")}
 
 def norm_chat(s):
     s = (s or "").strip()
@@ -309,9 +331,155 @@ def norm_chat(s):
     if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
     return None
 
-# ═══════════════════════════════════════════════════════════
-# KICK + YOUTUBE
-# ═══════════════════════════════════════════════════════════
+def norm_user(s):
+    s = (s or "").strip()
+    m = re.match(r"(?:https?://)?t\.me/([A-Za-z][\w]{3,})", s)
+    if m: return "@" + m.group(1)
+    if re.match(r"^@[A-Za-z][\w]{4,}$", s): return s
+    if re.match(r"^[A-Za-z][\w]{4,}$", s): return "@" + s
+    return None
+
+# ═══ TELEGRAM VERIFICATION ═══
+async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
+    text = (
+        f"🔐 <b>طلب توثيق قناة</b>\n\n"
+        f"المستخدم <code>{site_username}</code> يحاول إضافة هذه القناة إلى Respect Live:\n\n"
+        f"📺 <b>{chat_name}</b>\n\n"
+        f"<b>هل أنت من يحاول إضافة هذه القناة؟</b>\n"
+        f"<i>إذا لم تكن أنت، اضغط ❌ لا.</i>"
+    )
+    kb = {"inline_keyboard": [[
+        {"text": "✅ نعم، أنا من يحاول", "callback_data": f"verify_y:{vid}"},
+    ],[
+        {"text": "❌ لا، ليس أنا", "callback_data": f"verify_n:{vid}"},
+    ]]}
+    j = await tg_api("sendMessage", {"chat_id": tg_user_id, "text": text, "parse_mode": "HTML", "reply_markup": kb})
+    if j.get("ok"):
+        return j["result"]["message_id"]
+    return 0
+
+async def handle_tg_update(update):
+    """معالجة تحديثات تيليجرام (رسائل + أزرار)"""
+    # Callback (زر)
+    cq = update.get("callback_query")
+    if cq:
+        data = cq.get("data", "")
+        from_id = str(cq["from"]["id"])
+        msg_id = cq["message"]["message_id"]
+        chat_id = cq["message"]["chat"]["id"]
+        try:
+            if data.startswith("verify_y:"):
+                vid = int(data.split(":")[1])
+                c = db()
+                row = c.execute("SELECT * FROM tg_verifications WHERE id=?", (vid,)).fetchone()
+                if not row:
+                    c.close()
+                    await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "انتهت الجلسة"})
+                    return
+                row = dict(row)
+                # تحقق: هل هذا المستخدم هو نفسه صاحب الطلب؟
+                if row["tg_user_id"] and row["tg_user_id"] != from_id:
+                    c.close()
+                    await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "هذا ليس طلبك", "show_alert": True})
+                    return
+                if row["status"] != "pending":
+                    c.close()
+                    await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "تم بالفعل"})
+                    return
+                if row["expires"] < now():
+                    c.execute("UPDATE tg_verifications SET status='expired' WHERE id=?", (vid,))
+                    c.commit(); c.close()
+                    await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "انتهت المهلة"})
+                    return
+                # ولّد الرمز
+                code = f"{secrets.randbelow(1000000):06d}"
+                c.execute("UPDATE tg_verifications SET code=?, status='confirmed' WHERE id=?", (code, vid))
+                c.commit(); c.close()
+                # أرسل الرمز
+                await tg_api("editMessageText", {
+                    "chat_id": chat_id, "message_id": msg_id,
+                    "text": f"✅ <b>تم التأكيد</b>\n\nأدخل هذا الرمز في الموقع:\n\n<code>{code}</code>\n\n<i>صالح لمدة 5 دقائق</i>",
+                    "parse_mode": "HTML"
+                })
+                await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "✅ تم"})
+                # حدّث الرمز لصلاحية 5 دقائق إضافية
+                c = db()
+                c.execute("UPDATE tg_verifications SET expires=? WHERE id=?", (now()+300, vid))
+                c.commit(); c.close()
+                return
+            if data.startswith("verify_n:"):
+                vid = int(data.split(":")[1])
+                c = db()
+                c.execute("UPDATE tg_verifications SET status='cancelled' WHERE id=?", (vid,))
+                c.commit(); c.close()
+                await tg_api("editMessageText", {
+                    "chat_id": chat_id, "message_id": msg_id,
+                    "text": "❌ <b>تم الإلغاء</b>\n\nإذا لم تكن أنت من حاول، فقد يكون أحد يعرف اسمك فقط. لا مشكلة — لن يُضاف شيء.",
+                    "parse_mode": "HTML"
+                })
+                await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "تم الإلغاء"})
+                return
+        except Exception as e:
+            print(f"[TG callback] {e}")
+        await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"]})
+        return
+
+    # رسالة عادية
+    msg = update.get("message")
+    if msg:
+        text = (msg.get("text") or "").strip()
+        chat = msg.get("chat", {})
+        chat_id = chat.get("id")
+        is_private = chat.get("type") == "private"
+        if is_private:
+            if text.startswith("/start"):
+                bot_name = cfg("bot_name_custom", "Respect Live")
+                welcome = (
+                    f"👋 أهلاً بك في <b>{bot_name}</b>!\n\n"
+                    f"هذا البوت يُستخدم لتوثيق قنواتك على الموقع.\n\n"
+                    f"<b>كيفية التوثيق:</b>\n"
+                    f"1️⃣ اذهب إلى الموقع وسجّل دخولك\n"
+                    f"2️⃣ اضغط \"إضافة قناة\" واختر تيليجرام\n"
+                    f"3️⃣ اكتب اسم قناتك واسمك هنا <code>{chat.get('username') or '@username'}</code>\n"
+                    f"4️⃣ انتظر رسالة مني ووافق عليها\n"
+                    f"5️⃣ انسخ الرمز المكوّن من 6 أرقام والصقه في الموقع\n\n"
+                    f"<i>تم — لا يمكنك فعل أي شيء آخر هنا.</i>"
+                )
+                await tg_api("sendMessage", {"chat_id": chat_id, "text": welcome, "parse_mode": "HTML"})
+                return
+
+async def setup_tg_webhook():
+    if not TELEGRAM_TOKEN: return
+    if not PUBLIC_URL:
+        print("[TG] ⚠️ PUBLIC_URL/Railway domain غير موجود — سيتم استخدام polling")
+        asyncio.create_task(tg_poll_loop())
+        return
+    url = f"{PUBLIC_URL}/api/telegram/webhook"
+    j = await tg_api("setWebhook", {"url": url, "allowed_updates": ["message", "callback_query"]})
+    if j.get("ok"):
+        print(f"[TG] ✅ Webhook set: {url}")
+    else:
+        print(f"[TG] ❌ Webhook failed: {j}")
+        asyncio.create_task(tg_poll_loop())
+
+async def tg_poll_loop():
+    """Fallback: polling في حالة عدم وجود URL"""
+    offset = 0
+    print("[TG] Polling started")
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=35) as c:
+                r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates", json={"offset": offset, "timeout": 30, "allowed_updates": ["message", "callback_query"]})
+                j = r.json()
+            if j.get("ok"):
+                for u in j["result"]:
+                    offset = u["update_id"] + 1
+                    asyncio.create_task(handle_tg_update(u))
+        except Exception as e:
+            print(f"[TG poll] {e}")
+        await asyncio.sleep(2)
+
+# ═══ KICK + YOUTUBE ═══
 async def kick_fetch(slug):
     h = {"User-Agent":UA,"Accept":"application/json","Referer":"https://kick.com/"}
     async with httpx.AsyncClient(timeout=15, headers=h) as c:
@@ -375,9 +543,7 @@ async def yt_resolve(input_str):
         except: return None
     return None
 
-# ═══════════════════════════════════════════════════════════
-# PUSH
-# ═══════════════════════════════════════════════════════════
+# ═══ PUSH ═══
 def push_available(): return bool(VAPID_PUBLIC and VAPID_PRIVATE)
 
 async def push_send_to_user(username, title, body, image="", url="/", tag=""):
@@ -402,9 +568,7 @@ async def push_send_to_user(username, title, body, image="", url="/", tag=""):
         except: pass
     return sent
 
-# ═══════════════════════════════════════════════════════════
-# TEXT PROCESSING
-# ═══════════════════════════════════════════════════════════
+# ═══ TEXT PROCESSING ═══
 _MENTION_RE = re.compile(r"<@[!&]?\d+>")
 _ROLE_RE = re.compile(r"<@&\d+>")
 _CHAN_RE = re.compile(r"<#\d+>")
@@ -484,9 +648,7 @@ def build_text(tpl, data, site=""):
     }
     return re.sub(r"\{(\w+)\}", lambda m: str(v.get(m.group(1), m.group(0))), str(tpl))
 
-# ═══════════════════════════════════════════════════════════
-# GROQ AI
-# ═══════════════════════════════════════════════════════════
+# ═══ GROQ AI ═══
 def get_groq_key(): return GROQ_ENV_KEY or cfg("groq_api_key", "")
 def groq_available(): return bool(get_groq_key())
 
@@ -506,45 +668,30 @@ async def groq_rewrite(text, prompt="", model=None):
     except Exception as e:
         print(f"[Groq] {e}"); return None
 
-# ═══════════════════════════════════════════════════════════
-# DISCORD CLIENT — ✅ يكتشف المكتبة تلقائياً (bot / self-bot)
-# ═══════════════════════════════════════════════════════════
+# ═══ DISCORD CLIENT ═══
 _HAS_INTENTS = hasattr(discord, 'Intents')
 discord_client = None
 _SELF_BOT = False
 
 if _HAS_INTENTS:
-    # ─── مكتبة discord.py (Rapptz) — دعم البوتات العادية ───
     try:
         try:
-            # محاولة self-bot أولاً إن كانت مدعومة (نادراً)
-            discord_client = discord.Client(
-                self_bot=True,
-                intents=discord.Intents(guilds=True, guild_messages=True, message_content=True)
-            )
+            discord_client = discord.Client(self_bot=True, intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
             _SELF_BOT = True
-            print("[Discord] ✅ Self-bot mode (discord.py)")
         except TypeError:
-            # fallback: بوت عادي مع Intents
             intents = discord.Intents(guilds=True, guild_messages=True, message_content=True)
             discord_client = discord.Client(intents=intents)
             _SELF_BOT = False
-            print("[Discord] ✅ Regular bot mode (discord.py with Intents)")
     except Exception as e:
-        print(f"[Discord] ❌ Init error (discord.py): {e}")
+        print(f"[Discord] Init error: {e}")
         discord_client = None
 else:
-    # ─── مكتبة discord.py-self (dolfies) — self-bot فقط ───
     try:
         discord_client = discord.Client(self_bot=True)
         _SELF_BOT = True
-        print("[Discord] ✅ Self-bot mode (discord.py-self)")
     except Exception as e:
-        print(f"[Discord] ❌ Init error (discord.py-self): {e}")
+        print(f"[Discord] Init error: {e}")
         discord_client = None
-
-if discord_client is None:
-    print("[Discord] ⚠️ No Discord client — running in HTTP-only mode")
 
 _CH_CACHE = {}
 _G_CACHE = {}
@@ -568,7 +715,6 @@ if discord_client:
     async def on_ready():
         print(f"[Discord] ✅ Logged in: {discord_client.user} (self_bot={_SELF_BOT})")
         _refresh_cache()
-
     @discord_client.event
     async def on_guild_channel_create(channel): _refresh_cache()
     @discord_client.event
@@ -619,9 +765,8 @@ if discord_client:
             if not data["final_text"] and not data["image"]: return
             site = cfg("site_name", SITE_NAME)
             for feed in feeds:
-                owner = feed["added_by"]
                 if data["is_bot"] and _feed_ignores_bot(feed, data["user_id"]): continue
-                if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG): continue
+                if not rate_ok(f"discord:{feed['id']}", max_per_min=MAX_PER_MIN_TG): continue
                 use_orig = feed["use_original"] if "use_original" in feed.keys() else 1
                 if use_orig:
                     text = data["final_text"] or ""
@@ -642,26 +787,39 @@ if discord_client:
                     final_img = fixed or data["image"]
                 btn = feed["btn_text"] or cfg("btn_discord", "عرض الروم")
                 room_url = (feed["room_url"] if "room_url" in feed.keys() else "") or data["message_url"]
-                tids = []
-                try: tids = [int(x) for x in json.loads(feed["target_tg_ids"] or "[]")]
+                # احصل على قنوات TG من feed_subs + target_tg_ids القديمة
+                tg_ids_set = set()
+                try:
+                    for x in json.loads(feed["target_tg_ids"] or "[]"):
+                        try: tg_ids_set.add(int(x))
+                        except: pass
                 except: pass
                 c2 = db()
-                if tids:
-                    ph = ",".join("?"*len(tids))
-                    tgs = c2.execute(f"SELECT * FROM tg_channels WHERE added_by=? AND enabled=1 AND id IN ({ph})", (owner,*tids)).fetchall()
-                else:
-                    tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (owner,)).fetchall()
-                c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (owner, data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
+                subs = c2.execute("SELECT tg_channel_id FROM feed_subs WHERE feed_id=? AND enabled=1", (feed["id"],)).fetchall()
+                for s in subs:
+                    try: tg_ids_set.add(int(s["tg_channel_id"]))
+                    except: pass
+                tgs = []
+                if tg_ids_set:
+                    ph = ",".join("?"*len(tg_ids_set))
+                    tgs = c2.execute(f"SELECT * FROM tg_channels WHERE enabled=1 AND id IN ({ph})", tuple(tg_ids_set)).fetchall()
+                # احفظ إشعار لصاحب الرابط (owner)
+                c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
                 c2.commit(); c2.close()
-                asyncio.create_task(push_send_to_user(owner, data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
+                asyncio.create_task(push_send_to_user(feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
+                # أرسل لكل قناة TG
                 for tg in tgs:
                     await tg_send(tg["chat_id"], text, final_img, btn, room_url)
+                    # أعطِ إشعار لكل مالك قناة (اختياري)
+                    if tg["added_by"] != feed["added_by"]:
+                        c3 = db()
+                        c3.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
+                        c3.commit(); c3.close()
+                        asyncio.create_task(push_send_to_user(tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
         except Exception as e:
             print(f"[Discord on_message] {e}")
 
-# ═══════════════════════════════════════════════════════════
-# JOBS
-# ═══════════════════════════════════════════════════════════
+# ═══ JOBS ═══
 async def job_kick():
     c = db()
     rows = c.execute("SELECT * FROM kick_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now()-90, BATCH_KICK)).fetchall()
@@ -750,6 +908,7 @@ async def job_cleanup():
     c.execute("DELETE FROM recent_videos WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY added_by ORDER BY ts DESC) rn FROM recent_videos) WHERE rn>12)")
     c.execute("DELETE FROM notifs WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY username ORDER BY ts DESC) rn FROM notifs) WHERE rn>60)")
     c.execute("DELETE FROM suggestions WHERE ts<?", (now()-90*86400,))
+    c.execute("DELETE FROM tg_verifications WHERE created<?", (now()-3600,))
     c.commit(); c.close()
 
 scheduler = AsyncIOScheduler()
@@ -765,7 +924,10 @@ async def lifespan(app):
         try: asyncio.create_task(discord_client.start(DISCORD_TOKEN))
         except Exception as e: print(f"[Discord] Start error: {e}")
     else:
-        print("[Discord] No token — running in HTTP-only mode")
+        print("[Discord] No token — HTTP-only mode")
+    if TELEGRAM_TOKEN:
+        try: await setup_tg_webhook()
+        except Exception as e: print(f"[TG] webhook setup error: {e}")
     if push_available(): print("[Push] Enabled")
     if groq_available(): print("[Groq] Enabled")
     yield
@@ -773,9 +935,148 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
-# ═══════════════════════════════════════════════════════════
-# API — BOOT
-# ═══════════════════════════════════════════════════════════
+# ═══ API — TELEGRAM WEBHOOK ═══
+@app.post("/api/telegram/webhook")
+async def tg_webhook(request: Request):
+    try:
+        upd = await request.json()
+        asyncio.create_task(handle_tg_update(upd))
+    except Exception as e:
+        print(f"[TG webhook] {e}")
+    return {"ok": True}
+
+@app.get("/api/telegram/webhook-info")
+async def tg_webhook_info(request: Request):
+    require_owner(request)
+    j = await tg_api("getWebhookInfo", {})
+    return j
+
+# ═══ API — TG VERIFY ═══
+@app.post("/api/tg/verify/start")
+async def tg_verify_start(request: Request):
+    u = require_auth(request)
+    if not TELEGRAM_TOKEN:
+        return JSONResponse({"error":"توكن تيليجرام غير مضبوط"}, 400)
+    if not rate_ok(f"tgv:{u['username']}", 5):
+        return JSONResponse({"error":"عدد كبير من المحاولات، انتظر دقيقة"}, 429)
+    body = await request.json()
+    chat_input = (body.get("chat_id") or "").strip()
+    tg_user = (body.get("tg_username") or "").strip()
+    chat_id = norm_chat(chat_input)
+    tg_un = norm_user(tg_user)
+    if not chat_id:
+        return JSONResponse({"error":"معرّف القناة غير صالح"}, 400)
+    if not tg_un:
+        return JSONResponse({"error":"اسم حسابك في تيليجرام غير صالح (يجب أن يبدأ بـ @)"}, 400)
+    # تحقق من القناة
+    chat_info = await tg_get_chat_info(chat_id)
+    if not chat_info:
+        return JSONResponse({"error":"تعذّر الوصول للقناة — تأكد أن البوت مضاف كمشرف"}, 400)
+    # هل القناة مضافة من أحد؟
+    c = db()
+    ex = c.execute("SELECT added_by FROM tg_channels WHERE chat_id=?", (chat_info["chat_id"],)).fetchone()
+    if ex:
+        c.close()
+        return JSONResponse({"error":f"هذه القناة مسجلة مسبقاً للمستخدم: {ex['added_by']}"}, 409)
+    # تحقق من حد القنوات
+    if not check_limit(u["username"], "tg", u["role"]):
+        c.close()
+        i = limit_info(u["username"],"tg",u["role"])
+        return JSONResponse({"error":f"وصلت الحد ({i['limit']})"}, 400)
+    # هل فيه طلب معلق لنفس القناة؟
+    old = c.execute("SELECT id FROM tg_verifications WHERE tg_chat_id=? AND status='pending' AND expires>?", (chat_info["chat_id"], now())).fetchone()
+    if old:
+        c.close()
+        return JSONResponse({"error":"يوجد طلب معلق لهذه القناة، انتظر انتهاءه"}, 409)
+    # حل حساب المستخدم
+    user_info = await tg_get_chat_info(tg_un)
+    if not user_info or user_info.get("type") != "private":
+        c.close()
+        return JSONResponse({"error":"تعذّر التعرف على حسابك — تأكد أنك ضغطت /start في البوت أولاً"}, 400)
+    tg_user_id = user_info["chat_id"]
+    # أنشئ طلب
+    t = now()
+    c.execute("INSERT INTO tg_verifications(site_username,tg_username,tg_user_id,tg_chat_id,tg_chat_name,tg_chat_avatar,status,created,expires) VALUES(?,?,?,?,?,?,'pending',?,?)",
+        (u["username"], tg_un, tg_user_id, chat_info["chat_id"], chat_info["name"], chat_info["avatar"], t, t + VERIFY_TTL))
+    c.commit()
+    vid = c.execute("SELECT last_insert_rowid() as id").fetchone()["id"]
+    c.close()
+    # أرسل DM للمستخدم
+    msg_id = await send_verify_dm(vid, tg_user_id, u["username"], chat_info["name"])
+    if not msg_id:
+        c = db()
+        c.execute("UPDATE tg_verifications SET status='failed' WHERE id=?", (vid,))
+        c.commit(); c.close()
+        return JSONResponse({"error":"تعذّر إرسال الرسالة — تأكد أنك ضغطت /start في البوت"}, 400)
+    # احفظ msg_id
+    c = db()
+    c.execute("UPDATE tg_verifications SET tg_msg_id=? WHERE id=?", (msg_id, vid))
+    c.commit(); c.close()
+    return {"ok":True,"verify_id":vid,"chat_name":chat_info["name"],"chat_avatar":chat_info["avatar"],"expires":VERIFY_TTL}
+
+@app.get("/api/tg/verify/{vid}")
+async def tg_verify_status(vid: int, request: Request):
+    u = require_auth(request)
+    c = db()
+    row = c.execute("SELECT * FROM tg_verifications WHERE id=? AND site_username=?", (vid, u["username"])).fetchone()
+    c.close()
+    if not row: raise HTTPException(404)
+    row = dict(row)
+    # إذا انتهت المهلة ولم يؤكد
+    if row["status"] == "pending" and row["expires"] < now():
+        c = db()
+        c.execute("UPDATE tg_verifications SET status='expired' WHERE id=?", (vid,))
+        c.commit(); c.close()
+        row["status"] = "expired"
+    return {
+        "status": row["status"],
+        "chat_name": row["tg_chat_name"],
+        "chat_avatar": row["tg_chat_avatar"],
+        "expires_in": max(0, row["expires"] - now()),
+    }
+
+@app.post("/api/tg/verify/{vid}/code")
+async def tg_verify_code(vid: int, request: Request):
+    u = require_auth(request)
+    body = await request.json()
+    code = (body.get("code") or "").strip()
+    if not re.match(r"^\d{6}$", code):
+        return JSONResponse({"error":"الرمز يجب أن يكون 6 أرقام"}, 400)
+    c = db()
+    row = c.execute("SELECT * FROM tg_verifications WHERE id=? AND site_username=?", (vid, u["username"])).fetchone()
+    if not row:
+        c.close(); return JSONResponse({"error":"طلب غير موجود"}, 404)
+    row = dict(row)
+    if row["status"] == "used":
+        c.close(); return JSONResponse({"error":"تم استخدام هذا الطلب مسبقاً"}, 400)
+    if row["status"] != "confirmed":
+        c.close(); return JSONResponse({"error":"لم يتم التأكيد من تيليجرام بعد"}, 400)
+    if row["expires"] < now():
+        c.close(); return JSONResponse({"error":"انتهت صلاحية الرمز"}, 400)
+    if row["code"] != code:
+        c.close(); return JSONResponse({"error":"الرمز غير صحيح"}, 400)
+    # تحقق مرة أخرى من القناة (لم تأخذ من أحد)
+    ex = c.execute("SELECT added_by FROM tg_channels WHERE chat_id=?", (row["tg_chat_id"],)).fetchone()
+    if ex:
+        c.close(); return JSONResponse({"error":f"القناة مسجلة مسبقاً للمستخدم: {ex['added_by']}"}, 409)
+    # أضف القناة
+    t = now()
+    c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,banner,enabled,verified,owner_tg_id,owner_tg_username,added_by,created) VALUES(?,?,?,?,?,1,1,?,?,?,?)",
+        (row["tg_chat_id"], row["tg_username"], row["tg_chat_name"], row["tg_chat_avatar"], "", row["tg_user_id"], row["tg_username"], u["username"], t))
+    c.execute("UPDATE tg_verifications SET status='used' WHERE id=?", (vid,))
+    c.commit(); c.close()
+    log_sec(u["username"], "tg_verify_ok", row["tg_chat_id"], "")
+    return {"ok":True}
+
+@app.post("/api/tg/verify/{vid}/cancel")
+async def tg_verify_cancel(vid: int, request: Request):
+    u = require_auth(request)
+    c = db()
+    c.execute("UPDATE tg_verifications SET status='cancelled' WHERE id=? AND site_username=? AND status='pending'", (vid, u["username"]))
+    c.commit(); c.close()
+    return {"ok":True}
+
+# ═══ API — BOOT ═══
 @app.get("/api/boot")
 async def api_boot():
     theme = get_site_theme()
@@ -813,9 +1114,7 @@ async def api_guest_preview():
     c.close()
     return {"counts":{"kick":kc,"yt":yc,"tg":tc},"live":[dict(r) for r in live]}
 
-# ═══════════════════════════════════════════════════════════
-# API — AUTH
-# ═══════════════════════════════════════════════════════════
+# ═══ API — AUTH ═══
 @app.post("/api/login")
 async def api_login(request: Request, response: Response, u: str = Form(...), p: str = Form(...)):
     u = u.strip()[:60]
@@ -883,9 +1182,7 @@ async def api_profile(request: Request):
     c = db(); c.execute(f"UPDATE users SET {', '.join(sets)} WHERE username=?", vals); c.commit(); c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — HOME STATS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — HOME STATS ═══
 @app.get("/api/home-stats")
 async def api_home_stats(request: Request):
     u = require_auth(request)
@@ -894,7 +1191,7 @@ async def api_home_stats(request: Request):
         "kick": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE added_by=?", (u["username"],)).fetchone()["n"],
         "yt": c.execute("SELECT COUNT(*) n FROM yt_channels WHERE added_by=?", (u["username"],)).fetchone()["n"],
         "tg": c.execute("SELECT COUNT(*) n FROM tg_channels WHERE added_by=?", (u["username"],)).fetchone()["n"],
-        "feeds": c.execute("SELECT COUNT(*) n FROM discord_feeds WHERE added_by=?", (u["username"],)).fetchone()["n"],
+        "feeds": c.execute("SELECT COUNT(*) n FROM feed_subs WHERE username=? AND enabled=1", (u["username"],)).fetchone()["n"],
         "live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE added_by=? AND live=1 AND enabled=1", (u["username"],)).fetchone()["n"],
         "videos": c.execute("SELECT COUNT(*) n FROM recent_videos WHERE added_by=?", (u["username"],)).fetchone()["n"],
     }
@@ -909,9 +1206,7 @@ async def api_home_stats(request: Request):
     c.close()
     return {"my":my,"global":g,"live_now":[dict(r) for r in live],"videos":[dict(r) for r in vids]}
 
-# ═══════════════════════════════════════════════════════════
-# API — CHANNELS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — CHANNELS ═══
 @app.get("/api/channels/{kind}")
 async def api_channels(kind: str, request: Request):
     u = require_auth(request)
@@ -939,6 +1234,9 @@ async def api_add_channel(kind: str, request: Request):
     u = require_auth(request)
     if not rate_ok(f"add:{u['username']}", MAX_PER_MIN_CH): raise HTTPException(429, "عدد كبير")
     body = await request.json()
+    if kind == "tg":
+        # قنوات TG لها flow خاص مع التوثيق
+        return JSONResponse({"error":"استخدم flow التوثيق الجديد"}, 400)
     c = db(); t = now(); warn = ""
     if kind == "kick":
         slug = re.sub(r"[^a-z0-9_-]", "", (body.get("slug") or "").lower().replace("@",""))
@@ -967,21 +1265,6 @@ async def api_add_channel(kind: str, request: Request):
             (cid,"",info["name"] or cid,info.get("avatar") or "",info.get("banner") or "",
              body.get("msg","")[:1500], body.get("btn_text","")[:60], last, t, u["username"], t))
         if not TELEGRAM_TOKEN: warn = "⚠️ توكن تيليجرام غير مضبوط"
-    elif kind == "tg":
-        cid = norm_chat((body.get("chat_id") or "").strip())
-        if not cid: c.close(); return JSONResponse({"error":"معرّف غير صالح"},400)
-        if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (cid, u["username"])).fetchone():
-            c.close(); return JSONResponse({"error":"مضافة مسبقاً"},409)
-        if not check_limit(u["username"], "tg", u["role"]):
-            c.close(); i = limit_info(u["username"],"tg",u["role"]); return JSONResponse({"error":f"وصلت الحد ({i['limit']})"},400)
-        info = await tg_get_chat_info(cid)
-        name = (info or {}).get("name") or body.get("name") or cid
-        uname = (info or {}).get("username") or ""
-        avatar = (info or {}).get("avatar") or ""
-        real = (info or {}).get("chat_id") or cid
-        c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,banner,enabled,added_by,created) VALUES(?,?,?,?,?,1,?,?)", (real,uname,name,avatar,"",u["username"],t))
-        if not TELEGRAM_TOKEN: warn = "⚠️ توكن تيليجرام غير مضبوط"
-        elif not info: warn = "⚠️ البوت غير مضاف كمسؤول في القناة"
     else: c.close(); raise HTTPException(404)
     c.commit(); c.close()
     return {"ok":True,"warn":warn}
@@ -990,6 +1273,7 @@ async def api_add_channel(kind: str, request: Request):
 async def api_bulk_add(kind: str, request: Request):
     u = require_auth(request)
     if kind not in ("kick","yt","tg"): raise HTTPException(404)
+    if kind == "tg": return JSONResponse({"error":"لا يمكن الإضافة الجماعية للتيليجرام"}, 400)
     body = await request.json()
     ids = [int(x) for x in (body.get("ids") or []) if str(x).isdigit()][:50]
     if not ids: return JSONResponse({"error":"لا توجد قنوات"},400)
@@ -1023,15 +1307,6 @@ async def api_bulk_add(kind: str, request: Request):
                 yinfo = await yt_resolve(row["identifier"])
                 c.execute("INSERT INTO yt_channels(channel_id,handle,name,avatar,banner,msg,btn_text,enabled,auto_send,last_video,last_check,added_by,created) VALUES(?,?,?,?,?,?,?,1,1,?,?,?,?)",
                     (row["identifier"],"",row["name"] or row["identifier"],row["avatar"] or "",(yinfo or {}).get("banner") or "","","",last,t,u["username"],t))
-            elif kind == "tg":
-                if c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (row["identifier"], u["username"])).fetchone():
-                    c.close(); failed += 1; errors.append(f"{row['name']}: مضافة"); continue
-                tgi = await tg_get_chat_info(row["identifier"])
-                name = (tgi or {}).get("name") or row["name"] or row["identifier"]
-                uname = (tgi or {}).get("username") or (row["identifier"] if row["identifier"].startswith("@") else "")
-                avatar = (tgi or {}).get("avatar") or row["avatar"] or ""
-                real = (tgi or {}).get("chat_id") or row["identifier"]
-                c.execute("INSERT INTO tg_channels(chat_id,username,name,avatar,banner,enabled,added_by,created) VALUES(?,?,?,?,?,1,?,?)", (real,uname,name,avatar,"",u["username"],t))
             c.commit(); c.close()
             added += 1
             if u["role"] != "owner": remaining -= 1
@@ -1048,6 +1323,9 @@ async def api_del_channel(kind: str, cid: int, request: Request):
     row = c.execute(f"SELECT * FROM {table} WHERE id=?", (cid,)).fetchone()
     if not row: c.close(); raise HTTPException(404)
     if u["role"] != "owner" and row["added_by"] != u["username"]: c.close(); raise HTTPException(403)
+    if kind == "tg":
+        # احذف اشتراكاتها
+        c.execute("DELETE FROM feed_subs WHERE tg_channel_id=?", (cid,))
     c.execute(f"DELETE FROM {table} WHERE id=?", (cid,))
     c.commit(); c.close()
     return {"ok":True}
@@ -1089,8 +1367,8 @@ async def api_refresh_channel(kind: str, cid: int, request: Request):
     if kind == "tg":
         info = await tg_get_chat_info(row["chat_id"])
         if not info: c.close(); return JSONResponse({"error":"تعذّر الجلب — تأكد أن البوت مضاف"},400)
-        c.execute("UPDATE tg_channels SET name=?,username=?,avatar=?,chat_id=? WHERE id=?",
-            (info["name"],info["username"] or row["username"],info["avatar"] or row["avatar"],info["chat_id"],cid))
+        c.execute("UPDATE tg_channels SET name=?,username=?,avatar=? WHERE id=?",
+            (info["name"],info["username"] or row["username"],info["avatar"] or row["avatar"],cid))
     else:
         info = await yt_resolve(row["channel_id"])
         if not info: c.close(); return JSONResponse({"error":"تعذّر الجلب"},400)
@@ -1099,9 +1377,7 @@ async def api_refresh_channel(kind: str, cid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — SEND
-# ═══════════════════════════════════════════════════════════
+# ═══ API — SEND ═══
 @app.get("/api/send/prefill")
 async def api_send_prefill(request: Request):
     u = require_auth(request)
@@ -1166,9 +1442,7 @@ async def api_send(request: Request):
             out["users"] += 1
     return {"ok":True,"result":out}
 
-# ═══════════════════════════════════════════════════════════
-# API — DISCORD
-# ═══════════════════════════════════════════════════════════
+# ═══ API — DISCORD ═══
 @app.get("/api/discord/channels")
 async def api_dc_channels(request: Request):
     require_discord(request)
@@ -1194,19 +1468,43 @@ async def api_dc_bots(request: Request):
 @app.get("/api/discord/feeds")
 async def api_dc_feeds(request: Request):
     u = require_discord(request)
+    is_owner_user = u["role"] == "owner"
     c = db()
-    rows = c.execute("SELECT * FROM discord_feeds WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
-    tgs = c.execute("SELECT id,name,username,avatar,enabled FROM tg_channels WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
+    if is_owner_user:
+        rows = c.execute("SELECT * FROM discord_feeds ORDER BY id DESC").fetchall()
+    else:
+        rows = c.execute("SELECT * FROM discord_feeds WHERE enabled=1 ORDER BY id DESC").fetchall()
+    # احصل على اشتراكات المستخدم
+    my_subs = {}
+    if is_owner_user:
+        subs_rows = c.execute("SELECT feed_id, tg_channel_id, enabled FROM feed_subs").fetchall()
+        for s in subs_rows:
+            my_subs.setdefault(s["feed_id"], []).append(s["tg_channel_id"])
+    else:
+        subs_rows = c.execute("SELECT feed_id, tg_channel_id, enabled FROM feed_subs WHERE username=?", (u["username"],)).fetchall()
+        for s in subs_rows:
+            my_subs.setdefault(s["feed_id"], []).append(s["tg_channel_id"])
+    # قنوات TG الخاصة بالمستخدم
+    if is_owner_user:
+        tgs = c.execute("SELECT id,name,username,avatar,enabled FROM tg_channels WHERE enabled=1 ORDER BY id DESC").fetchall()
+    else:
+        tgs = c.execute("SELECT id,name,username,avatar,enabled FROM tg_channels WHERE added_by=? AND enabled=1 ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
-    return {"rows":[dict(r) for r in rows],"known_channels":_CH_CACHE,"guilds":_G_CACHE,
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["my_subs"] = my_subs.get(d["id"], [])
+        out.append(d)
+    return {"rows":out,"known_channels":_CH_CACHE,"guilds":_G_CACHE,
             "watching":list(_CH_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
             "auto_discovery":not bool(WATCH_CHANNELS),"bot_ready":bool(discord_client and discord_client.is_ready()),
             "bot_info":_BOT_INFO,"bot_name_custom":cfg("bot_name_custom","Respect Live"),
-            "bot_invite_url":cfg("bot_invite_url",""),"self_bot_mode":_SELF_BOT,"my_tgs":[dict(r) for r in tgs]}
+            "bot_invite_url":cfg("bot_invite_url",""),"self_bot_mode":_SELF_BOT,
+            "is_owner":is_owner_user,"my_tgs":[dict(r) for r in tgs]}
 
 @app.post("/api/discord/feeds")
 async def api_dc_add_feed(request: Request):
-    u = require_discord(request)
+    u = require_owner(request)  # ⚠️ المالك فقط
     body = await request.json()
     ch = str(body.get("channel_id") or "").strip()
     if not ch or not ch.isdigit(): return JSONResponse({"error":"channel_id يجب أن يكون رقماً"},400)
@@ -1225,31 +1523,26 @@ async def api_dc_add_feed(request: Request):
     room_url = str(body.get("room_url") or "")[:500]
     use_ai = 1 if body.get("use_ai") else 0
     ai_p = str(body.get("ai_prompt") or "")[:2000]
-    tids = [int(x) for x in (body.get("target_tg_ids") or []) if str(x).isdigit()][:50]
     c = db()
-    if c.execute("SELECT 1 FROM discord_feeds WHERE channel_id=? AND added_by=?", (ch, u["username"])).fetchone():
-        c.close(); return JSONResponse({"error":"مضاف مسبقاً"},409)
+    if c.execute("SELECT 1 FROM discord_feeds WHERE channel_id=?", (ch,)).fetchone():
+        c.close(); return JSONResponse({"error":"الروم مضاف مسبقاً"},409)
     c.execute("INSERT INTO discord_feeds(channel_id,channel_name,guild_id,template,btn_text,source_type,target_tg_ids,enabled,use_original,ignore_bots,keyword_rules,fixed_image,room_url,use_ai,ai_prompt,added_by,created) VALUES(?,?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?)",
-        (ch,name,gid,tpl,btn,src,json.dumps(tids),use_orig,json.dumps(ig_bots),json.dumps(kw),fixed,room_url,use_ai,ai_p,u["username"],now()))
+        (ch,name,gid,tpl,btn,src,"[]",use_orig,json.dumps(ig_bots),json.dumps(kw),fixed,room_url,use_ai,ai_p,u["username"],now()))
     c.commit(); c.close()
     return {"ok":True}
 
 @app.patch("/api/discord/feeds/{fid}")
 async def api_dc_patch_feed(fid: int, request: Request):
-    u = require_discord(request)
+    u = require_owner(request)  # ⚠️ المالك فقط
     body = await request.json()
     c = db()
     row = c.execute("SELECT * FROM discord_feeds WHERE id=?", (fid,)).fetchone()
     if not row: c.close(); raise HTTPException(404)
-    if u["role"] != "owner" and row["added_by"] != u["username"]: c.close(); raise HTTPException(403)
     sets, vals = [], []
     for f in ("template","btn_text","fixed_image","room_url","ai_prompt"):
         if f in body: sets.append(f"{f}=?"); vals.append(str(body[f])[:2000])
     for f in ("enabled","use_original","use_ai"):
         if f in body: sets.append(f"{f}=?"); vals.append(1 if body[f] else 0)
-    if "target_tg_ids" in body:
-        tids = [int(x) for x in (body["target_tg_ids"] or []) if str(x).isdigit()][:50]
-        sets.append("target_tg_ids=?"); vals.append(json.dumps(tids))
     if "ignore_bots" in body:
         igs = [str(x) for x in (body["ignore_bots"] or [])][:50]
         sets.append("ignore_bots=?"); vals.append(json.dumps(igs))
@@ -1266,18 +1559,37 @@ async def api_dc_patch_feed(fid: int, request: Request):
 
 @app.delete("/api/discord/feeds/{fid}")
 async def api_dc_del_feed(fid: int, request: Request):
-    u = require_discord(request)
+    u = require_owner(request)  # ⚠️ المالك فقط
     c = db()
-    row = c.execute("SELECT * FROM discord_feeds WHERE id=?", (fid,)).fetchone()
-    if not row: c.close(); raise HTTPException(404)
-    if u["role"] != "owner" and row["added_by"] != u["username"]: c.close(); raise HTTPException(403)
+    c.execute("DELETE FROM feed_subs WHERE feed_id=?", (fid,))
     c.execute("DELETE FROM discord_feeds WHERE id=?", (fid,))
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — NOTIFICATIONS
-# ═══════════════════════════════════════════════════════════
+@app.post("/api/discord/feeds/{fid}/subscribe")
+async def api_dc_feed_sub(fid: int, request: Request):
+    """المستخدم يشترك بقنوات TG الخاصة به في هذا الـ feed"""
+    u = require_discord(request)
+    body = await request.json()
+    tg_ids = [int(x) for x in (body.get("tg_channel_ids") or []) if str(x).isdigit()][:50]
+    c = db()
+    # تحقق من الـ feed موجود
+    if not c.execute("SELECT 1 FROM discord_feeds WHERE id=?", (fid,)).fetchone():
+        c.close(); raise HTTPException(404)
+    # تحقق من قنوات TG
+    my_channels = set()
+    for x in c.execute("SELECT id FROM tg_channels WHERE added_by=?", (u["username"],)).fetchall():
+        my_channels.add(x["id"])
+    # احذف اشتراكات المستخدم القديمة لهذا الـ feed
+    c.execute("DELETE FROM feed_subs WHERE feed_id=? AND username=?", (fid, u["username"]))
+    # أضف الجديدة (المصرح بها فقط)
+    for tid in tg_ids:
+        if tid in my_channels:
+            c.execute("INSERT OR IGNORE INTO feed_subs(feed_id, tg_channel_id, username, enabled, created) VALUES(?,?,?,1,?)", (fid, tid, u["username"], now()))
+    c.commit(); c.close()
+    return {"ok":True}
+
+# ═══ API — NOTIFICATIONS ═══
 @app.get("/api/notifs")
 async def api_notifs(request: Request):
     u = require_auth(request)
@@ -1300,9 +1612,7 @@ async def api_notifs_clear(request: Request):
     c = db(); c.execute("DELETE FROM notifs WHERE username=?", (u["username"],)); c.commit(); c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — SUGGESTIONS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — SUGGESTIONS ═══
 @app.post("/api/suggestions")
 async def api_suggest(request: Request):
     u = require_auth(request)
@@ -1340,9 +1650,7 @@ async def api_admin_del_sug(sid: int, request: Request):
     c = db(); c.execute("DELETE FROM suggestions WHERE id=?", (sid,)); c.commit(); c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — PUSH
-# ═══════════════════════════════════════════════════════════
+# ═══ API — PUSH ═══
 @app.get("/api/push/key")
 async def api_push_key():
     if not push_available(): return JSONResponse({"error":"Push غير مفعّل"},404)
@@ -1378,9 +1686,7 @@ async def api_push_test(request: Request):
     if sent == 0: return JSONResponse({"error":"لا اشتراك فعّال"},404)
     return {"ok":True,"sent":sent}
 
-# ═══════════════════════════════════════════════════════════
-# API — UPLOAD / IMAGES
-# ═══════════════════════════════════════════════════════════
+# ═══ API — UPLOAD / IMAGES ═══
 @app.post("/api/upload")
 async def api_upload(request: Request):
     u = require_auth(request)
@@ -1407,9 +1713,7 @@ async def api_get_image(img_id: str):
     if not row: raise HTTPException(404)
     return FastResponse(content=row["data"], media_type=row["mime"], headers={"cache-control":"public, max-age=31536000, immutable"})
 
-# ═══════════════════════════════════════════════════════════
-# API — SETTINGS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — SETTINGS ═══
 @app.get("/api/settings")
 async def api_settings(request: Request):
     require_auth(request)
@@ -1472,9 +1776,7 @@ async def api_maint(request: Request):
     if text: set_cfg("maintenance_text", text)
     return {"ok":True,"maintenance":enabled==1}
 
-# ═══════════════════════════════════════════════════════════
-# API — GROQ AI
-# ═══════════════════════════════════════════════════════════
+# ═══ API — GROQ AI ═══
 @app.get("/api/ai/status")
 async def api_ai_status(request: Request):
     require_auth(request)
@@ -1509,9 +1811,7 @@ async def api_admin_groq(request: Request):
         return {"ok":True,"test":out or "فشل الاختبار"}
     return {"ok":True,"available":groq_available()}
 
-# ═══════════════════════════════════════════════════════════
-# API — ADMIN DEFAULTS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — ADMIN DEFAULTS ═══
 @app.get("/api/admin/default-channels")
 async def api_admin_defaults(request: Request):
     require_owner(request)
@@ -1615,9 +1915,7 @@ async def api_admin_patch_default(cid: int, request: Request):
     c.close()
     return {"ok":True}
 
-# ═══════════════════════════════════════════════════════════
-# API — ADMIN USERS
-# ═══════════════════════════════════════════════════════════
+# ═══ API — ADMIN USERS ═══
 @app.get("/api/admin/users")
 async def api_admin_users(request: Request):
     require_owner(request)
@@ -1689,8 +1987,9 @@ async def api_admin_del_user(uid: int, request: Request):
     if row["username"] == u["username"] or row["username"].lower() == ADMIN_USERNAME.lower():
         c.close(); return JSONResponse({"error":"لا يمكن حذف هذا الحساب"},400)
     un = row["username"]
-    for t in ("kick_channels","yt_channels","tg_channels","discord_feeds","recent_videos"):
+    for t in ("kick_channels","yt_channels","tg_channels","recent_videos"):
         c.execute(f"DELETE FROM {t} WHERE added_by=?", (un,))
+    c.execute("DELETE FROM feed_subs WHERE username=?", (un,))
     for t in ("notifs","sessions","suggestions","push_subs"):
         c.execute(f"DELETE FROM {t} WHERE username=?", (un,))
     c.execute("DELETE FROM users WHERE id=?", (uid,))
@@ -1709,7 +2008,9 @@ async def api_admin_stats(request: Request):
         "kick_live": c.execute("SELECT COUNT(*) n FROM kick_channels WHERE live=1").fetchone()["n"],
         "yt_total": c.execute("SELECT COUNT(*) n FROM yt_channels").fetchone()["n"],
         "tg_total": c.execute("SELECT COUNT(*) n FROM tg_channels").fetchone()["n"],
+        "tg_verified": c.execute("SELECT COUNT(*) n FROM tg_channels WHERE verified=1").fetchone()["n"],
         "feeds_total": c.execute("SELECT COUNT(*) n FROM discord_feeds").fetchone()["n"],
+        "feed_subs_total": c.execute("SELECT COUNT(*) n FROM feed_subs WHERE enabled=1").fetchone()["n"],
         "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"],
         "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"],
         "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"],
@@ -1726,6 +2027,8 @@ async def api_admin_stats(request: Request):
     s["maintenance"] = cfg("maintenance","0") == "1"
     s["self_bot_mode"] = _SELF_BOT
     s["bot_info"] = _BOT_INFO
+    s["public_url"] = PUBLIC_URL
+    s["webhook_set"] = bool(PUBLIC_URL and TELEGRAM_TOKEN)
     return s
 
 @app.get("/api/admin/security")
@@ -1736,9 +2039,7 @@ async def api_admin_sec(request: Request):
     c.close()
     return {"rows":[dict(r) for r in rows]}
 
-# ═══════════════════════════════════════════════════════════
-# ROOT + MANIFEST + SW + HEALTH
-# ═══════════════════════════════════════════════════════════
+# ═══ ROOT + MANIFEST + SW ═══
 @app.get("/", response_class=HTMLResponse)
 async def index():
     try:
@@ -1775,7 +2076,8 @@ async def health():
     return {"ok":True,"discord_ready":bool(discord_client and discord_client.is_ready()),
             "discord_channels":len(_CH_CACHE),"auto_discovery":not bool(WATCH_CHANNELS),
             "push_enabled":push_available(),"telegram_enabled":bool(TELEGRAM_TOKEN),
-            "groq_enabled":groq_available(),"maintenance":cfg("maintenance","0")=="1","self_bot_mode":_SELF_BOT}
+            "groq_enabled":groq_available(),"maintenance":cfg("maintenance","0")=="1",
+            "self_bot_mode":_SELF_BOT,"public_url":PUBLIC_URL}
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,1 +1,9 @@
-python-3.12.5
+.env
+.env.*
+*.db
+*.db-*
+__pycache__/
+*.pyc
+venv/
+env/
+.DS_Store

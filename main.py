@@ -1114,6 +1114,32 @@ async def lifespan(app):
     if groq_available(): print("[Groq] Enabled")
     yield
     scheduler.shutdown(wait=False)
+    scheduler = AsyncIOScheduler()
+
+@asynccontextmanager
+async def lifespan(app):
+    init_db()
+    migrate_tg_channels_per_user()
+    scheduler.add_job(job_kick, "interval", seconds=90)
+    scheduler.add_job(job_yt, "interval", seconds=300)
+    scheduler.add_job(job_cleanup, "interval", hours=6)
+    scheduler.start()
+    if DISCORD_TOKEN and discord_client:
+        try: asyncio.create_task(discord_client.start(DISCORD_TOKEN))
+        except Exception as e: print(f"[Discord] Start error: {e}")
+    else:
+        print("[Discord] No token — HTTP-only mode")
+    if TELEGRAM_TOKEN:
+        try: await setup_tg_webhook()
+        except Exception as e: print(f"[TG] webhook setup error: {e}")
+    if push_available(): print("[Push] Enabled")
+    if groq_available(): print("[Groq] Enabled")
+    yield
+    scheduler.shutdown(wait=False)
+
+app = FastAPI(lifespan=lifespan)
+
+# ═══ API — TELEGRAM WEBHOOK ═══
     # ═══ API — TELEGRAM WEBHOOK ═══
 @app.post("/api/telegram/webhook")
 async def tg_webhook(request: Request):

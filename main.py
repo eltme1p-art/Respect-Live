@@ -153,8 +153,9 @@ def init_db():
         "bot_invite_url": "", "bot_name_custom": "Respect Live Bot",
         "groq_api_key": "", "groq_model": "llama-3.3-70b-versatile",
     }
-    for k, v in defaults.items():      # ✅ صحيح
-    c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
+    # ✅ الإصلاح هنا: أضفنا .items()
+    for k, v in defaults.items():
+        c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
     c.close()
     print("[DB] Ready")
@@ -481,7 +482,7 @@ async def push_send_to_user(username, title, body, image="", url="/", tag=""):
     return sent
 
 # ═══════════════════════════════════════════════════════════
-# 🆕 TEXT PROCESSING
+# TEXT PROCESSING
 # ═══════════════════════════════════════════════════════════
 _MENTION_RE = re.compile(r"<@[!&]?\d+>")
 _ROLE_MENTION = re.compile(r"<@&\d+>")
@@ -631,7 +632,7 @@ def build_discord_text(template, data, site_name=""):
     return re.sub(r"\{(\w+)\}", repl, str(template))
 
 # ═══════════════════════════════════════════════════════════
-# 🆕 GROQ AI
+# GROQ AI
 # ═══════════════════════════════════════════════════════════
 def get_groq_key():
     return GROQ_API_KEY_ENV or cfg("groq_api_key", "")
@@ -1051,7 +1052,7 @@ async def lifespan(app):
     scheduler.add_job(job_cleanup, "interval", hours=6)
     scheduler.start()
 
-    # 🆕 تشغيل الديسكورد حسب الإعدادات
+    # تشغيل الديسكورد حسب الإعدادات
     if discord_client and DISCORD_TOKEN:
         try:
             asyncio.create_task(discord_client.start(DISCORD_TOKEN))
@@ -1104,8 +1105,8 @@ async def boot(request: Request):
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_ready": discord_client.is_ready() if discord_client else False,
         "self_bot_mode": _SELF_BOT,
-        "discord_mode": _DISCORD_MODE,  # 🆕
-        "discord_enabled": DISCORD_ENABLE,  # 🆕
+        "discord_mode": _DISCORD_MODE,
+        "discord_enabled": DISCORD_ENABLE,
     }
 
 @app.get("/api/guest-preview")
@@ -1196,8 +1197,8 @@ async def me(request: Request):
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
         "self_bot_mode": _SELF_BOT,
-        "discord_mode": _DISCORD_MODE,  # 🆕
-        "discord_enabled": DISCORD_ENABLE,  # 🆕
+        "discord_mode": _DISCORD_MODE,
+        "discord_enabled": DISCORD_ENABLE,
     }
 
 @app.patch("/api/me/profile")
@@ -1673,7 +1674,7 @@ async def discord_available_channels(request: Request):
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
         "self_bot_mode": _SELF_BOT,
-        "discord_mode": _DISCORD_MODE,  # 🆕
+        "discord_mode": _DISCORD_MODE,
     }
 
 @app.post("/api/discord/refresh")
@@ -1709,7 +1710,7 @@ async def list_feeds(request: Request):
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
         "self_bot_mode": _SELF_BOT,
-        "discord_mode": _DISCORD_MODE,  # 🆕
+        "discord_mode": _DISCORD_MODE,
         "my_tgs": [dict(r) for r in tgs],
     }
 
@@ -2434,8 +2435,8 @@ async def admin_stats(request: Request):
     stats["groq_source"] = "env" if GROQ_API_KEY_ENV else ("db" if cfg("groq_api_key", "") else "none")
     stats["maintenance"] = cfg("maintenance", "0") == "1"
     stats["self_bot_mode"] = _SELF_BOT
-    stats["discord_mode"] = _DISCORD_MODE  # 🆕
-    stats["discord_enabled"] = DISCORD_ENABLE  # 🆕
+    stats["discord_mode"] = _DISCORD_MODE
+    stats["discord_enabled"] = DISCORD_ENABLE
     stats["bot_info"] = _DISCORD_BOT_INFO
     return stats
 
@@ -2506,8 +2507,8 @@ async def health():
         "groq_enabled": groq_available(),
         "maintenance": cfg("maintenance", "0") == "1",
         "self_bot_mode": _SELF_BOT,
-        "discord_mode": _DISCORD_MODE,  # 🆕
-        "discord_enabled": DISCORD_ENABLE,  # 🆕
+        "discord_mode": _DISCORD_MODE,
+        "discord_enabled": DISCORD_ENABLE,
     }
 
 # ═══════════════════════════════════════════════════════════

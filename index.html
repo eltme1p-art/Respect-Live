@@ -377,7 +377,6 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
 .ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
 .ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
-/* ═══ TG VERIFY ═══ */
 .tgv-box{padding:18px;border:1.5px dashed var(--blue-line);border-radius:16px;background:rgba(var(--blue-rgb),.04);margin:14px 0}
 .tgv-step{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:13px;color:var(--text-2)}
 .tgv-step b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;border-radius:50%;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:12px;flex-shrink:0}
@@ -396,9 +395,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .tgv-timer{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-en);font-weight:900;color:var(--blue);font-size:13px;margin:10px 0}
 .tgv-spinner{width:20px;height:20px;border:2.5px solid rgba(var(--blue-rgb),.2);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* ✅ Fix: منع أيقونات الدرع من التمدد */
 .tgv-box > b > svg, .tgv-step > svg { width:16px; height:16px; max-width:16px; max-height:16px; flex-shrink:0; }
-::selection{background:rgba(var(--blue-rgb),.35);color:#fff}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -437,8 +434,9 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 
 <script>
 'use strict';
+console.log('[RL] script start');
 
-/* ═══ ICONS ✅ الإصلاح: shieldCheck و warn بأحجام مضبوطة ═══ */
+/* ═══ ICONS ═══ */
 const IC = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
   kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
@@ -571,7 +569,7 @@ function applyTheme(theme) {
     root.setProperty('--blue2', theme.ac);
     const hex = theme.ac.replace('#','');
     const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-    root.setProperty('--blue-rgb', `${r},${g},${b}`);
+    root.setProperty('--blue-rgb', r + ',' + g + ',' + b);
   }
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta && theme.c1) meta.setAttribute('content', theme.c1);
@@ -583,7 +581,8 @@ function showMaintenance(text) {
   m.classList.add('on'); $('#app').style.display = 'none';
 }
 
-/* ═══ PUSH ═══ */
+console.log('[RL] utils loaded');
+  /* ═══ PUSH ═══ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
   navigator.serviceWorker.addEventListener('message', e => {
@@ -632,6 +631,7 @@ async function testPush() {
 
 /* ═══ BOOT ═══ */
 async function boot() {
+  console.log('[RL] boot starting...');
   try {
     const b = await api('/api/boot');
     S.boot = b;
@@ -641,12 +641,15 @@ async function boot() {
     const sp = $('#spLogo');
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
     if (b.theme) applyTheme(b.theme);
+    console.log('[RL] boot loaded');
   } catch (e) {
+    console.log('[RL] boot failed:', e.message);
     S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false };
   }
   try {
     const me = await api('/api/me');
     S.me = me;
+    console.log('[RL] logged in as', me.user.username);
     if (S.maintenance && S.me.user.role !== 'owner') {
       setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
       showMaintenance(S.boot.maintenance_text); return;
@@ -654,7 +657,9 @@ async function boot() {
     await loadAll();
     await checkPushStatus();
     renderApp();
+    console.log('[RL] app rendered');
   } catch (e) {
+    console.log('[RL] not logged in:', e.message);
     if (S.maintenance) {
       setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
       showMaintenance(S.boot.maintenance_text); return;
@@ -759,7 +764,8 @@ function renderAuth() {
   const skip = $('#skipBtn');
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
 }
-  /* ═══ MAIN APP ═══ */
+
+/* ═══ MAIN APP ═══ */
 function renderApp() {
   $('#app').style.display = '';
   const name = (S.boot.site_name || 'Respect Live').split(' ');
@@ -1923,6 +1929,7 @@ function renderAdminStats(c) {
         النشطون: <b style="color:var(--green)">${s.users_active||0}</b><br>
         المحظورون: <b style="color:var(--red)">${s.users_banned||0}</b><br>
         قنوات TG موثّقة: <b style="color:var(--green)">${s.tg_verified||0}</b><br>
+        قنوات TG معروفة للبوت: <b style="color:var(--purple)">${s.tg_known||0}</b><br>
         روابط DC: <b>${s.feeds_total||0}</b> · اشتراكات: <b>${s.feed_subs_total||0}</b><br>
         اشتراكات Push: <b>${s.push_subs||0}</b><br>
         اقتراحات: <b style="color:var(--orange)">${s.suggestions_unread||0}</b><br>
@@ -2304,13 +2311,15 @@ async function renderAdminSystem(c) {
     </div>
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:8px">${IC.refresh} أدوات</div>
-      <button class="btn ghost wide" id="__refreshDC">${IC.refresh} تحديث كاش ديسكورد</button>
+      <button class="btn ghost wide" id="__refreshDC" style="margin-bottom:8px">${IC.refresh} تحديث كاش ديسكورد</button>
+      <button class="btn ghost wide" id="__setupWH">${IC.link} إعادة ضبط Webhook تيليجرام</button>
     </div>
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:10px">معلومات تيليجرام</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
         Public URL: <b style="font-family:var(--font-en);color:var(--text)">${esc(stats.public_url || 'غير مضبوط')}</b><br>
         Webhook: <b style="color:${stats.webhook_set?'var(--green)':'var(--red)'}">${stats.webhook_set?'مفعّل':'غير مفعّل (يعمل polling)'}</b><br>
+        قنوات معروفة للبوت: <b style="color:var(--purple)">${stats.tg_known||0}</b><br>
         <span class="mu" style="font-size:11.5px">لتفعيل Webhook أضف متغير <code>PUBLIC_URL</code> في Railway</span>
       </div>
     </div>`;
@@ -2324,6 +2333,9 @@ async function renderAdminSystem(c) {
   };
   $('#__refreshDC').onclick = async () => {
     try { const r = await api('/api/discord/refresh', { method:'POST' }); toast('تم — ' + (r.channels||0) + ' روم', 'ok'); await loadFeeds(); } catch (e) { toast(e.message, 'bad'); }
+  };
+  $('#__setupWH').onclick = async () => {
+    try { const r = await api('/api/telegram/setup-webhook', { method:'POST' }); toast(r.ok ? 'تم ضبط Webhook ✅' : 'فشل: ' + (r.description || ''), r.ok ? 'ok' : 'bad'); } catch (e) { toast(e.message, 'bad'); }
   };
 }
 
@@ -2358,7 +2370,9 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') { const m = $('#modal'); if (m && m.classList.contains('on')) m.classList.remove('on'); }
 });
 
-boot();
+console.log('[RL] all functions loaded, calling boot()...');
+boot().catch(e => { console.error('[RL] boot error:', e); });
+console.log('[RL] script end');
 </script>
 </body>
 </html>

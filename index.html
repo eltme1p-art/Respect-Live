@@ -341,6 +341,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .tg-pick-item .ck{width:20px;height:20px;border-radius:6px;flex-shrink:0;border:2px solid var(--line-2);display:grid;place-items:center;color:transparent;transition:.2s}
 .tg-pick-item.on .ck{background:var(--blue);border-color:var(--blue);color:#fff}
 .tg-pick-item .ck svg{width:12px;height:12px}
+/* Toggle switch */
 .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);margin:10px 0}
 .switch-row .sw-txt{flex:1;min-width:0}
 .switch-row b{display:block;font-size:13.5px;font-weight:900;margin-bottom:3px}
@@ -351,6 +352,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .sw i::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.28s cubic-bezier(.3,1.4,.5,1);box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .sw input:checked+i{background:var(--blue)}
 .sw input:checked+i::after{transform:translateX(-20px)}
+/* Keyword rule row */
 .kw-rule{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);margin-bottom:10px}
 .kw-rule-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .kw-rule-head b{font-size:13px;font-weight:900}
@@ -380,19 +382,6 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
 .ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
 .ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
-.dc-mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.dc-mode-card{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.02);flex:1;min-width:140px;text-align:center}
-.dc-mode-card .dc-label{font-family:var(--font-en);font-size:10px;font-weight:900;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px}
-.dc-mode-card .dc-val{font-family:var(--font-en);font-size:16px;font-weight:900;letter-spacing:1px}
-.dc-mode-card.self-bot{background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(99,102,241,.06));border-color:rgba(139,92,246,.35)}
-.dc-mode-card.self-bot .dc-val{color:var(--purple);text-shadow:0 0 12px rgba(139,92,246,.5)}
-.dc-mode-card.bot{background:linear-gradient(135deg,rgba(88,101,242,.12),rgba(71,82,196,.06));border-color:rgba(88,101,242,.35)}
-.dc-mode-card.bot .dc-val{color:#8b9dff;text-shadow:0 0 12px rgba(88,101,242,.5)}
-.dc-mode-card.disabled{background:rgba(124,135,153,.06);border-color:rgba(124,135,153,.25)}
-.dc-mode-card.disabled .dc-val{color:var(--muted)}
-.dc-mode-card.failed{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35)}
-.dc-mode-card.failed .dc-val{color:var(--red);text-shadow:0 0 12px rgba(239,68,68,.5)}
-.dc-mode-card .dc-sub{font-size:10.5px;color:var(--muted);margin-top:4px}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -429,9 +418,13 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toasts" id="toasts"></div>
 
+<!-- ❗ الجزء 2 (JavaScript) يوضع هنا -->
 <script>
 'use strict';
-  /* ICONS */
+
+/* ═══════════════════════════════════════════════════════════
+   ICONS
+   ═══════════════════════════════════════════════════════════ */
 const IC = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
   kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
@@ -467,10 +460,11 @@ const IC = {
   cog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
   sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/></svg>',
-  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>',
 };
 
-/* UTILS */
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+   ═══════════════════════════════════════════════════════════ */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
@@ -485,16 +479,6 @@ const fmtTime = ts => {
   if (d < 604800) return 'قبل ' + Math.floor(d/86400) + ' يوم';
   return new Date(ts*1000).toLocaleDateString('ar-EG');
 };
-
-function discordModeLabel(mode) {
-  const m = {
-    'self-bot': { label: 'SELF-BOT', sub: 'توكن شخصي', cls: 'self-bot' },
-    'bot':      { label: 'BOT', sub: 'بوت رسمي', cls: 'bot' },
-    'disabled': { label: 'DISABLED', sub: 'معطّل', cls: 'disabled' },
-    'failed':   { label: 'FAILED', sub: 'فشل الاتصال', cls: 'failed' },
-  };
-  return m[mode] || { label: (mode || 'UNKNOWN').toUpperCase(), sub: '', cls: 'disabled' };
-}
 
 async function api(path, opts={}) {
   const o = { credentials:'include', method: opts.method || 'GET', headers: {} };
@@ -546,7 +530,9 @@ function modal(opts) {
 }
 const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد', sub: msg, danger, okText:'تأكيد' });
 
-/* STATE */
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
 const S = {
   boot: {}, me: null, guest: false, view: 'home',
   channels: { kick: [], yt: [], tg: [] },
@@ -558,8 +544,6 @@ const S = {
   preview: null, pushEnabled: false,
   homeStats: null, maintenance: false,
   aiStatus: { available: false, model: '', source: 'none' },
-  discordMode: 'disabled',
-  discordEnabled: true,
 };
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
@@ -592,7 +576,9 @@ function hideMaintenance() {
   $('#app').style.display = '';
 }
 
-/* SERVICE WORKER + PUSH */
+/* ═══════════════════════════════════════════════════════════
+   SERVICE WORKER + PUSH
+   ═══════════════════════════════════════════════════════════ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
   navigator.serviceWorker.addEventListener('message', e => {
@@ -639,14 +625,14 @@ async function testPush() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* BOOT */
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════ */
 async function boot() {
   try {
     const b = await api('/api/boot');
     S.boot = b;
     S.maintenance = !!b.maintenance;
-    if (b.discord_mode) S.discordMode = b.discord_mode;
-    if (typeof b.discord_enabled === 'boolean') S.discordEnabled = b.discord_enabled;
     document.title = b.site_name || 'Respect Live';
     const sf = $('#spFoot'); if (sf) sf.textContent = (b.site_sub || 'STREAM MONITOR').toUpperCase();
     const sp = $('#spLogo');
@@ -658,8 +644,6 @@ async function boot() {
   try {
     const me = await api('/api/me');
     S.me = me;
-    if (me.discord_mode) S.discordMode = me.discord_mode;
-    if (typeof me.discord_enabled === 'boolean') S.discordEnabled = me.discord_enabled;
     if (S.maintenance && S.me.user.role !== 'owner') {
       setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
       showMaintenance(S.boot.maintenance_text); return;
@@ -710,7 +694,6 @@ async function loadFeeds() {
     S.botReady = !!r.bot_ready;
     S.botInfo = r.bot_info || {};
     S.myTgs = r.my_tgs || [];
-    if (r.discord_mode) S.discordMode = r.discord_mode;
   } catch (e) { S.feeds = []; S.knownChannels = {}; S.knownGuilds = {}; }
 }
 async function loadBots() {
@@ -734,7 +717,9 @@ function updateBadge() {
   else b.style.display = 'none';
 }
 
-/* AUTH */
+/* ═══════════════════════════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════════════════════════ */
 function renderAuth() {
   $('#app').style.display = '';
   $('#app').innerHTML = `
@@ -773,7 +758,9 @@ function renderAuth() {
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
 }
 
-/* MAIN APP */
+/* ═══════════════════════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════════════════════ */
 function renderApp() {
   $('#app').style.display = '';
   const name = (S.boot.site_name || 'Respect Live').split(' ');
@@ -828,7 +815,9 @@ function renderView() {
   return viewChannels(v, S.view);
 }
 
-/* HOME */
+/* ═══════════════════════════════════════════════════════════
+   HOME
+   ═══════════════════════════════════════════════════════════ */
 function viewHome(v) {
   const counts = isLogged()
     ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, dc:S.feeds.length }
@@ -897,7 +886,9 @@ function viewHome(v) {
   if (btn) btn.onclick = () => { S.guest = false; renderAuth(); };
 }
 
-/* CHANNELS */
+/* ═══════════════════════════════════════════════════════════
+   CHANNELS
+   ═══════════════════════════════════════════════════════════ */
 function limitBarHTML(kind) {
   const l = S.limits[kind] || { used:0, limit:10, remaining:10 };
   const pct = l.limit > 0 ? Math.min(100, (l.used / l.limit) * 100) : 0;
@@ -989,6 +980,7 @@ function chCard(kind, r) {
   });
   return card;
 }
+
 async function editChannelMsg(kind, r) {
   const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
   const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
@@ -1125,7 +1117,9 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* SEND MODAL */
+/* ═══════════════════════════════════════════════════════════
+   SEND MODAL
+   ═══════════════════════════════════════════════════════════ */
 async function openSendModal() {
   if (!isLogged()) return;
   let pre = { tgs: [], users: [], is_owner: isOwner() };
@@ -1211,16 +1205,15 @@ async function openSendModal() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* DISCORD */
+/* ═══════════════════════════════════════════════════════════
+   DISCORD
+   ═══════════════════════════════════════════════════════════ */
 function viewDiscord(v) {
   const chsCount = Object.keys(S.knownChannels).length;
   const guildsCount = Object.keys(S.knownGuilds).length;
   const botBadge = S.botReady ? '<span class="pill ok">'+IC.check+' البوت متصل</span>' : '<span class="pill bad">غير متصل</span>';
   const autoBadge = S.autoDiscovery ? '<span class="pill ok">اكتشاف تلقائي</span>' : '<span class="pill warn">يدوي</span>';
   const botName = S.botInfo.name || S.boot.bot_name_custom || 'Respect Live';
-  const modeInfo = discordModeLabel(S.discordMode);
-  const enableBadge = S.discordEnabled ? '<span class="pill ok">مفعّل</span>' : '<span class="pill bad">معطّل من النظام</span>';
-
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
@@ -1228,23 +1221,6 @@ function viewDiscord(v) {
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn sm" id="refreshChBtn">${IC.refresh} تحديث</button>
           <button class="btn pri sm" id="addFeedBtn">${IC.plus} ربط روم</button>
-        </div>
-      </div>
-      <div class="dc-mode-row">
-        <div class="dc-mode-card ${modeInfo.cls}">
-          <div class="dc-label">DISCORD MODE</div>
-          <div class="dc-val">${esc(modeInfo.label)}</div>
-          <div class="dc-sub">${esc(modeInfo.sub)}</div>
-        </div>
-        <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}">
-          <div class="dc-label">ENABLED</div>
-          <div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div>
-          <div class="dc-sub">${S.discordEnabled?'يعمل':'متوقف'}</div>
-        </div>
-        <div class="dc-mode-card ${S.botReady?'bot':'failed'}">
-          <div class="dc-label">CONNECTED</div>
-          <div class="dc-val">${S.botReady?'YES':'NO'}</div>
-          <div class="dc-sub">${S.botReady?chsCount+' روم':'غير متصل'}</div>
         </div>
       </div>
       <div class="ad-user-card" style="margin-bottom:14px">
@@ -1255,11 +1231,11 @@ function viewDiscord(v) {
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        ${botBadge} ${autoBadge} ${enableBadge}
+        ${botBadge} ${autoBadge}
         <span class="pill">${IC.dc} ${chsCount} روم</span>
         <span class="pill">${S.feeds.length} ربط</span>
       </div>
-      ${!S.botReady ? `<div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8"><b style="color:var(--red)">⚠️ البوت غير متصل</b><br>${!S.discordEnabled ? 'البوت معطّل — اضبط <code>DISCORD_ENABLE=1</code> في .env' : (S.discordMode === 'failed' ? 'فشل الاتصال — تأكد من التوكن والمكتبات' : 'تأكد من DISCORD_BOT_TOKEN')}</div>` : ''}
+      ${!S.botReady ? `<div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8"><b style="color:var(--red)">⚠️ البوت غير متصل</b><br>تأكد من DISCORD_BOT_TOKEN</div>` : ''}
       ${chsCount > 0 ? `<details style="margin-bottom:16px;padding:12px 14px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">الرومات المتاحة (${chsCount})</summary><div style="margin-top:12px">${Object.entries(S.knownChannels).map(([id, info]) => `<div class="discord-ch-item"><div class="ic">${IC.dc}</div><div class="if"><b>#${esc(info.name)}</b><small>${esc(info.guild||'')} · ${esc(id)}</small></div></div>`).join('')}</div></details>` : ''}
       ${S.feeds.length ? `<div id="feedsList"></div>` : `<div class="empty"><div class="em-icon">${IC.dc}</div><h3>لا توجد رومات مربوطة</h3><p>اربط روم ديسكورد</p>${chsCount ? `<button class="btn pri" id="emptyAddFeed">${IC.plus} ربط</button>` : ''}</div>`}
     </div>`;
@@ -1414,9 +1390,13 @@ async function editFeed(f) {
       });
       $$('#__botList .bot-item').forEach(item => {
         item.onclick = (e) => {
-          if (e.target.tagName === 'INPUT' || e.target.closest('.st')) {}
+          if (e.target.tagName === 'INPUT' || e.target.closest('.st')) {
+            // also toggle on status click
+          }
           const cb = item.querySelector('input[type="checkbox"]');
-          if (e.target.closest('.st') || e.target === item) cb.checked = !cb.checked;
+          if (e.target.closest('.st') || e.target === item) {
+            cb.checked = !cb.checked;
+          }
           item.classList.toggle('on', cb.checked);
           item.querySelector('.st').textContent = cb.checked ? 'مستثنى' : 'مقبول';
         };
@@ -1430,11 +1410,13 @@ async function editFeed(f) {
       function bindKwRules() {
         $$('#__kwList .kw-rule').forEach((el, idx) => {
           const rule = keywordRules[idx];
+          // Delete
           el.querySelector('[data-kwdel]').onclick = () => {
             keywordRules.splice(idx, 1);
             $('#__kwList').innerHTML = keywordRules.map((r, i) => renderKwRule(r, i)).join('');
             bindKwRules();
           };
+          // Add keyword
           const kwInput = el.querySelector('input[data-kwin]');
           const kwBtn = el.querySelector('[data-kwadd]');
           const addKw = () => {
@@ -1448,6 +1430,7 @@ async function editFeed(f) {
           };
           kwBtn.onclick = addKw;
           kwInput.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addKw(); } };
+          // Image
           const imgInput = el.querySelector('input[data-kwimg]');
           imgInput.oninput = () => {
             rule.image = imgInput.value.trim();
@@ -1501,6 +1484,7 @@ async function editFeed(f) {
   const useOrig = $('#__useOrig')?.checked ? 1 : 0;
   const useAi = $('#__useAi')?.checked ? 1 : 0;
   const aiPrompt = ($('#__aiPrompt')?.value || '').trim();
+  // Collect final keyword rules (may include empty ones)
   const finalRules = keywordRules.filter(rule => rule.keywords && rule.keywords.length > 0 && rule.image);
   try {
     await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: {
@@ -1611,7 +1595,10 @@ async function openAddFeed() {
     await loadFeeds(); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
-/* NOTIFICATIONS */
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════ */
 function viewNotifs(v) {
   v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الإشعارات <span>.</span></div>${S.notifs.length ? `<div style="display:flex;gap:7px"><button class="btn sm ghost" id="readAll">قرأت الكل</button><button class="btn sm danger" id="clearAll">مسح</button></div>` : ''}</div><div id="ntList"></div></div>`;
   const l = $('#ntList');
@@ -1626,7 +1613,9 @@ function viewNotifs(v) {
   const ca = $('#clearAll'); if (ca) ca.onclick = async () => { const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true); if (!ok) return; try { await api('/api/notifs/clear', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
 }
 
-/* ACCOUNT MENU */
+/* ═══════════════════════════════════════════════════════════
+   ACCOUNT MENU
+   ═══════════════════════════════════════════════════════════ */
 function openAccountMenu() {
   if (!isLogged()) { if (S.guest) { S.guest = false; renderAuth(); } return; }
   const old = $('#accMenu'); if (old) old.remove();
@@ -1717,7 +1706,9 @@ async function openSuggestion() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ADMIN */
+/* ═══════════════════════════════════════════════════════════
+   ADMIN
+   ═══════════════════════════════════════════════════════════ */
 async function openAdmin() {
   if (!isOwner()) { S.view = 'home'; return renderApp(); }
   await loadAdminData();
@@ -1731,8 +1722,6 @@ async function loadAdminData() {
     ]);
     S.admin.users = users.rows || []; S.admin.defaults = defaults.rows || [];
     S.admin.stats = stats || {}; S.admin.suggestions = suggestions.rows || []; S.admin.sec = sec.rows || [];
-    if (S.admin.stats.discord_mode) S.discordMode = S.admin.stats.discord_mode;
-    if (typeof S.admin.stats.discord_enabled === 'boolean') S.discordEnabled = S.admin.stats.discord_enabled;
   } catch (e) { toast(e.message, 'bad'); }
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
 }
@@ -1778,7 +1767,6 @@ function renderAdminContent() {
 
 function renderAdminStats(c) {
   const s = S.admin.stats;
-  const modeInfo = discordModeLabel(S.discordMode);
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الإحصائيات <span>.</span></div></div>
     <div class="stats" style="margin:0 0 20px">
@@ -1786,11 +1774,6 @@ function renderAdminStats(c) {
       <div class="s"><b>${s.kick_total||0}</b><small>كيك</small></div>
       <div class="s"><b>${s.yt_total||0}</b><small>يوتيوب</small></div>
       <div class="s"><b>${s.tg_total||0}</b><small>تيليجرام</small></div>
-    </div>
-    <div class="dc-mode-row" style="margin-bottom:20px">
-      <div class="dc-mode-card ${modeInfo.cls}"><div class="dc-label">DISCORD MODE</div><div class="dc-val">${esc(modeInfo.label)}</div><div class="dc-sub">${esc(modeInfo.sub)}</div></div>
-      <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}"><div class="dc-label">DISCORD ENABLE</div><div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div><div class="dc-sub">${S.discordEnabled?'يعمل':'متوقف'}</div></div>
-      <div class="dc-mode-card ${s.bot_info?.name?'bot':'disabled'}"><div class="dc-label">BOT</div><div class="dc-val">${s.bot_info?.name ? esc(s.bot_info.name.slice(0,10)) : 'N/A'}</div><div class="dc-sub">${s.discord_ready?'متصل':'غير متصل'}</div></div>
     </div>
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:15px;margin-bottom:10px">الخدمات</div>
@@ -1812,8 +1795,6 @@ function renderAdminStats(c) {
         اشتراكات Push: <b>${s.push_subs||0}</b><br>
         اقتراحات: <b style="color:var(--orange)">${s.suggestions_unread||0}</b><br>
         ${s.bot_info?.name ? 'اسم البوت: <b>'+esc(s.bot_info.name)+'</b><br>' : ''}
-        وضع الديسكورد: <b style="color:var(--blue)">${esc(modeInfo.label)}</b><br>
-        تفعيل الديسكورد: <b style="color:${S.discordEnabled?'var(--green)':'var(--red)'}">${S.discordEnabled?'مفعّل':'معطّل'}</b>
       </div>
     </div>`;
 }
@@ -2049,6 +2030,9 @@ async function renderAdminAppearance(c) {
   };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — GROQ AI
+   ═══════════════════════════════════════════════════════════ */
 async function renderAdminAI(c) {
   await loadSettings();
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
@@ -2103,7 +2087,7 @@ async function renderAdminAI(c) {
   $('#__gsave').onclick = async () => {
     const body = { model: $('#__gmodel').value };
     const key = $('#__gkey')?.value.trim();
-    if (key && st.source !== 'env') body.api_key = key;
+    if (key && !st.source === 'env') body.api_key = key;
     try {
       await api('/api/admin/groq', { method:'POST', body });
       toast('تم الحفظ', 'ok'); await loadSettings(); renderAdminAI(c);
@@ -2203,42 +2187,8 @@ async function renderAdminSystem(c) {
   await loadSettings();
   const s = S.settings || {};
   const isMnt = s.maintenance === '1';
-  const modeInfo = discordModeLabel(S.discordMode);
-  const selfBot = S.discordMode === 'self-bot';
-  const isDisabled = S.discordMode === 'disabled';
-  const isFailed = S.discordMode === 'failed';
-
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">النظام <span>.</span></div></div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:12px">${IC.dc} حالة الديسكورد</div>
-      <div class="dc-mode-row" style="margin-bottom:14px">
-        <div class="dc-mode-card ${modeInfo.cls}">
-          <div class="dc-label">MODE</div>
-          <div class="dc-val">${esc(modeInfo.label)}</div>
-          <div class="dc-sub">${esc(modeInfo.sub)}</div>
-        </div>
-        <div class="dc-mode-card ${S.discordEnabled?'bot':'disabled'}">
-          <div class="dc-label">ENABLED</div>
-          <div class="dc-val">${S.discordEnabled?'ON':'OFF'}</div>
-          <div class="dc-sub">DISCORD_ENABLE</div>
-        </div>
-        <div class="dc-mode-card ${S.botReady?'bot':'failed'}">
-          <div class="dc-label">READY</div>
-          <div class="dc-val">${S.botReady?'YES':'NO'}</div>
-          <div class="dc-sub">${S.botReady?'متصل':'غير متصل'}</div>
-        </div>
-      </div>
-      <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
-        <div>🔹 <b style="color:var(--purple)">Self-Bot:</b> يستخدم توكنك الشخصي — يقرأ كل الرسائل</div>
-        <div>🔹 <b style="color:#8b9dff">Bot:</b> بوت رسمي — قد لا يقرأ رسائل البوتات</div>
-        <div>🔹 <b style="color:var(--muted)">Disabled:</b> معطّل من <code>.env</code> (DISCORD_ENABLE=0)</div>
-        <div>🔹 <b style="color:var(--red)">Failed:</b> فشل — تحقق من التوكن والمكتبات</div>
-      </div>
-      ${isDisabled ? `<div style="padding:10px 14px;background:rgba(124,135,153,.10);border:1px solid rgba(124,135,153,.3);border-radius:10px;font-size:12.5px;margin-top:10px">💡 لتشغيله: <code>DISCORD_ENABLE=1</code> في <code>.env</code> ثم أعد التشغيل</div>` : ''}
-      ${isFailed ? `<div style="padding:10px 14px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12.5px;margin-top:10px">⚠️ تحقق من: <code>DISCORD_BOT_TOKEN</code> + ثبّت <code>discord.py-self</code> إذا تريد Self-Bot</div>` : ''}
-      ${selfBot ? `<div style="padding:10px 14px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:12.5px;margin-top:10px;color:var(--purple)">⚠️ Self-Bot مخالف لشروط ديسكورد — الحساب معرّض للحظر</div>` : ''}
-    </div>
     <div class="ad-user-card" style="${isMnt ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)' : ''}">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:8px;display:flex;align-items:center;gap:10px">${IC.wrench} وضع الصيانة ${isMnt ? '<span class="pill bad">مفعّل</span>' : '<span class="pill ok">معطّل</span>'}</div>
       <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">الزوار والمستخدمون يشوفون شاشة "صيانة" — الأدمن فقط يدخل.</div>
@@ -2264,7 +2214,9 @@ async function renderAdminSystem(c) {
   };
 }
 
-/* EVENT DELEGATION */
+/* ═══════════════════════════════════════════════════════════
+   EVENT DELEGATION
+   ═══════════════════════════════════════════════════════════ */
 document.addEventListener('click', e => {
   const item = e.target.closest('.sug-item');
   if (item) {

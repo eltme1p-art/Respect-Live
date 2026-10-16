@@ -1,40 +1,9 @@
-# Environment (لا ترفع هذه أبداً)
 .env
-.env.local
-.env.production
-.env.*.local
-
-# Database
+.env.*
 *.db
-*.db-journal
-*.db-wal
-*.db-shm
-respect.db*
-
-# Python
+*.db-*
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+*.pyc
 venv/
 env/
-ENV/
-.venv/
-build/
-dist/
-*.egg-info/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
 .DS_Store
-Thumbs.db
-
-# Logs
-*.log
-logs/

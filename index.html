@@ -377,10 +377,11 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
 .ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
 .ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
-/* ═══ TG VERIFY STYLES ═══ */
+/* ═══ TG VERIFY ═══ */
 .tgv-box{padding:18px;border:1.5px dashed var(--blue-line);border-radius:16px;background:rgba(var(--blue-rgb),.04);margin:14px 0}
 .tgv-step{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:13px;color:var(--text-2)}
-.tgv-step b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:12px;flex-shrink:0}
+.tgv-step b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;border-radius:50%;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:12px;flex-shrink:0}
+.tgv-step b svg{width:14px;height:14px;max-width:14px;max-height:14px}
 .tgv-step.done b{background:var(--green);border-color:var(--green);color:#fff}
 .tgv-step.active b{background:var(--blue);border-color:var(--blue);color:#fff;animation:chPulse 1.9s infinite}
 .tgv-chat{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);margin:14px 0}
@@ -395,19 +396,14 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .tgv-timer{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-en);font-weight:900;color:var(--blue);font-size:13px;margin:10px 0}
 .tgv-spinner{width:20px;height:20px;border:2.5px solid rgba(var(--blue-rgb),.2);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ch-badge.owner{background:rgba(245,180,0,.95);color:#000;top:12px;right:12px}
-.sub-channels{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.sub-channels .pill{cursor:pointer;transition:.18s}
-.sub-channels .pill.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* ✅ Fix: منع أيقونات الدرع من التمدد */
+.tgv-box > b > svg, .tgv-step > svg { width:16px; height:16px; max-width:16px; max-height:16px; flex-shrink:0; }
+::selection{background:rgba(var(--blue-rgb),.35);color:#fff}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
 ::-webkit-scrollbar-thumb:hover{background:rgba(var(--blue-rgb),.48)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-
-b>svg, small>svg, span>svg, .pill>svg { max-width:20px; max-height:20px; flex-shrink:0; }
-.tgv-step svg { width:14px; height:14px; flex-shrink:0; }
-</style>
 </style>
 </head>
 <body>
@@ -442,7 +438,7 @@ b>svg, small>svg, span>svg, .pill>svg { max-width:20px; max-height:20px; flex-sh
 <script>
 'use strict';
 
-/* ═══ ICONS ═══ */
+/* ═══ ICONS ✅ الإصلاح: shieldCheck و warn بأحجام مضبوطة ═══ */
 const IC = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
   kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
@@ -478,7 +474,9 @@ const IC = {
   cog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
   sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/></svg>',
-warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',shieldCheck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',};
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  shieldCheck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+};
 
 /* ═══ UTILS ═══ */
 const $ = (s, r=document) => r.querySelector(s);
@@ -557,7 +555,6 @@ const S = {
   preview: null, pushEnabled: false,
   homeStats: null, maintenance: false,
   aiStatus: { available: false, model: '', source: 'none' },
-  tgVerifyPoll: null,
 };
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
@@ -762,8 +759,7 @@ function renderAuth() {
   const skip = $('#skipBtn');
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
 }
-
-/* ═══ MAIN APP ═══ */
+  /* ═══ MAIN APP ═══ */
 function renderApp() {
   $('#app').style.display = '';
   const name = (S.boot.site_name || 'Respect Live').split(' ');
@@ -910,7 +906,7 @@ function viewChannels(v, kind) {
         ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull ? 'disabled' : ''}>${IC.plus} ${isTg ? 'توثيق قناة' : 'إضافة'}</button>` : ''}
       </div>
       ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
-      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green)">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل لك رمز على تيليجرام للتأكد أنك صاحبها.</span></div>` : ''}
+      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green);display:inline-flex;align-items:center;gap:6px">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل لك رمز على تيليجرام للتأكد أنك صاحبها.</span></div>` : ''}
       <div id="cList"></div>
     </div>`;
   const list = $('#cList');
@@ -1119,7 +1115,8 @@ async function openAddChannel(kind) {
     await loadChannels(kind); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
-  /* ═══ TG VERIFY FLOW (جديد) ═══ */
+
+/* ═══ TG VERIFY ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) {
@@ -1129,10 +1126,9 @@ async function openTgVerify() {
   if (lim.remaining <= 0) {
     return modal({ title:'وصلت الحد', sub:`الحد الأقصى ${lim.limit} قنوات تيليجرام`, okText:'حسناً', cancel:false });
   }
-  // المرحلة 1: إدخال بيانات
   const html = `
-    <div style="padding:14px 16px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:14px;font-size:12.5px;line-height:1.9">
-      <b style="color:var(--blue);display:flex;align-items:center;gap:6px">${IC.shieldCheck} خطوات التوثيق</b>
+    <div class="tgv-box">
+      <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">${IC.shieldCheck} خطوات التوثيق</b>
       <div class="tgv-step active" data-step="1"><b>1</b> أدخل بيانات قناتك وحسابك</div>
       <div class="tgv-step" data-step="2"><b>2</b> سنرسل لك رسالة في تيليجرام — اضغط "✅ نعم"</div>
       <div class="tgv-step" data-step="3"><b>3</b> انسخ الرمز المكوّن من 6 أرقام والصقه هنا</div>
@@ -1166,6 +1162,7 @@ async function openTgVerify() {
     chatName = res.chat_name || '';
     chatAvatar = res.chat_avatar || '';
     toast('تم إرسال الرسالة — تفقد تيليجرام', 'ok');
+    if (res.warn) setTimeout(() => toast(res.warn, ''), 700);
   } catch (e) {
     return toast(e.message, 'bad');
   }
@@ -1173,7 +1170,6 @@ async function openTgVerify() {
 }
 
 async function tgVerifyWait(verifyId, chatName, chatAvatar) {
-  // المرحلة 2: انتظار التأكيد
   const html = `
     <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
     <div class="tgv-chat">
@@ -1192,14 +1188,12 @@ async function tgVerifyWait(verifyId, chatName, chatAvatar) {
       <button class="btn sm ghost" id="__vcancel">إلغاء الطلب</button>
     </div>`;
   modal({ title:'بانتظار التأكيد', sub:'تحقق من رسائل تيليجرام', html, okText:'لدي الرمز بالفعل', cancel:false, wide: true });
-  // عدّاد تنازلي
   let left = 600;
   const timer = setInterval(() => {
     left--;
     const s = document.getElementById('__vtsec'); if (s) s.textContent = left;
     if (left <= 0) { clearInterval(timer); toast('انتهت مدة التوثيق', 'bad'); }
   }, 1000);
-  // زر الإلغاء
   setTimeout(() => {
     const c = document.getElementById('__vcancel');
     if (c) c.onclick = async () => {
@@ -1209,7 +1203,6 @@ async function tgVerifyWait(verifyId, chatName, chatAvatar) {
       toast('تم إلغاء الطلب', 'ok');
     };
   }, 100);
-  // Polling
   let polls = 0;
   const pollInterval = setInterval(async () => {
     polls++;
@@ -1289,14 +1282,14 @@ async function openSendModal() {
     <label class="fld"><span>نص الزر</span><input type="text" id="__btnT" placeholder="اختياري"></label>
     <label class="fld"><span>رابط الزر</span><input type="text" id="__btnU" placeholder="https://..."></label>
     <label class="fld"><span>قنوات TG</span></label>
-    <div class="rads" style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <label class="pill" style="cursor:pointer"><input type="radio" name="tgm" value="none" checked style="margin-left:6px">بدون</label>
       <label class="pill" style="cursor:pointer"><input type="radio" name="tgm" value="all" style="margin-left:6px">الكل</label>
       <label class="pill" style="cursor:pointer"><input type="radio" name="tgm" value="pick" style="margin-left:6px">تحديد</label>
     </div>
     <div class="tg-pick-grid" id="__tgList">${tgHTML}</div>
     ${pre.is_owner && pre.users.length ? `<label class="fld" style="margin-top:14px"><span>المستخدمون</span></label>
-      <div class="rads" style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <label class="pill" style="cursor:pointer"><input type="radio" name="usm" value="none" checked style="margin-left:6px">بدون</label>
         <label class="pill" style="cursor:pointer"><input type="radio" name="usm" value="all" style="margin-left:6px">الكل</label>
         <label class="pill" style="cursor:pointer"><input type="radio" name="usm" value="pick" style="margin-left:6px">تحديد</label>
@@ -1349,7 +1342,7 @@ async function openSendModal() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ DISCORD (مُحدَّث) ═══ */
+/* ═══ DISCORD ═══ */
 function viewDiscord(v) {
   const chsCount = Object.keys(S.knownChannels).length;
   const guildsCount = Object.keys(S.knownGuilds).length;
@@ -1380,7 +1373,7 @@ function viewDiscord(v) {
       </div>
       ${!S.botReady ? `<div style="padding:14px 16px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8"><b style="color:var(--red)">⚠️ البوت غير متصل</b><br>تأكد من DISCORD_BOT_TOKEN</div>` : ''}
       ${!S.isOwnerView ? `<div style="padding:14px 16px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
-        <b style="color:var(--blue);display:flex;align-items:center;gap:6px">${IC.link} كيف يعمل هذا القسم؟</b>
+        <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px">${IC.link} كيف يعمل هذا القسم؟</b>
         <div class="mu" style="margin-top:8px">الإدارة تضيف روابط ديسكورد → تختار أنت القنوات التي تريد استقبال الرسائل فيها.<br>اضغط <b>"متابعة"</b> في أي رابط لاختيار قنواتك.</div>
       </div>` : ''}
       ${chsCount > 0 ? `<details style="margin-bottom:16px;padding:12px 14px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><summary style="cursor:pointer;font-weight:900;font-size:13px;color:var(--blue)">الرومات المتاحة (${chsCount})</summary><div style="margin-top:12px;max-height:280px;overflow-y:auto">${Object.entries(S.knownChannels).map(([id, info]) => `<div class="discord-ch-item"><div class="ic">${IC.dc}</div><div class="if"><b>#${esc(info.name)}</b><small>${esc(info.guild||'')} · ${esc(id)}</small></div></div>`).join('')}</div></details>` : ''}

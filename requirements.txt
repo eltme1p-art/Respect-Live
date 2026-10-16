@@ -1,5 +1,5 @@
-discord.py-self==2.4.1
-aiohttp>=3.9.0
+discord.py-self==2.1.0
+aiohttp
 fastapi
 uvicorn[standard]
 httpx

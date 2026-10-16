@@ -1,4 +1,4 @@
-"""Respect Live — مراقبة قنوات البث + بوت ديسكورد"""
+"""Respect Live — نظام مراقبة كامل (Self-bot + Groq AI)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -11,16 +11,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ═══════════════════════════════════════════════════════════
+# CONFIG
+# ═══════════════════════════════════════════════════════════
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 SESSION_SECRET = os.getenv("SESSION_SECRET", secrets.token_hex(32))
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
-DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
-DISCORD_GUILD_ID = os.getenv("DISCORD_GUILD_ID", "").strip()
+DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")  # ⚠️ user token للـ self-bot
+GROQ_API_KEY_ENV = os.getenv("GROQ_API_KEY", "")    # اختياري — لو ما حبيت تخزنه في DB
 WATCH_CHANNELS = [c.strip() for c in os.getenv("DISCORD_WATCH_CHANNELS", "").split(",") if c.strip()]
 ALLOWED_GUILDS = [g.strip() for g in os.getenv("DISCORD_ALLOWED_GUILDS", "").split(",") if g.strip()]
-if DISCORD_GUILD_ID and DISCORD_GUILD_ID not in ALLOWED_GUILDS:
-    ALLOWED_GUILDS.append(DISCORD_GUILD_ID)
 VAPID_PUBLIC = os.getenv("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.getenv("VAPID_PRIVATE_KEY", "")
 VAPID_EMAIL = os.getenv("VAPID_EMAIL", "mailto:admin@example.com")
@@ -65,11 +66,12 @@ CREATE INDEX IF NOT EXISTS idx_yt_by ON yt_channels(added_by);
 CREATE INDEX IF NOT EXISTS idx_yt_check ON yt_channels(enabled, last_check);
 CREATE TABLE IF NOT EXISTS tg_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_tg_by ON tg_channels(added_by);
-CREATE TABLE IF NOT EXISTS discord_feeds (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '', template TEXT DEFAULT '', btn_text TEXT DEFAULT 'عرض', source_type TEXT DEFAULT 'generic', target_tg_ids TEXT DEFAULT '', enabled INTEGER DEFAULT 1, added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
+CREATE TABLE IF NOT EXISTS discord_feeds (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT NOT NULL, channel_name TEXT DEFAULT '', guild_id TEXT DEFAULT '', template TEXT DEFAULT '', btn_text TEXT DEFAULT 'عرض الروم', source_type TEXT DEFAULT 'generic', target_tg_ids TEXT DEFAULT '', enabled INTEGER DEFAULT 1, use_original INTEGER DEFAULT 1, ignore_bots TEXT DEFAULT '', keyword_rules TEXT DEFAULT '', fixed_image TEXT DEFAULT '', room_url TEXT DEFAULT '', use_ai INTEGER DEFAULT 0, ai_prompt TEXT DEFAULT '', added_by TEXT NOT NULL, created INTEGER, UNIQUE(channel_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_df_by ON discord_feeds(added_by);
 CREATE INDEX IF NOT EXISTS idx_df_ch ON discord_feeds(channel_id, enabled);
 CREATE TABLE IF NOT EXISTS discord_seen (message_id TEXT PRIMARY KEY, ts INTEGER);
 CREATE INDEX IF NOT EXISTS idx_ds_ts ON discord_seen(ts);
+CREATE TABLE IF NOT EXISTS discord_bots (id TEXT PRIMARY KEY, name TEXT DEFAULT '', avatar TEXT DEFAULT '', first_seen INTEGER, last_seen INTEGER, seen_count INTEGER DEFAULT 1);
 CREATE TABLE IF NOT EXISTS notifs (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, title TEXT DEFAULT '', body TEXT DEFAULT '', image TEXT DEFAULT '', btn_text TEXT DEFAULT '', btn_url TEXT DEFAULT '', kind TEXT DEFAULT 'admin', ts INTEGER, is_read INTEGER DEFAULT 0);
 CREATE INDEX IF NOT EXISTS idx_notifs ON notifs(username, ts);
 CREATE TABLE IF NOT EXISTS recent_videos (id INTEGER PRIMARY KEY AUTOINCREMENT, video_id TEXT NOT NULL, ch_name TEXT DEFAULT '', title TEXT DEFAULT '', thumb TEXT DEFAULT '', url TEXT DEFAULT '', ts INTEGER, added_by TEXT NOT NULL, UNIQUE(video_id, added_by));
@@ -87,7 +89,7 @@ CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 def init_db():
     c = db()
     c.executescript(SCHEMA)
-    # Add missing columns (safe migration)
+    # Migrations
     additions = [
         ("users", "can_discord", "INTEGER DEFAULT 0"),
         ("users", "avatar", "TEXT DEFAULT ''"),
@@ -97,8 +99,16 @@ def init_db():
         ("yt_channels", "auto_send", "INTEGER DEFAULT 1"),
         ("yt_channels", "banner", "TEXT DEFAULT ''"),
         ("tg_channels", "banner", "TEXT DEFAULT ''"),
-        ("discord_feeds", "btn_text", "TEXT DEFAULT 'عرض'"),
+        ("discord_feeds", "btn_text", "TEXT DEFAULT 'عرض الروم'"),
         ("discord_feeds", "target_tg_ids", "TEXT DEFAULT ''"),
+        ("discord_feeds", "guild_id", "TEXT DEFAULT ''"),
+        ("discord_feeds", "use_original", "INTEGER DEFAULT 1"),
+        ("discord_feeds", "ignore_bots", "TEXT DEFAULT ''"),
+        ("discord_feeds", "keyword_rules", "TEXT DEFAULT ''"),
+        ("discord_feeds", "fixed_image", "TEXT DEFAULT ''"),
+        ("discord_feeds", "room_url", "TEXT DEFAULT ''"),
+        ("discord_feeds", "use_ai", "INTEGER DEFAULT 0"),
+        ("discord_feeds", "ai_prompt", "TEXT DEFAULT ''"),
     ]
     for tbl, col, typ in additions:
         try:
@@ -121,22 +131,21 @@ def init_db():
     defaults = {
         "site_name": SITE_NAME, "site_sub": "STREAM MONITOR · OFFICIAL",
         "hero_title": "مراقبة", "hero_accent": "القنوات.",
-        "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد. إشعارات فورية عند أي بث أو فيديو جديد.",
+        "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.",
         "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>",
         "tpl_yt": "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>",
-        "tpl_discord": "<b>{author}</b>\n\n{content}",
-        "tpl_twitter": "<b>{author}</b>\n\n{content}",
-        "tpl_youtube_dc": "<b>{title}</b>\n\n{author}",
+        "tpl_discord": "<b>{name}</b>\n\n{content}",
+        "tpl_twitter": "<b>{name}</b>\n\n{content}",
+        "tpl_youtube_dc": "<b>{title}</b>\n\n{name}",
         "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو",
-        "btn_tg": "عرض القناة", "btn_discord": "عرض",
+        "btn_tg": "عرض القناة", "btn_discord": "عرض الروم",
         "lim_kick": "10", "lim_yt": "5", "lim_tg": "3",
         "guest_mode": "1", "guest_blur": "14",
         "site_theme": "default", "site_logo": "",
         "site_c1": "#030508", "site_c2": "#0a0f18", "site_ac": "#0b55ea",
-        "maintenance": "0",
-        "maintenance_text": "الموقع في صيانة مؤقتة — نرجع قريباً",
-        "bot_invite_url": "",
-        "bot_name_custom": "Respect Live Bot",
+        "maintenance": "0", "maintenance_text": "الموقع في صيانة مؤقتة — نرجع قريباً",
+        "bot_invite_url": "", "bot_name_custom": "Respect Live Bot",
+        "groq_api_key": "", "groq_model": "llama-3.3-70b-versatile",
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
@@ -232,7 +241,7 @@ def require_discord_access(request):
         return u
     if u.get("can_discord") == 1:
         return u
-    raise HTTPException(403, "غير مصرح بالوصول لصفحة ديسكورد")
+    raise HTTPException(403, "غير مصرح")
 
 def get_user_limits(username, role):
     if role == "owner":
@@ -267,6 +276,9 @@ def limit_info(username, kind, role):
     c.close()
     return {"used": used, "limit": limit, "remaining": max(0, limit - used)}
 
+# ═══════════════════════════════════════════════════════════
+# TELEGRAM
+# ═══════════════════════════════════════════════════════════
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN:
         return False
@@ -346,6 +358,9 @@ def norm_chat(s):
         return "@" + s
     return None
 
+# ═══════════════════════════════════════════════════════════
+# KICK
+# ═══════════════════════════════════════════════════════════
 async def kick_fetch(slug):
     h = {"User-Agent": UA, "Accept": "application/json", "Referer": "https://kick.com/"}
     async with httpx.AsyncClient(timeout=15, headers=h) as c:
@@ -367,6 +382,9 @@ async def kick_fetch(slug):
                 print(f"[KICK] {e}")
     return None
 
+# ═══════════════════════════════════════════════════════════
+# YOUTUBE
+# ═══════════════════════════════════════════════════════════
 async def yt_feed(channel_id):
     try:
         async with httpx.AsyncClient(timeout=15, headers={"User-Agent": UA}) as c:
@@ -421,6 +439,9 @@ async def yt_resolve(input_str):
             return None
     return None
 
+# ═══════════════════════════════════════════════════════════
+# PUSH
+# ═══════════════════════════════════════════════════════════
 def push_available():
     return bool(VAPID_PUBLIC and VAPID_PRIVATE)
 
@@ -454,9 +475,222 @@ async def push_send_to_user(username, title, body, image="", url="/", tag=""):
     return sent
 
 # ═══════════════════════════════════════════════════════════
-# DISCORD BOT
+# 🆕 TEXT PROCESSING
 # ═══════════════════════════════════════════════════════════
-discord_client = discord.Client(intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
+_MENTION_RE = re.compile(r"<@[!&]?\d+>")
+_ROLE_MENTION = re.compile(r"<@&\d+>")
+_CHANNEL_MENTION = re.compile(r"<#\d+>")
+_CUSTOM_EMOJI = re.compile(r"<a?:\w+:\d+>")
+
+def clean_mentions(text):
+    """يزيل كل أنواع المنشن من النص"""
+    if not text:
+        return ""
+    t = str(text)
+    t = _MENTION_RE.sub("", t)
+    t = _ROLE_MENTION.sub("", t)
+    t = _CHANNEL_MENTION.sub("", t)
+    t = re.sub(r"@everyone\b", "", t)
+    t = re.sub(r"@here\b", "", t)
+    # إزالة custom emojis
+    t = _CUSTOM_EMOJI.sub("", t)
+    # تنظيف المسافات الزائدة
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+def extract_discord_message(msg):
+    """استخراج كامل من رسالة ديسكورد (content + embeds + attachments)"""
+    # الاسم من author (بدون @)
+    author = msg.author.display_name or msg.author.name or ""
+    author_no_at = re.sub(r"^@", "", author).strip()
+    author_username = getattr(msg.author, "name", "")
+    author_id = str(msg.author.id)
+    is_bot = bool(getattr(msg.author, "bot", False))
+
+    # النص الأساسي
+    raw_content = (msg.content or "").strip()
+    content = clean_mentions(raw_content)
+
+    # من الـ embed
+    embed_title = ""
+    embed_desc = ""
+    embed_author = ""
+    embed_image = ""
+    embed_url = ""
+    embed_footer = ""
+    embed_fields = []
+    if msg.embeds:
+        e = msg.embeds[0]
+        if e.author and e.author.name:
+            embed_author = e.author.name
+        if e.title:
+            embed_title = e.title.strip()
+        if e.description:
+            embed_desc = clean_mentions(e.description.strip())
+        if e.url:
+            embed_url = e.url
+        if e.footer and e.footer.text:
+            embed_footer = e.footer.text
+        if e.fields:
+            for f in e.fields:
+                embed_fields.append({"name": f.name or "", "value": f.value or ""})
+        if e.image and e.image.url:
+            embed_image = e.image.url
+        elif e.thumbnail and e.thumbnail.url:
+            embed_image = e.thumbnail.url
+
+    # الصور من attachments
+    attach_images = []
+    if msg.attachments:
+        for a in msg.attachments:
+            if a.content_type and a.content_type.startswith("image/"):
+                attach_images.append(a.url)
+
+    # الصورة النهائية
+    final_image = embed_image or (attach_images[0] if attach_images else "")
+
+    # النص النهائي من embed أو content
+    final_text = content or embed_desc or embed_title or ""
+    if embed_title and embed_desc and embed_title not in embed_desc:
+        final_text = embed_title + "\n\n" + embed_desc
+    elif embed_title and not embed_desc:
+        final_text = embed_title
+
+    return {
+        "author": author[:200],
+        "author_no_at": author_no_at[:200],
+        "author_username": author_username[:100],
+        "author_id": author_id,
+        "is_bot": is_bot,
+        "content": content[:4000],
+        "content_raw": raw_content[:4000],
+        "title": embed_title[:300],
+        "description": embed_desc[:4000],
+        "embed_author": embed_author[:200],
+        "embed_url": embed_url,
+        "embed_footer": embed_footer[:300],
+        "embed_fields": embed_fields[:10],
+        "image": final_image,
+        "attach_images": attach_images[:5],
+        "final_text": final_text[:4000],
+        "guild_id": str(msg.guild.id) if msg.guild else "",
+        "guild_name": msg.guild.name if msg.guild else "",
+        "channel_id": str(msg.channel.id),
+        "channel_name": getattr(msg.channel, "name", "") or "",
+        "message_id": str(msg.id),
+        "message_url": f"https://discord.com/channels/{msg.guild.id}/{msg.channel.id}/{msg.id}" if msg.guild else "",
+    }
+
+def match_keyword_image(rules_json, text, default_image=""):
+    """يطابق الكلمات المفتاحية ويرجع الصورة المناسبة"""
+    if not rules_json:
+        return default_image
+    try:
+        rules = json.loads(rules_json)
+    except Exception:
+        return default_image
+    if not isinstance(rules, list):
+        return default_image
+    text_lower = (text or "").lower()
+    for rule in rules:
+        if not isinstance(rule, dict):
+            continue
+        kws = rule.get("keywords") or []
+        if not isinstance(kws, list):
+            continue
+        for kw in kws:
+            kw = str(kw).strip().lower()
+            if kw and kw in text_lower:
+                return rule.get("image", "") or default_image
+    return default_image
+
+def build_discord_text(template, data, site_name=""):
+    """يبني النص النهائي من القالب والبيانات"""
+    if not template:
+        template = "<b>{name}</b>\n\n{content}"
+    # متغيرات متاحة
+    vars_map = {
+        "name": data.get("author_no_at") or data.get("author") or "",
+        "author": data.get("author") or "",
+        "author_no_at": data.get("author_no_at") or "",
+        "username": data.get("author_username") or "",
+        "user_id": data.get("author_id") or "",
+        "content": data.get("content") or "",
+        "content_raw": data.get("content_raw") or "",
+        "description": data.get("description") or "",
+        "title": data.get("title") or "",
+        "footer": data.get("embed_footer") or "",
+        "channel": data.get("channel_name") or "",
+        "channel_id": data.get("channel_id") or "",
+        "guild": data.get("guild_name") or "",
+        "guild_id": data.get("guild_id") or "",
+        "url": data.get("embed_url") or data.get("message_url") or "",
+        "message_url": data.get("message_url") or "",
+        "site": site_name,
+    }
+    def repl(m):
+        k = m.group(1)
+        return str(vars_map.get(k, m.group(0)))
+    return re.sub(r"\{(\w+)\}", repl, str(template))
+
+# ═══════════════════════════════════════════════════════════
+# 🆕 GROQ AI
+# ═══════════════════════════════════════════════════════════
+def get_groq_key():
+    return GROQ_API_KEY_ENV or cfg("groq_api_key", "")
+
+def groq_available():
+    return bool(get_groq_key())
+
+async def groq_rewrite(text, ai_prompt="", model=None):
+    """يعيد صياغة النص عبر Groq"""
+    key = get_groq_key()
+    if not key:
+        return None
+    model = model or cfg("groq_model", "llama-3.3-70b-versatile")
+    system = ai_prompt.strip() if ai_prompt else "أنت مساعد يعيد صياغة الرسائل بأسلوب واضح ومختصر بالعربية. أعد الرسالة كما هي إن كانت واضحة. لا تكتب أي مقدمة أو خاتمة، أعد النص فقط."
+    try:
+        async with httpx.AsyncClient(timeout=30) as c:
+            r = await c.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"authorization": f"Bearer {key}", "content-type": "application/json"},
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": text[:4000]},
+                    ],
+                    "temperature": 0.4,
+                    "max_tokens": 1024,
+                },
+            )
+            if r.status_code != 200:
+                print(f"[Groq] {r.status_code} {r.text[:200]}")
+                return None
+            j = r.json()
+            return (j.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
+    except Exception as e:
+        print(f"[Groq] {e}")
+        return None
+
+# ═══════════════════════════════════════════════════════════
+# 🆕 DISCORD BOT — SELF-BOT MODE
+# ═══════════════════════════════════════════════════════════
+try:
+    discord_client = discord.Client(
+        self_bot=True,
+        intents=discord.Intents(guilds=True, guild_messages=True, message_content=True),
+    )
+    _SELF_BOT = True
+    print("[Discord] ✅ Self-bot mode enabled")
+except TypeError:
+    # لو discord.py العادي (ما فيه self_bot)
+    discord_client = discord.Client(
+        intents=discord.Intents(guilds=True, guild_messages=True, message_content=True),
+    )
+    _SELF_BOT = False
+    print("[Discord] ⚠️ Self-bot NOT available — install discord.py-self")
+
 _DISCORD_CHANNELS_CACHE = {}
 _DISCORD_GUILDS_CACHE = {}
 _DISCORD_BOT_INFO = {"id": "", "name": "", "avatar": ""}
@@ -476,11 +710,12 @@ def _refresh_discord_cache():
             continue
         for ch in g.text_channels:
             _DISCORD_CHANNELS_CACHE[str(ch.id)] = {"name": ch.name, "guild": g.name, "guild_id": str(g.id), "guild_name": g.name}
-    print(f"[Discord] Cache refreshed: {len(_DISCORD_CHANNELS_CACHE)} channels, {len(_DISCORD_GUILDS_CACHE)} guilds")
+    print(f"[Discord] Cache: {len(_DISCORD_CHANNELS_CACHE)} channels in {len(_DISCORD_GUILDS_CACHE)} guilds")
 
 @discord_client.event
 async def on_ready():
-    print(f"[Discord] Logged in as {discord_client.user}")
+    print(f"[Discord] ✅ Logged in as {discord_client.user}")
+    print(f"[Discord] Mode: {'SELF-BOT' if _SELF_BOT else 'BOT'}")
     _refresh_discord_cache()
 
 @discord_client.event
@@ -499,140 +734,175 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
     _refresh_discord_cache()
 
-def _is_watched_channel(ch_id):
-    if ch_id in _DISCORD_CHANNELS_CACHE:
-        return True
-    if WATCH_CHANNELS and ch_id in WATCH_CHANNELS:
-        return True
-    return False
+def _get_feeds_for_channel(ch_id):
+    c = db()
+    feeds = c.execute("SELECT * FROM discord_feeds WHERE channel_id=? AND enabled=1", (ch_id,)).fetchall()
+    c.close()
+    return feeds
 
-def classify_message_source(msg):
-    if msg.embeds:
-        e = msg.embeds[0]
-        url = (e.url or "").lower()
-        an = ((e.author.name if e.author else "") or "").lower()
-        pv = ((e.provider.name if e.provider else "") or "").lower()
-        if "twitter.com" in url or "x.com" in url or "twitter" in pv or "twitter" in an:
-            return "twitter"
-        if "youtube.com" in url or "youtu.be" in url or "youtube" in pv or "youtube" in an:
-            return "youtube"
-    if "twitter.com" in (msg.content or "").lower() or "x.com" in (msg.content or "").lower():
-        return "twitter"
-    if "youtube.com" in (msg.content or "").lower() or "youtu.be" in (msg.content or "").lower():
-        return "youtube"
-    return "generic"
+def _feed_ignores_bot(feed, author_id):
+    """هل هذا الـ feed يتجاهل هذا البوت؟"""
+    try:
+        ig = feed["ignore_bots"] or ""
+        if not ig:
+            return False
+        bots = json.loads(ig)
+        if not isinstance(bots, list):
+            return False
+        return str(author_id) in [str(x) for x in bots]
+    except Exception:
+        return False
 
-def extract_discord_data(msg):
-    """Extract everything (embeds-aware). Author is display name only — no @."""
-    author = msg.author.display_name or msg.author.name or ""
-    content = (msg.content or "").strip()
-    title = ""
-    description = ""
-    image = ""
-    url = ""
-    author_url = ""
-    if msg.embeds:
-        e = msg.embeds[0]
-        if e.author and e.author.name:
-            author = e.author.name
-            author_url = (e.author.url or "")
-        elif e.provider and e.provider.name:
-            author = e.provider.name
-        if e.title:
-            title = e.title.strip()
-        if e.description:
-            description = e.description.strip()
-        url = e.url or ""
-        if e.image and e.image.url:
-            image = e.image.url
-        elif e.thumbnail and e.thumbnail.url:
-            image = e.thumbnail.url
-        if not content:
-            content = description or title
-    if not image and msg.attachments:
-        for a in msg.attachments:
-            if a.content_type and a.content_type.startswith("image/"):
-                image = a.url
-                break
-    # Strip leading @ from author name (twitter style)
-    author_no_at = re.sub(r"^@", "", author).strip()
-    return {
-        "author": author[:200],
-        "author_no_at": author_no_at[:200],
-        "content": content[:2000],
-        "title": title[:200],
-        "description": description[:2000],
-        "image": image,
-        "url": url,
-        "author_url": author_url,
-    }
+def _track_bot(msg):
+    """يتتبع البوتات التي ترسل في الرومات"""
+    try:
+        if not getattr(msg.author, "bot", False):
+            return
+        aid = str(msg.author.id)
+        name = msg.author.name or msg.author.display_name or ""
+        avatar = str(msg.author.display_avatar.url) if getattr(msg.author, "display_avatar", None) else ""
+        c = db()
+        existing = c.execute("SELECT seen_count FROM discord_bots WHERE id=?", (aid,)).fetchone()
+        if existing:
+            c.execute("UPDATE discord_bots SET last_seen=?, seen_count=seen_count+1, name=?, avatar=? WHERE id=?", (now(), name, avatar, aid))
+        else:
+            c.execute("INSERT INTO discord_bots(id,name,avatar,first_seen,last_seen,seen_count) VALUES(?,?,?,?,?,1)", (aid, name, avatar, now(), now()))
+        c.commit()
+        c.close()
+    except Exception:
+        pass
 
 @discord_client.event
 async def on_message(msg):
-    if msg.author.bot and not msg.embeds:
+    # تجاهل رسائل نفس الحساب
+    if discord_client.user and msg.author.id == discord_client.user.id:
         return
-    if msg.guild is None:
+    if not msg.guild:
         return
     if ALLOWED_GUILDS and str(msg.guild.id) not in ALLOWED_GUILDS:
         return
+
     ch_id = str(msg.channel.id)
-    if not _is_watched_channel(ch_id):
+
+    # تتبع البوتات
+    if getattr(msg.author, "bot", False):
+        _track_bot(msg)
+
+    # ابحث عن feeds لهذا الروم
+    feeds = _get_feeds_for_channel(ch_id)
+    if not feeds:
+        # لو ما فيه feed، تجاهل — لا نسجل في discord_seen
         return
+
+    # منع التكرار (لكل رسالة مرة واحدة، نُرسلها لكل feeds)
     c = db()
     if c.execute("SELECT 1 FROM discord_seen WHERE message_id=?", (str(msg.id),)).fetchone():
         c.close()
         return
     c.execute("INSERT INTO discord_seen(message_id,ts) VALUES(?,?)", (str(msg.id), now()))
     c.commit()
-    source = classify_message_source(msg)
-    data = extract_discord_data(msg)
-    if not data["content"] and not data["image"]:
-        c.close()
-        return
-    feeds = c.execute("SELECT * FROM discord_feeds WHERE channel_id=? AND enabled=1", (ch_id,)).fetchall()
     c.close()
-    if not feeds:
+
+    # استخراج البيانات
+    data = extract_discord_message(msg)
+    if not data["final_text"] and not data["image"]:
         return
+
+    site_name = cfg("site_name", SITE_NAME)
+
     for feed in feeds:
         owner = feed["added_by"]
+
+        # تجاهل البوتات المحددة
+        if data["is_bot"] and _feed_ignores_bot(feed, data["author_id"]):
+            continue
+
         if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG):
             continue
-        if feed["template"]:
-            tpl = feed["template"]
-        elif source == "twitter":
-            tpl = cfg("tpl_twitter") or cfg("tpl_discord")
-        elif source == "youtube":
-            tpl = cfg("tpl_youtube_dc") or cfg("tpl_discord")
+
+        # اختيار النص
+        use_original = feed["use_original"] if "use_original" in feed.keys() else 1
+        if use_original:
+            # نسخ الأصل
+            text = data["final_text"] or ""
+            if data["author_no_at"]:
+                text = f"<b>{data['author_no_at']}</b>\n\n{text}"
+            # استخدم قالب فقط إذا فيه
+            if feed["template"]:
+                text = build_discord_text(feed["template"], data, site_name)
         else:
-            tpl = cfg("tpl_discord")
-        text = (tpl.replace("{author}", data["author"])
-                    .replace("{author_no_at}", data["author_no_at"])
-                    .replace("{content}", data["content"])
-                    .replace("{title}", data["title"])
-                    .replace("{description}", data["description"])
-                    .replace("{channel}", getattr(msg.channel, "name", "") or "")
-                    .replace("{source}", source))
-        btn_text = feed["btn_text"] or cfg("btn_discord", "عرض")
-        # Target TG channels (per feed)
+            # قالب
+            tpl = feed["template"]
+            if not tpl:
+                src = feed["source_type"]
+                if src == "twitter":
+                    tpl = cfg("tpl_twitter") or cfg("tpl_discord")
+                elif src == "youtube":
+                    tpl = cfg("tpl_youtube_dc") or cfg("tpl_discord")
+                else:
+                    tpl = cfg("tpl_discord")
+            text = build_discord_text(tpl, data, site_name)
+
+        # AI rewrite (اختياري)
+        if feed["use_ai"] if "use_ai" in feed.keys() else 0:
+            if groq_available():
+                try:
+                    ai_out = await groq_rewrite(text, feed["ai_prompt"] or "")
+                    if ai_out:
+                        text = ai_out
+                except Exception as e:
+                    print(f"[AI Feed] {e}")
+
+        # الصورة (keyword rules)
+        final_image = ""
+        kw_rules = feed["keyword_rules"] if "keyword_rules" in feed.keys() else ""
+        if kw_rules:
+            final_image = match_keyword_image(kw_rules, text, "")
+        if not final_image:
+            fixed = feed["fixed_image"] if "fixed_image" in feed.keys() else ""
+            if fixed:
+                final_image = fixed
+            else:
+                final_image = data["image"]
+
+        # الزر
+        btn_text = feed["btn_text"] or cfg("btn_discord", "عرض الروم")
+        room_url = feed["room_url"] if "room_url" in feed.keys() and feed["room_url"] else data["message_url"]
+
+        # القنوات المستهدفة
         target_ids = []
         try:
             raw = feed["target_tg_ids"] or ""
             target_ids = [int(x) for x in json.loads(raw)] if raw else []
         except Exception:
             target_ids = []
+
         c2 = db()
         if target_ids:
             placeholders = ",".join("?" * len(target_ids))
             tgs = c2.execute(f"SELECT * FROM tg_channels WHERE added_by=? AND enabled=1 AND id IN ({placeholders})", (owner, *target_ids)).fetchall()
         else:
             tgs = c2.execute("SELECT * FROM tg_channels WHERE added_by=? AND enabled=1", (owner,)).fetchall()
-        c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (owner, data["author_no_at"] or data["title"] or "رسالة ديسكورد", (data["content"] or data["description"])[:500], data["image"], btn_text if data["url"] else "", data["url"] or "", now()))
+
+        # إشعار داخلي
+        c2.execute(
+            "INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)",
+            (owner, data["author_no_at"] or "رسالة ديسكورد", strip_html_simple(text)[:500], final_image, btn_text, room_url, now()),
+        )
         c2.commit()
         c2.close()
-        asyncio.create_task(push_send_to_user(owner, data["author_no_at"] or "رسالة ديسكورد", (data["content"] or data["description"])[:200], data["image"], data["url"], "discord"))
-        for tg in tgs:
-            await tg_send(tg["chat_id"], text, data["image"], btn_text, data["url"])
 
+        asyncio.create_task(push_send_to_user(owner, data["author_no_at"] or "رسالة ديسكورد", strip_html_simple(text)[:200], final_image, room_url, "discord"))
+
+        for tg in tgs:
+            await tg_send(tg["chat_id"], text, final_image, btn_text, room_url)
+
+def strip_html_simple(s):
+    return re.sub(r"<[^>]+>", "", str(s or "")).strip()
+
+# ═══════════════════════════════════════════════════════════
+# JOBS
+# ═══════════════════════════════════════════════════════════
 async def job_kick():
     c = db()
     rows = c.execute("SELECT * FROM kick_channels WHERE enabled=1 AND last_check<? ORDER BY last_check LIMIT ?", (now() - 90, BATCH_KICK)).fetchall()
@@ -753,13 +1023,20 @@ async def lifespan(app):
     scheduler.add_job(job_cleanup, "interval", hours=6)
     scheduler.start()
     if DISCORD_TOKEN:
-        asyncio.create_task(discord_client.start(DISCORD_TOKEN))
+        try:
+            asyncio.create_task(discord_client.start(DISCORD_TOKEN))
+        except Exception as e:
+            print(f"[Discord] Start error: {e}")
     else:
         print("[Discord] No token")
     if push_available():
         print("[Push] Enabled")
     else:
         print("[Push] VAPID missing")
+    if groq_available():
+        print("[Groq] ✅ Enabled")
+    else:
+        print("[Groq] ⚠️ No API key")
     yield
     scheduler.shutdown(wait=False)
 
@@ -783,7 +1060,8 @@ async def boot(request: Request):
         "has_telegram": bool(TELEGRAM_TOKEN),
         "has_discord": bool(DISCORD_TOKEN),
         "has_push": push_available(),
-        "discord_watching": len(_DISCORD_CHANNELS_CACHE) or len(WATCH_CHANNELS),
+        "has_groq": groq_available(),
+        "discord_watching": len(_DISCORD_CHANNELS_CACHE),
         "theme": theme,
         "site_logo": cfg("site_logo", ""),
         "maintenance": maintenance,
@@ -791,6 +1069,7 @@ async def boot(request: Request):
         "bot_invite_url": cfg("bot_invite_url", ""),
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_ready": discord_client.is_ready() if discord_client else False,
+        "self_bot_mode": _SELF_BOT,
     }
 
 @app.get("/api/guest-preview")
@@ -825,7 +1104,6 @@ async def login(request: Request, response: Response, u: str = Form(...), p: str
     if not secrets.compare_digest(hash_pw(p, row["salt"]), row["pass_hash"]):
         log_sec(u, "login_fail", "bad pass", ip)
         return JSONResponse({"error": "بيانات خاطئة"}, 401)
-    # Maintenance mode: only owner can login
     if cfg("maintenance", "0") == "1" and row["role"] != "owner":
         return JSONResponse({"error": "الموقع في صيانة — حاول لاحقاً"}, 503)
     tok = new_session(row["username"])
@@ -870,16 +1148,18 @@ async def me(request: Request):
         "btn_kick": cfg("btn_kick", "شاهد البث"),
         "btn_yt": cfg("btn_yt", "شاهد الفيديو"),
         "btn_tg": cfg("btn_tg", "عرض القناة"),
-        "btn_discord": cfg("btn_discord", "عرض"),
+        "btn_discord": cfg("btn_discord", "عرض الروم"),
         "site_name": cfg("site_name", SITE_NAME),
         "site_logo": cfg("site_logo", ""),
         "site_theme": cfg("site_theme", "default"),
         "has_telegram": bool(TELEGRAM_TOKEN),
         "has_discord": bool(DISCORD_TOKEN),
         "has_push": push_available(),
+        "has_groq": groq_available(),
         "bot_ready": discord_client.is_ready() if discord_client else False,
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
+        "self_bot_mode": _SELF_BOT,
     }
 
 @app.patch("/api/me/profile")
@@ -930,11 +1210,9 @@ async def home_stats(request: Request):
         "discord_channels": len(_DISCORD_CHANNELS_CACHE),
         "bot_ready": discord_client.is_ready() if discord_client else False,
     }
-    # Get recent live channels
     live_now = c.execute(
         "SELECT slug, name, avatar, banner, thumb, title, viewers FROM kick_channels WHERE live=1 AND enabled=1 ORDER BY viewers DESC LIMIT 4"
     ).fetchall()
-    # Get recent videos
     videos = c.execute(
         "SELECT video_id, ch_name, title, thumb, url FROM recent_videos WHERE added_by=? ORDER BY ts DESC LIMIT 4",
         (u["username"],)
@@ -1007,7 +1285,7 @@ async def add_channel(kind: str, request: Request):
              (info or {}).get("viewers") or 0, (info or {}).get("thumb") or "", t, u["username"], t)
         )
         if not TELEGRAM_TOKEN:
-            warn = "⚠️ البوت غير مضاف — لن يتم إرسال الإشعارات حتى تجهّز البوت"
+            warn = "⚠️ البوت غير مضاف — لن يتم إرسال الإشعارات"
     elif kind == "yt":
         info = await yt_resolve(body.get("channel_id") or body.get("input") or "")
         if not info:
@@ -1030,7 +1308,7 @@ async def add_channel(kind: str, request: Request):
              last, t, u["username"], t)
         )
         if not TELEGRAM_TOKEN:
-            warn = "⚠️ البوت غير مضاف — لن يتم إرسال الإشعارات حتى تجهّز البوت"
+            warn = "⚠️ البوت غير مضاف — لن يتم إرسال الإشعارات"
     elif kind == "tg":
         raw = (body.get("chat_id") or "").strip()
         cid = norm_chat(raw)
@@ -1054,9 +1332,9 @@ async def add_channel(kind: str, request: Request):
             (real_cid, uname, name, avatar, "", u["username"], t)
         )
         if not TELEGRAM_TOKEN:
-            warn = "⚠️ توكن تيليجرام غير مضبوط — لن يتم إرسال الإشعارات"
+            warn = "⚠️ توكن تيليجرام غير مضبوط"
         elif not info:
-            warn = "⚠️ لم نتمكن من جلب بيانات القناة — تأكد أن البوت مضاف كمشرف"
+            warn = "⚠️ لم نتمكن من جلب بيانات القناة"
     else:
         c.close()
         raise HTTPException(404)
@@ -1226,7 +1504,7 @@ async def refresh_tg_channel(cid: int, request: Request):
     info = await tg_get_chat_info(row["chat_id"])
     c.close()
     if not info:
-        return JSONResponse({"error": "تعذّر جلب بيانات القناة — تأكد أن البوت مضاف كمشرف"}, 400)
+        return JSONResponse({"error": "تعذّر جلب بيانات القناة"}, 400)
     c = db()
     c.execute("UPDATE tg_channels SET name=?, username=?, avatar=?, chat_id=? WHERE id=?",
               (info["name"], info["username"] or row["username"], info["avatar"] or row["avatar"], info["chat_id"], cid))
@@ -1257,11 +1535,10 @@ async def refresh_yt_channel(cid: int, request: Request):
     return {"ok": True}
 
 # ═══════════════════════════════════════════════════════════
-# API — SEND (يدوي من المستخدم لتيليجرام)
+# API — SEND
 # ═══════════════════════════════════════════════════════════
 @app.get("/api/send/prefill")
 async def send_prefill(request: Request):
-    """يرجع قوائم القنوات والمستخدمين للاختيار عند الإرسال"""
     u = require_auth(request)
     c = db()
     if u["role"] == "owner":
@@ -1279,7 +1556,6 @@ async def send_prefill(request: Request):
 
 @app.post("/api/send")
 async def send_manual(request: Request):
-    """إرسال رسالة يدوية من المستخدم إلى TG/المستخدمين"""
     u = require_auth(request)
     if not rate_ok(f"send:{u['username']}", max_per_min=10):
         return JSONResponse({"error": "عدد كبير من الإرسالات"}, 429)
@@ -1293,7 +1569,6 @@ async def send_manual(request: Request):
     if btn_url and not btn_url.startswith("http"):
         return JSONResponse({"error": "رابط الزر غير صالح"}, 400)
     out = {"tg_sent": 0, "tg_failed": 0, "users": 0}
-    # TG channels
     tg_mode = (body.get("tg") or {}).get("mode", "none")
     tg_ids = (body.get("tg") or {}).get("ids", [])
     tgs_to_send = []
@@ -1322,7 +1597,6 @@ async def send_manual(request: Request):
                 out["tg_failed"] += 1
         except Exception:
             out["tg_failed"] += 1
-    # To users (owner only)
     users_mode = (body.get("users") or {}).get("mode", "none")
     if users_mode != "none" and u["role"] == "owner":
         users_ids = (body.get("users") or {}).get("ids", [])
@@ -1356,12 +1630,11 @@ async def discord_available_channels(request: Request):
         "guilds": _DISCORD_GUILDS_CACHE,
         "watching": list(_DISCORD_CHANNELS_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
         "auto_discovery": not bool(WATCH_CHANNELS),
-        "guild_id": DISCORD_GUILD_ID,
         "bot_ready": discord_client.is_ready() if discord_client else False,
         "bot_info": _DISCORD_BOT_INFO,
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
-        "in_guild": bool(DISCORD_GUILD_ID and DISCORD_GUILD_ID in _DISCORD_GUILDS_CACHE),
+        "self_bot_mode": _SELF_BOT,
     }
 
 @app.post("/api/discord/refresh")
@@ -1370,30 +1643,20 @@ async def discord_refresh(request: Request):
     _refresh_discord_cache()
     return {"ok": True, "channels": len(_DISCORD_CHANNELS_CACHE), "guilds": len(_DISCORD_GUILDS_CACHE), "bot_ready": discord_client.is_ready() if discord_client else False}
 
-@app.post("/api/discord/check-guild")
-async def discord_check_guild(request: Request):
-    """يتحقق من أن البوت منضم للسيرفر المُدخل"""
+@app.get("/api/discord/bots")
+async def discord_bots(request: Request):
+    """يرجع قائمة البوتات التي ترسل في الرومات (لمساعدتها في ignore_bots)"""
     require_discord_access(request)
-    body = await request.json()
-    gid = str(body.get("guild_id") or "").strip()
-    if not gid.isdigit():
-        return JSONResponse({"error": "معرّف السيرفر غير صالح"}, 400)
-    if not discord_client.is_ready():
-        return {"ok": True, "in_guild": False, "reason": "البوت غير متصل"}
-    guild = discord_client.get_guild(int(gid))
-    return {
-        "ok": True,
-        "in_guild": guild is not None,
-        "guild_name": guild.name if guild else "",
-        "channels_count": len([ch for ch in guild.text_channels]) if guild else 0,
-    }
+    c = db()
+    rows = c.execute("SELECT id, name, avatar, last_seen, seen_count FROM discord_bots ORDER BY last_seen DESC LIMIT 200").fetchall()
+    c.close()
+    return {"rows": [dict(r) for r in rows]}
 
 @app.get("/api/discord/feeds")
 async def list_feeds(request: Request):
     u = require_discord_access(request)
     c = db()
     rows = c.execute("SELECT * FROM discord_feeds WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
-    # Get user's TG channels to allow target selection
     tgs = c.execute("SELECT id, name, username, avatar, enabled FROM tg_channels WHERE added_by=? ORDER BY id DESC", (u["username"],)).fetchall()
     c.close()
     return {
@@ -1406,6 +1669,7 @@ async def list_feeds(request: Request):
         "bot_info": _DISCORD_BOT_INFO,
         "bot_name_custom": cfg("bot_name_custom", "Respect Live Bot"),
         "bot_invite_url": cfg("bot_invite_url", ""),
+        "self_bot_mode": _SELF_BOT,
         "my_tgs": [dict(r) for r in tgs],
     }
 
@@ -1421,9 +1685,22 @@ async def add_feed(request: Request):
             return JSONResponse({"error": "البوت لم يكتشف الرومات بعد — اضغط تحديث"}, 400)
         return JSONResponse({"error": "الروم غير موجود في السيرفر"}, 400)
     tpl = str(body.get("template") or "")[:2000]
-    btn_text = str(body.get("btn_text") or "عرض")[:60]
+    btn_text = str(body.get("btn_text") or "عرض الروم")[:60]
     name = str(body.get("channel_name") or "")[:100]
     source = str(body.get("source_type") or "generic")[:20]
+    guild_id = str(body.get("guild_id") or "")[:30]
+    use_original = 1 if body.get("use_original", True) else 0
+    ignore_bots = body.get("ignore_bots") or []
+    if not isinstance(ignore_bots, list):
+        ignore_bots = []
+    ignore_bots = [str(x) for x in ignore_bots][:50]
+    keyword_rules = body.get("keyword_rules") or []
+    if not isinstance(keyword_rules, list):
+        keyword_rules = []
+    fixed_image = str(body.get("fixed_image") or "")[:500]
+    room_url = str(body.get("room_url") or "")[:500]
+    use_ai = 1 if body.get("use_ai") else 0
+    ai_prompt = str(body.get("ai_prompt") or "")[:2000]
     target_ids = body.get("target_tg_ids") or []
     if not isinstance(target_ids, list):
         target_ids = []
@@ -1435,8 +1712,11 @@ async def add_feed(request: Request):
         c.close()
         return JSONResponse({"error": "مضاف مسبقاً"}, 409)
     c.execute(
-        "INSERT INTO discord_feeds(channel_id,channel_name,template,btn_text,source_type,target_tg_ids,enabled,added_by,created) VALUES(?,?,?,?,?,?,1,?,?)",
-        (ch, name, tpl, btn_text, source, json.dumps(target_ids), u["username"], now())
+        "INSERT INTO discord_feeds(channel_id,channel_name,guild_id,template,btn_text,source_type,target_tg_ids,enabled,use_original,ignore_bots,keyword_rules,fixed_image,room_url,use_ai,ai_prompt,added_by,created) VALUES(?,?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?)",
+        (ch, name, guild_id, tpl, btn_text, source,
+         json.dumps(target_ids), use_original,
+         json.dumps(ignore_bots), json.dumps(keyword_rules),
+         fixed_image, room_url, use_ai, ai_prompt, u["username"], now())
     )
     c.commit()
     c.close()
@@ -1464,6 +1744,21 @@ async def patch_feed(fid: int, request: Request):
     if "enabled" in body:
         sets.append("enabled=?")
         vals.append(1 if body["enabled"] else 0)
+    if "use_original" in body:
+        sets.append("use_original=?")
+        vals.append(1 if body["use_original"] else 0)
+    if "fixed_image" in body:
+        sets.append("fixed_image=?")
+        vals.append(str(body["fixed_image"])[:500])
+    if "room_url" in body:
+        sets.append("room_url=?")
+        vals.append(str(body["room_url"])[:500])
+    if "use_ai" in body:
+        sets.append("use_ai=?")
+        vals.append(1 if body["use_ai"] else 0)
+    if "ai_prompt" in body:
+        sets.append("ai_prompt=?")
+        vals.append(str(body["ai_prompt"])[:2000])
     if "target_tg_ids" in body:
         tids = body["target_tg_ids"] or []
         if not isinstance(tids, list):
@@ -1471,6 +1766,19 @@ async def patch_feed(fid: int, request: Request):
         tids = [int(x) for x in tids if str(x).isdigit()][:50]
         sets.append("target_tg_ids=?")
         vals.append(json.dumps(tids))
+    if "ignore_bots" in body:
+        bots = body["ignore_bots"] or []
+        if not isinstance(bots, list):
+            bots = []
+        bots = [str(x) for x in bots][:50]
+        sets.append("ignore_bots=?")
+        vals.append(json.dumps(bots))
+    if "keyword_rules" in body:
+        rules = body["keyword_rules"] or []
+        if not isinstance(rules, list):
+            rules = []
+        sets.append("keyword_rules=?")
+        vals.append(json.dumps(rules))
     if sets:
         vals.append(fid)
         c.execute(f"UPDATE discord_feeds SET {', '.join(sets)} WHERE id=?", vals)
@@ -1493,6 +1801,53 @@ async def del_feed(fid: int, request: Request):
     c.commit()
     c.close()
     return {"ok": True}
+
+# ═══════════════════════════════════════════════════════════
+# API — 🆕 AI / GROQ
+# ═══════════════════════════════════════════════════════════
+@app.get("/api/ai/status")
+async def ai_status(request: Request):
+    require_auth(request)
+    return {
+        "available": groq_available(),
+        "model": cfg("groq_model", "llama-3.3-70b-versatile"),
+        "source": "env" if GROQ_API_KEY_ENV else ("db" if cfg("groq_api_key", "") else "none"),
+    }
+
+@app.post("/api/ai/rewrite")
+async def ai_rewrite(request: Request):
+    u = require_auth(request)
+    if not rate_ok(f"ai:{u['username']}", max_per_min=10):
+        return JSONResponse({"error": "عدد كبير من الطلبات"}, 429)
+    if not groq_available():
+        return JSONResponse({"error": "Groq غير مفعّل — أضف API key من لوحة التحكم"}, 400)
+    body = await request.json()
+    text = (body.get("text") or "").strip()
+    if not text:
+        return JSONResponse({"error": "لا يوجد نص"}, 400)
+    prompt = str(body.get("prompt") or "")[:2000]
+    out = await groq_rewrite(text[:4000], prompt)
+    if not out:
+        return JSONResponse({"error": "فشل الاتصال بـ Groq"}, 500)
+    return {"ok": True, "text": out}
+
+@app.post("/api/admin/groq")
+async def admin_groq(request: Request):
+    require_owner(request)
+    body = await request.json()
+    if "api_key" in body:
+        key = str(body["api_key"]).strip()[:200]
+        if key and not key.startswith("gsk_"):
+            return JSONResponse({"error": "API key يجب أن يبدأ بـ gsk_"}, 400)
+        set_cfg("groq_api_key", key)
+    if "model" in body:
+        set_cfg("groq_model", str(body["model"]).strip()[:100] or "llama-3.3-70b-versatile")
+    # Test
+    if body.get("test"):
+        test_text = "مرحباً، اختبر الاتصال"
+        out = await groq_rewrite(test_text, "أعد التحية فقط", None)
+        return {"ok": True, "test": out or "فشل الاختبار"}
+    return {"ok": True, "available": groq_available()}
 
 # ═══════════════════════════════════════════════════════════
 # API — NOTIFICATIONS
@@ -1675,8 +2030,12 @@ async def get_settings(request: Request):
             "guest_mode", "guest_blur",
             "site_theme", "site_logo", "site_c1", "site_c2", "site_ac",
             "maintenance", "maintenance_text",
-            "bot_invite_url", "bot_name_custom"]
-    return {k: cfg(k) for k in keys}
+            "bot_invite_url", "bot_name_custom",
+            "groq_model"]
+    out = {k: cfg(k) for k in keys}
+    out["groq_configured"] = groq_available()
+    out["groq_source"] = "env" if GROQ_API_KEY_ENV else ("db" if cfg("groq_api_key", "") else "none")
+    return out
 
 @app.post("/api/settings")
 async def save_settings(request: Request):
@@ -1689,7 +2048,8 @@ async def save_settings(request: Request):
                "guest_mode", "guest_blur",
                "site_theme", "site_logo", "site_c1", "site_c2", "site_ac",
                "maintenance", "maintenance_text",
-               "bot_invite_url", "bot_name_custom"]
+               "bot_invite_url", "bot_name_custom",
+               "groq_model"]
     for k in allowed:
         if k in body:
             set_cfg(k, str(body[k])[:2000])
@@ -1724,7 +2084,7 @@ async def admin_site_logo_del(request: Request):
     return {"ok": True}
 
 # ═══════════════════════════════════════════════════════════
-# API — MAINTENANCE (owner toggle)
+# API — MAINTENANCE
 # ═══════════════════════════════════════════════════════════
 @app.post("/api/admin/maintenance")
 async def admin_maintenance(request: Request):
@@ -2031,7 +2391,10 @@ async def admin_stats(request: Request):
     stats["has_telegram"] = bool(TELEGRAM_TOKEN)
     stats["has_discord"] = bool(DISCORD_TOKEN)
     stats["has_push"] = push_available()
+    stats["has_groq"] = groq_available()
+    stats["groq_source"] = "env" if GROQ_API_KEY_ENV else ("db" if cfg("groq_api_key", "") else "none")
     stats["maintenance"] = cfg("maintenance", "0") == "1"
+    stats["self_bot_mode"] = _SELF_BOT
     stats["bot_info"] = _DISCORD_BOT_INFO
     return stats
 
@@ -2099,7 +2462,9 @@ async def health():
         "watching": len(WATCH_CHANNELS),
         "push_enabled": push_available(),
         "telegram_enabled": bool(TELEGRAM_TOKEN),
-        "maintenance": cfg("maintenance", "0") == "1"
+        "groq_enabled": groq_available(),
+        "maintenance": cfg("maintenance", "0") == "1",
+        "self_bot_mode": _SELF_BOT,
     }
 
 # ═══════════════════════════════════════════════════════════

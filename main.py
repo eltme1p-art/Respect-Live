@@ -1,4 +1,4 @@
-"""Respect Live — Self-Bot + Multi-Channel + TG Verification (v2)"""
+"""Respect Live — Self-Bot + Multi-Channel + TG Verification (v3)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -67,6 +67,8 @@ CREATE INDEX IF NOT EXISTS idx_yt_by ON yt_channels(added_by);
 CREATE TABLE IF NOT EXISTS tg_channels (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', banner TEXT DEFAULT '', enabled INTEGER DEFAULT 1, verified INTEGER DEFAULT 0, owner_tg_id TEXT DEFAULT '', owner_tg_username TEXT DEFAULT '', added_by TEXT NOT NULL, created INTEGER, UNIQUE(chat_id, added_by));
 CREATE INDEX IF NOT EXISTS idx_tg_by ON tg_channels(added_by);
 CREATE INDEX IF NOT EXISTS idx_tg_chat ON tg_channels(chat_id);
+CREATE TABLE IF NOT EXISTS tg_known_channels (chat_id TEXT PRIMARY KEY, username TEXT DEFAULT '', name TEXT DEFAULT '', avatar TEXT DEFAULT '', type TEXT DEFAULT '', last_seen INTEGER);
+CREATE INDEX IF NOT EXISTS idx_tkc_un ON tg_known_channels(username);
 CREATE TABLE IF NOT EXISTS tg_verifications (id INTEGER PRIMARY KEY AUTOINCREMENT, site_username TEXT NOT NULL, tg_username TEXT NOT NULL, tg_user_id TEXT DEFAULT '', tg_chat_id TEXT DEFAULT '', tg_chat_name TEXT DEFAULT '', tg_chat_avatar TEXT DEFAULT '', code TEXT DEFAULT '', status TEXT DEFAULT 'pending', tg_msg_id INTEGER DEFAULT 0, created INTEGER, expires INTEGER);
 CREATE INDEX IF NOT EXISTS idx_tgv_status ON tg_verifications(status, expires);
 CREATE TABLE IF NOT EXISTS feed_subs (id INTEGER PRIMARY KEY AUTOINCREMENT, feed_id INTEGER NOT NULL, tg_channel_id INTEGER NOT NULL, username TEXT NOT NULL, enabled INTEGER DEFAULT 1, created INTEGER, UNIQUE(feed_id, tg_channel_id));
@@ -108,7 +110,6 @@ def migrate_tg_channels_per_user():
             added_by TEXT NOT NULL, created INTEGER,
             UNIQUE(chat_id, added_by)
         )""")
-        # انسخ البيانات (مع تجاهل التكرار)
         rows = c.execute("SELECT * FROM tg_channels_old").fetchall()
         seen = set()
         for r in rows:
@@ -186,7 +187,6 @@ def init_db():
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
-    # ترحيل الـ verified للقنوات القديمة
     if cfg("tg_verify_migration", "") != "done":
         try:
             c.execute("UPDATE tg_channels SET verified=1 WHERE verified=0")
@@ -194,7 +194,6 @@ def init_db():
         except: pass
         c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('tg_verify_migration','done')")
         c.commit()
-    # ترحيل feed_subs
     if cfg("feed_subs_migration", "") != "done":
         try:
             feeds = c.execute("SELECT id, added_by, target_tg_ids FROM discord_feeds").fetchall()
@@ -351,53 +350,122 @@ async def tg_save_photo(file_id):
     c.commit(); c.close()
     return f"/api/image/{img_id}"
 
+async def _cache_and_return_chat(chat):
+    """يخزن معلومات القناة في الكاش ويعيدها"""
+    name = chat.get("title") or chat.get("username") or str(chat.get("id", ""))
+    username = ("@" + chat["username"]) if chat.get("username") else ""
+    photo = chat.get("photo") or {}
+    photo_id = photo.get("big_file_id") or photo.get("small_file_id") or ""
+    avatar = await tg_save_photo(photo_id) if photo_id else ""
+    cid = str(chat.get("id", ""))
+    ctype = chat.get("type", "")
+    if cid:
+        try:
+            c = db()
+            c.execute("""INSERT INTO tg_known_channels(chat_id, username, name, avatar, type, last_seen)
+                VALUES(?,?,?,?,?,?)
+                ON CONFLICT(chat_id) DO UPDATE SET
+                username=excluded.username, name=excluded.name,
+                avatar=excluded.avatar, type=excluded.type, last_seen=excluded.last_seen""",
+                (cid, username, name, avatar, ctype, now()))
+            c.commit(); c.close()
+        except Exception as e:
+            print(f"[TG cache save] {e}")
+    return {"name": name, "username": username, "avatar": avatar, "chat_id": cid, "type": ctype}
+
 async def tg_get_chat_info(chat_input):
-    """✅ محسّنة — تحاول عدة صيغ للوصول للقناة (يعمل مع القنوات العامة والخاصة)"""
+    """✅ النسخة الجديدة — تعتمد على الكاش أولاً ثم getChat مع محاولات متعددة"""
     if not TELEGRAM_TOKEN: return None
     s = str(chat_input or "").strip()
     if not s: return None
 
-    # ابنِ قائمة محاولات
-    attempts = []
-    s_no_at = s.lstrip("@")
-    # لو chat_id رقمي (يبدأ بـ -100 أو -)
-    if re.match(r"^-?\d+$", s):
-        attempts.append(s)
-        # لو رقم موجب بسيط، جرب -100XX
-        if not s.startswith("-"):
-            attempts.append(f"-100{s}")
-    else:
-        # يوزر — جرب مع @ وبدون
-        attempts.append("@" + s_no_at)
-        attempts.append(s_no_at)
-        # جرب رابط
-        m = re.search(r"t\.me/([A-Za-z][\w]{3,})", s)
-        if m:
-            attempts.insert(0, "@" + m.group(1))
+    uname = None
+    numeric = None
+    m = re.search(r"t\.me/([A-Za-z0-9_]{5,})", s)
+    if m:
+        uname = m.group(1)
+    elif s.startswith("@"):
+        uname = s[1:]
+    elif re.match(r"^-?\d+$", s):
+        numeric = s
+    elif re.match(r"^[A-Za-z0-9_]{5,}$", s):
+        uname = s
 
-    last_error = ""
-    for attempt in attempts:
+    # 1️⃣ الكاش المحلي أولاً
+    if uname or numeric:
+        c = db()
         try:
-            j = await tg_api("getChat", {"chat_id": attempt})
-            if j.get("ok"):
-                chat = j.get("result", {})
-                name = chat.get("title") or " ".join(filter(None,[chat.get("first_name"),chat.get("last_name")])) or chat.get("username") or str(attempt)
-                username = ("@"+chat["username"]) if chat.get("username") else ""
-                photo = chat.get("photo") or {}
-                photo_id = photo.get("big_file_id") or photo.get("small_file_id") or ""
-                avatar = await tg_save_photo(photo_id) if photo_id else ""
-                return {
-                    "name": name,
-                    "username": username,
-                    "avatar": avatar,
-                    "chat_id": str(chat.get("id", attempt)),
-                    "type": chat.get("type", "")
-                }
-            else:
-                last_error = j.get("description", "")
+            row = None
+            if uname:
+                row = c.execute(
+                    "SELECT * FROM tg_known_channels WHERE lower(username)=lower(?) OR lower(username)=lower(?)",
+                    ("@" + uname, uname)
+                ).fetchone()
+            elif numeric:
+                row = c.execute("SELECT * FROM tg_known_channels WHERE chat_id=?", (numeric,)).fetchone()
+                if not row and numeric.startswith("-100"):
+                    row = c.execute("SELECT * FROM tg_known_channels WHERE chat_id=?", (numeric[4:],)).fetchone()
+            if row:
+                c.close()
+                return {"name": row["name"], "username": row["username"], "avatar": row["avatar"], "chat_id": row["chat_id"], "type": row["type"]}
         except Exception as e:
-            last_error = str(e)
-    print(f"[TG getChat] failed for '{s}': {last_error}")
+            print(f"[TG cache] {e}")
+        finally:
+            try: c.close()
+            except: pass
+
+    # 2️⃣ getChat بمحاولات متعددة
+    attempts = []
+    if uname:
+        attempts.append("@" + uname)
+        attempts.append(uname)
+    if numeric:
+        attempts.append(numeric)
+        if numeric.startswith("-100"):
+            attempts.append(numeric[4:])
+            attempts.append("-" + numeric[4:])
+        elif numeric.startswith("-"):
+            attempts.append("-100" + numeric[1:])
+            attempts.append(numeric[1:])
+        else:
+            attempts.append("-100" + numeric)
+            attempts.append("-" + numeric)
+
+    seen = set()
+    last_err = ""
+    for a in attempts:
+        if a in seen: continue
+        seen.add(a)
+        try:
+            j = await tg_api("getChat", {"chat_id": a})
+            if j.get("ok") and j.get("result"):
+                return await _cache_and_return_chat(j["result"])
+            else:
+                last_err = j.get("description", "")
+        except Exception as e:
+            last_err = str(e)
+
+    # 3️⃣ Fallback: getUpdates
+    try:
+        j = await tg_api("getUpdates", {"limit": 100, "allowed_updates": ["channel_post", "my_chat_member", "message"]})
+        if j.get("ok"):
+            for u in j.get("result", []):
+                mcm = u.get("my_chat_member") or {}
+                chat = mcm.get("chat") or {}
+                if chat.get("type") == "channel":
+                    ch_un = (chat.get("username") or "").lower()
+                    if (uname and ch_un == uname.lower()) or (numeric and str(chat.get("id")) == numeric):
+                        return await _cache_and_return_chat(chat)
+                cp = u.get("channel_post") or {}
+                chat = cp.get("chat") or {}
+                if chat.get("type") == "channel":
+                    ch_un = (chat.get("username") or "").lower()
+                    if (uname and ch_un == uname.lower()) or (numeric and str(chat.get("id")) == numeric):
+                        return await _cache_and_return_chat(chat)
+    except Exception as e:
+        print(f"[TG getUpdates fallback] {e}")
+
+    print(f"[TG getChat] '{s}' failed: {last_err}")
     return None
 
 async def tg_verify_bot_admin(chat_id):
@@ -454,6 +522,29 @@ async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     return 0
 
 async def handle_tg_update(update):
+    # ✅ رصد إضافة البوت لقناة — نخزن القناة فوراً
+    mcm = update.get("my_chat_member")
+    if mcm:
+        try:
+            chat = mcm.get("chat", {})
+            if chat.get("type") == "channel":
+                await _cache_and_return_chat(chat)
+                print(f"[TG] Cached channel from my_chat_member: {chat.get('title')}")
+        except Exception as e:
+            print(f"[TG my_chat_member] {e}")
+        return
+
+    # ✅ رصد منشورات القناة — نخزنها أيضاً
+    cp = update.get("channel_post")
+    if cp:
+        try:
+            chat = cp.get("chat", {})
+            if chat.get("type") == "channel":
+                await _cache_and_return_chat(chat)
+        except Exception as e:
+            print(f"[TG channel_post] {e}")
+        return
+
     cq = update.get("callback_query")
     if cq:
         data = cq.get("data", "")
@@ -509,6 +600,7 @@ async def handle_tg_update(update):
             print(f"[TG callback] {e}")
         await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"]})
         return
+
     msg = update.get("message")
     if msg:
         text = (msg.get("text") or "").strip()
@@ -539,7 +631,7 @@ async def setup_tg_webhook():
         asyncio.create_task(tg_poll_loop())
         return
     url = f"{PUBLIC_URL}/api/telegram/webhook"
-    j = await tg_api("setWebhook", {"url": url, "allowed_updates": ["message", "callback_query"]})
+    j = await tg_api("setWebhook", {"url": url, "allowed_updates": ["message", "callback_query", "my_chat_member", "channel_post"]})
     if j.get("ok"):
         print(f"[TG] ✅ Webhook set: {url}")
     else:
@@ -552,7 +644,7 @@ async def tg_poll_loop():
     while True:
         try:
             async with httpx.AsyncClient(timeout=35) as c:
-                r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates", json={"offset": offset, "timeout": 30, "allowed_updates": ["message", "callback_query"]})
+                r = await c.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates", json={"offset": offset, "timeout": 30, "allowed_updates": ["message", "callback_query", "my_chat_member", "channel_post"]})
                 j = r.json()
             if j.get("ok"):
                 for u in j["result"]:
@@ -888,7 +980,6 @@ if discord_client:
                 c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
                 c2.commit(); c2.close()
                 asyncio.create_task(push_send_to_user(feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
-                # ✅ إصلاح: منع إرسال رسالة مكررة لنفس chat_id لو أكثر من مستخدم أضاف نفس القناة
                 sent_chat_ids = set()
                 for tg in tgs:
                     if tg["chat_id"] in sent_chat_ids: continue
@@ -998,6 +1089,7 @@ async def job_cleanup():
     c.execute("DELETE FROM notifs WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY username ORDER BY ts DESC) rn FROM notifs) WHERE rn>60)")
     c.execute("DELETE FROM suggestions WHERE ts<?", (now()-90*86400,))
     c.execute("DELETE FROM tg_verifications WHERE created<?", (now()-3600,))
+    c.execute("DELETE FROM tg_known_channels WHERE last_seen<?", (now()-30*86400,))
     c.commit(); c.close()
 
 scheduler = AsyncIOScheduler()
@@ -1022,9 +1114,7 @@ async def lifespan(app):
     if groq_available(): print("[Groq] Enabled")
     yield
     scheduler.shutdown(wait=False)
-
-app = FastAPI(lifespan=lifespan)
-# ═══ API — TELEGRAM WEBHOOK ═══
+    # ═══ API — TELEGRAM WEBHOOK ═══
 @app.post("/api/telegram/webhook")
 async def tg_webhook(request: Request):
     try:
@@ -1039,6 +1129,25 @@ async def tg_webhook_info(request: Request):
     require_owner(request)
     j = await tg_api("getWebhookInfo", {})
     return j
+
+@app.post("/api/telegram/setup-webhook")
+async def tg_setup_webhook_manual(request: Request):
+    """يدوياً: إعادة ضبط webhook"""
+    require_owner(request)
+    if not PUBLIC_URL:
+        return JSONResponse({"error": "PUBLIC_URL غير مضبوط"}, 400)
+    url = f"{PUBLIC_URL}/api/telegram/webhook"
+    j = await tg_api("setWebhook", {"url": url, "allowed_updates": ["message", "callback_query", "my_chat_member", "channel_post"]})
+    return j
+
+@app.get("/api/telegram/known-channels")
+async def tg_known_channels(request: Request):
+    """عرض القنوات المخزنة في الكاش"""
+    require_owner(request)
+    c = db()
+    rows = c.execute("SELECT * FROM tg_known_channels ORDER BY last_seen DESC LIMIT 100").fetchall()
+    c.close()
+    return {"rows": [dict(r) for r in rows]}
 
 # ═══ API — TG VERIFY ═══
 @app.post("/api/tg/verify/start")
@@ -1058,39 +1167,34 @@ async def tg_verify_start(request: Request):
     if not tg_un:
         return JSONResponse({"error":"اسم حسابك في تيليجرام غير صالح (يجب أن يبدأ بـ @)"}, 400)
 
-    # ✅ إصلاح: محاولات متعددة للوصول للقناة
+    # محاولة الحصول على معلومات القناة (كاش → getChat → getUpdates)
     chat_info = await tg_get_chat_info(chat_id)
     if not chat_info:
-        return JSONResponse({"error":"تعذّر الوصول للقناة — تأكد من:\n• البوت مشرف في القناة\n• كتابة المعرّف بشكل صحيح (@username أو رابط t.me)\n• القناة ليست محظورة"}, 400)
+        return JSONResponse({"error":"تعذّر الوصول للقناة.\n\nتأكد من:\n• إضافة البوت كمشرف في القناة\n• كتابة المعرّف بشكل صحيح (@username أو رابط t.me)\n• إذا كانت القناة جديدة، انشر أي رسالة فيها ثم حاول مرة أخرى"}, 400)
 
-    # ✅ التحقق أن البوت مشرف (لتلقي الرسائل)
+    # تحقق أن البوت مشرف (تحذير فقط، لا نرفض)
     is_admin, admin_err = await tg_verify_bot_admin(chat_info["chat_id"])
-    # ملاحظة: لا نرفض لو ليس مشرفاً — يكفي أن يكون عضواً للتوثيق الأولي،
-    # لكن نرسل تحذيراً عبر warn في النتيجة (اختياري)
     admin_warning = ""
     if not is_admin:
         admin_warning = f"⚠️ {admin_err} — لن تُرسل الرسائل تلقائياً حتى ترفعه مشرفاً"
 
     c = db()
-    # ✅ هل المستخدم نفسه أضافها سابقاً؟
+    # هل المستخدم نفسه أضافها؟
     ex = c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (chat_info["chat_id"], u["username"])).fetchone()
     if ex:
         c.close()
         return JSONResponse({"error":"أنت أضفت هذه القناة مسبقاً"}, 409)
 
-    # حد القنوات
     if not check_limit(u["username"], "tg", u["role"]):
         c.close()
         i = limit_info(u["username"],"tg",u["role"])
         return JSONResponse({"error":f"وصلت الحد ({i['limit']})"}, 400)
 
-    # ✅ هل فيه طلب معلق لنفس القناة لنفس المستخدم؟
     old = c.execute("SELECT id FROM tg_verifications WHERE tg_chat_id=? AND site_username=? AND status='pending' AND expires>?", (chat_info["chat_id"], u["username"], now())).fetchone()
     if old:
         c.close()
         return JSONResponse({"error":"يوجد طلب معلق لهذه القناة، انتظر انتهاءه"}, 409)
 
-    # حل حساب المستخدم (يجب أن يكون ضغط /start)
     user_info = await tg_get_chat_info(tg_un)
     if not user_info or user_info.get("type") != "private":
         c.close()
@@ -1104,7 +1208,6 @@ async def tg_verify_start(request: Request):
     vid = c.execute("SELECT last_insert_rowid() as id").fetchone()["id"]
     c.close()
 
-    # أرسل DM
     msg_id = await send_verify_dm(vid, tg_user_id, u["username"], chat_info["name"])
     if not msg_id:
         c = db()
@@ -1162,7 +1265,6 @@ async def tg_verify_code(vid: int, request: Request):
     if row["code"] != code:
         c.close(); return JSONResponse({"error":"الرمز غير صحيح"}, 400)
 
-    # ✅ فحص: هل المستخدم نفسه أضافها؟
     ex = c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (row["tg_chat_id"], u["username"])).fetchone()
     if ex:
         c.close(); return JSONResponse({"error":"أنت أضفت هذه القناة مسبقاً"}, 409)
@@ -2113,6 +2215,7 @@ async def api_admin_stats(request: Request):
         "suggestions_unread": c.execute("SELECT COUNT(*) n FROM suggestions WHERE is_read=0").fetchone()["n"],
         "push_subs": c.execute("SELECT COUNT(*) n FROM push_subs").fetchone()["n"],
         "defaults_total": c.execute("SELECT COUNT(*) n FROM default_channels").fetchone()["n"],
+        "tg_known": c.execute("SELECT COUNT(*) n FROM tg_known_channels").fetchone()["n"],
     }
     c.close()
     s["discord_ready"] = bool(discord_client and discord_client.is_ready())
@@ -2181,3 +2284,5 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+
+app = FastAPI(lifespan=lifespan)

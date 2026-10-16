@@ -1,4 +1,4 @@
-discord.py-self
+discord.py-self>=2.4.0
 fastapi
 uvicorn[standard]
 httpx

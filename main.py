@@ -507,20 +507,44 @@ async def groq_rewrite(text, prompt="", model=None):
         print(f"[Groq] {e}"); return None
 
 # ═══════════════════════════════════════════════════════════
-# DISCORD CLIENT
+# DISCORD CLIENT — ✅ يكتشف المكتبة تلقائياً (bot / self-bot)
 # ═══════════════════════════════════════════════════════════
-try:
-    discord_client = discord.Client(self_bot=True, intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
-    _SELF_BOT = True
-    print("[Discord] Self-bot mode enabled")
-except TypeError:
+_HAS_INTENTS = hasattr(discord, 'Intents')
+discord_client = None
+_SELF_BOT = False
+
+if _HAS_INTENTS:
+    # ─── مكتبة discord.py (Rapptz) — دعم البوتات العادية ───
     try:
-        discord_client = discord.Client(intents=discord.Intents(guilds=True, guild_messages=True, message_content=True))
-        _SELF_BOT = False
-        print("[Discord] Regular bot mode (install discord.py-self for self-bot)")
+        try:
+            # محاولة self-bot أولاً إن كانت مدعومة (نادراً)
+            discord_client = discord.Client(
+                self_bot=True,
+                intents=discord.Intents(guilds=True, guild_messages=True, message_content=True)
+            )
+            _SELF_BOT = True
+            print("[Discord] ✅ Self-bot mode (discord.py)")
+        except TypeError:
+            # fallback: بوت عادي مع Intents
+            intents = discord.Intents(guilds=True, guild_messages=True, message_content=True)
+            discord_client = discord.Client(intents=intents)
+            _SELF_BOT = False
+            print("[Discord] ✅ Regular bot mode (discord.py with Intents)")
     except Exception as e:
-        print(f"[Discord] ERROR: {e}")
+        print(f"[Discord] ❌ Init error (discord.py): {e}")
         discord_client = None
+else:
+    # ─── مكتبة discord.py-self (dolfies) — self-bot فقط ───
+    try:
+        discord_client = discord.Client(self_bot=True)
+        _SELF_BOT = True
+        print("[Discord] ✅ Self-bot mode (discord.py-self)")
+    except Exception as e:
+        print(f"[Discord] ❌ Init error (discord.py-self): {e}")
+        discord_client = None
+
+if discord_client is None:
+    print("[Discord] ⚠️ No Discord client — running in HTTP-only mode")
 
 _CH_CACHE = {}
 _G_CACHE = {}
@@ -537,12 +561,12 @@ def _refresh_cache():
         if ALLOWED_GUILDS and str(g.id) not in ALLOWED_GUILDS: continue
         for ch in g.text_channels:
             _CH_CACHE[str(ch.id)] = {"name":ch.name,"guild":g.name,"guild_id":str(g.id)}
-    print(f"[Discord] Cache: {len(_CH_CACHE)} channels")
+    print(f"[Discord] Cache: {len(_CH_CACHE)} channels, {len(_G_CACHE)} guilds")
 
 if discord_client:
     @discord_client.event
     async def on_ready():
-        print(f"[Discord] ✅ Logged in: {discord_client.user}")
+        print(f"[Discord] ✅ Logged in: {discord_client.user} (self_bot={_SELF_BOT})")
         _refresh_cache()
 
     @discord_client.event
@@ -748,6 +772,7 @@ async def lifespan(app):
     scheduler.shutdown(wait=False)
 
 app = FastAPI(lifespan=lifespan)
+
 # ═══════════════════════════════════════════════════════════
 # API — BOOT
 # ═══════════════════════════════════════════════════════════

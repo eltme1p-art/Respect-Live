@@ -1,9 +1,14 @@
 """Respect Live — نظام مراقبة كامل (Self-bot + Groq AI)"""
+import sys
+print(f"=== PYTHON: {sys.version} ===", flush=True)
+import discord
+print(f"=== DISCORD FILE: {discord.__file__} ===", flush=True)
+print(f"=== DISCORD VERSION: {getattr(discord, '__version__', '?')} ===", flush=True)
+print(f"=== HAS Intents: {hasattr(discord, 'Intents')} ===", flush=True)
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 from typing import Optional
 import httpx
-import discord
 from fastapi import FastAPI, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, Response as FastResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -18,15 +23,14 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 SESSION_SECRET = os.getenv("SESSION_SECRET", secrets.token_hex(32))
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
-DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")  # ⚠️ user token للـ self-bot
-GROQ_API_KEY_ENV = os.getenv("GROQ_API_KEY", "")    # اختياري — لو ما حبيت تخزنه في DB
+DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "")
+GROQ_API_KEY_ENV = os.getenv("GROQ_API_KEY", "")
 WATCH_CHANNELS = [c.strip() for c in os.getenv("DISCORD_WATCH_CHANNELS", "").split(",") if c.strip()]
 ALLOWED_GUILDS = [g.strip() for g in os.getenv("DISCORD_ALLOWED_GUILDS", "").split(",") if g.strip()]
 
-# 🆕 متغيرات جديدة
-SELF_BOT_MODE = os.getenv("SELF_BOT_MODE", "1") == "1"           # تفعيل وضع السيلف-بوت
-DISCORD_ENABLE = os.getenv("DISCORD_ENABLE", "1") == "1"         # تشغيل البوت كلياً
-DISCORD_FALLBACK_BOT = os.getenv("DISCORD_FALLBACK_BOT", "1") == "1"  # رجوع لـ bot عادي لو فشل
+SELF_BOT_MODE = os.getenv("SELF_BOT_MODE", "1") == "1"
+DISCORD_ENABLE = os.getenv("DISCORD_ENABLE", "1") == "1"
+DISCORD_FALLBACK_BOT = os.getenv("DISCORD_FALLBACK_BOT", "1") == "1"
 
 VAPID_PUBLIC = os.getenv("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.getenv("VAPID_PRIVATE_KEY", "")
@@ -95,7 +99,6 @@ CREATE INDEX IF NOT EXISTS idx_sec_ts ON security_log(ts);
 def init_db():
     c = db()
     c.executescript(SCHEMA)
-    # Migrations
     additions = [
         ("users", "can_discord", "INTEGER DEFAULT 0"),
         ("users", "avatar", "TEXT DEFAULT ''"),
@@ -153,7 +156,6 @@ def init_db():
         "bot_invite_url": "", "bot_name_custom": "Respect Live Bot",
         "groq_api_key": "", "groq_model": "llama-3.3-70b-versatile",
     }
-    # ✅ الإصلاح هنا: أضفنا .items()
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
@@ -490,7 +492,6 @@ _CHANNEL_MENTION = re.compile(r"<#\d+>")
 _CUSTOM_EMOJI = re.compile(r"<a?:\w+:\d+>")
 
 def clean_mentions(text):
-    """يزيل كل أنواع المنشن من النص"""
     if not text:
         return ""
     t = str(text)
@@ -504,7 +505,6 @@ def clean_mentions(text):
     return t
 
 def extract_discord_message(msg):
-    """استخراج كامل من رسالة ديسكورد (content + embeds + attachments)"""
     author = msg.author.display_name or msg.author.name or ""
     author_no_at = re.sub(r"^@", "", author).strip()
     author_username = getattr(msg.author, "name", "")
@@ -581,7 +581,6 @@ def extract_discord_message(msg):
     }
 
 def match_keyword_image(rules_json, text, default_image=""):
-    """يطابق الكلمات المفتاحية ويرجع الصورة المناسبة"""
     if not rules_json:
         return default_image
     try:
@@ -604,7 +603,6 @@ def match_keyword_image(rules_json, text, default_image=""):
     return default_image
 
 def build_discord_text(template, data, site_name=""):
-    """يبني النص النهائي من القالب والبيانات"""
     if not template:
         template = "<b>{name}</b>\n\n{content}"
     vars_map = {
@@ -641,7 +639,6 @@ def groq_available():
     return bool(get_groq_key())
 
 async def groq_rewrite(text, ai_prompt="", model=None):
-    """يعيد صياغة النص عبر Groq"""
     key = get_groq_key()
     if not key:
         return None
@@ -671,14 +668,13 @@ async def groq_rewrite(text, ai_prompt="", model=None):
         print(f"[Groq] {e}")
         return None
         # ═══════════════════════════════════════════════════════════
-# 🆕 DISCORD BOT — SELF-BOT MODE + FALLBACK
+# DISCORD BOT — SELF-BOT MODE + FALLBACK
 # ═══════════════════════════════════════════════════════════
 discord_client = None
 _SELF_BOT = False
-_DISCORD_MODE = "disabled"  # disabled | self-bot | bot | failed
+_DISCORD_MODE = "disabled"
 
 def _build_discord_client():
-    """يبني عميل الديسكورد حسب الإعدادات — self-bot أو bot عادي"""
     global discord_client, _SELF_BOT, _DISCORD_MODE
 
     if not DISCORD_ENABLE:
@@ -693,7 +689,6 @@ def _build_discord_client():
 
     intents = discord.Intents(guilds=True, guild_messages=True, message_content=True)
 
-    # محاولة self-bot أولاً لو مفعّل
     if SELF_BOT_MODE:
         try:
             client = discord.Client(self_bot=True, intents=intents)
@@ -709,7 +704,6 @@ def _build_discord_client():
                 _DISCORD_MODE = "failed"
                 return None
 
-    # fallback: bot عادي
     try:
         client = discord.Client(intents=intents)
         _SELF_BOT = False
@@ -774,7 +768,6 @@ def _get_feeds_for_channel(ch_id):
     return feeds
 
 def _feed_ignores_bot(feed, author_id):
-    """هل هذا الـ feed يتجاهل هذا البوت؟"""
     try:
         ig = feed["ignore_bots"] or ""
         if not ig:
@@ -787,7 +780,6 @@ def _feed_ignores_bot(feed, author_id):
         return False
 
 def _track_bot(msg):
-    """يتتبع البوتات التي ترسل في الرومات"""
     try:
         if not getattr(msg.author, "bot", False):
             return
@@ -808,7 +800,6 @@ def _track_bot(msg):
 if discord_client:
     @discord_client.event
     async def on_message(msg):
-        # تجاهل رسائل نفس الحساب
         if discord_client.user and msg.author.id == discord_client.user.id:
             return
         if not msg.guild:
@@ -818,16 +809,13 @@ if discord_client:
 
         ch_id = str(msg.channel.id)
 
-        # تتبع البوتات
         if getattr(msg.author, "bot", False):
             _track_bot(msg)
 
-        # ابحث عن feeds لهذا الروم
         feeds = _get_feeds_for_channel(ch_id)
         if not feeds:
             return
 
-        # منع التكرار
         c = db()
         if c.execute("SELECT 1 FROM discord_seen WHERE message_id=?", (str(msg.id),)).fetchone():
             c.close()
@@ -836,7 +824,6 @@ if discord_client:
         c.commit()
         c.close()
 
-        # استخراج البيانات
         data = extract_discord_message(msg)
         if not data["final_text"] and not data["image"]:
             return
@@ -846,14 +833,12 @@ if discord_client:
         for feed in feeds:
             owner = feed["added_by"]
 
-            # تجاهل البوتات المحددة
             if data["is_bot"] and _feed_ignores_bot(feed, data["author_id"]):
                 continue
 
             if not rate_ok(f"discord:{owner}", max_per_min=MAX_PER_MIN_TG):
                 continue
 
-            # اختيار النص
             use_original = feed["use_original"] if "use_original" in feed.keys() else 1
             if use_original:
                 text = data["final_text"] or ""
@@ -873,7 +858,6 @@ if discord_client:
                         tpl = cfg("tpl_discord")
                 text = build_discord_text(tpl, data, site_name)
 
-            # AI rewrite
             if feed["use_ai"] if "use_ai" in feed.keys() else 0:
                 if groq_available():
                     try:
@@ -883,7 +867,6 @@ if discord_client:
                     except Exception as e:
                         print(f"[AI Feed] {e}")
 
-            # الصورة
             final_image = ""
             kw_rules = feed["keyword_rules"] if "keyword_rules" in feed.keys() else ""
             if kw_rules:
@@ -895,11 +878,9 @@ if discord_client:
                 else:
                     final_image = data["image"]
 
-            # الزر
             btn_text = feed["btn_text"] or cfg("btn_discord", "عرض الروم")
             room_url = feed["room_url"] if "room_url" in feed.keys() and feed["room_url"] else data["message_url"]
 
-            # القنوات المستهدفة
             target_ids = []
             try:
                 raw = feed["target_tg_ids"] or ""
@@ -1052,7 +1033,6 @@ async def lifespan(app):
     scheduler.add_job(job_cleanup, "interval", hours=6)
     scheduler.start()
 
-    # تشغيل الديسكورد حسب الإعدادات
     if discord_client and DISCORD_TOKEN:
         try:
             asyncio.create_task(discord_client.start(DISCORD_TOKEN))
@@ -1685,7 +1665,6 @@ async def discord_refresh(request: Request):
 
 @app.get("/api/discord/bots")
 async def discord_bots(request: Request):
-    """يرجع قائمة البوتات التي ترسل في الرومات (لمساعدتها في ignore_bots)"""
     require_discord_access(request)
     c = db()
     rows = c.execute("SELECT id, name, avatar, last_seen, seen_count FROM discord_bots ORDER BY last_seen DESC LIMIT 200").fetchall()

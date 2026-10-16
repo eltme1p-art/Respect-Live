@@ -153,8 +153,8 @@ def init_db():
         "bot_invite_url": "", "bot_name_custom": "Respect Live Bot",
         "groq_api_key": "", "groq_model": "llama-3.3-70b-versatile",
     }
-    for k, v in defaults:
-        c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
+    for k, v in defaults.items():      # ✅ صحيح
+    c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     c.commit()
     c.close()
     print("[DB] Ready")

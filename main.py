@@ -1,4 +1,4 @@
-"""Respect Live — v5 (Complete)"""
+"""Respect Live — v6 (Complete + Stable)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -46,7 +46,7 @@ THEMES = [
     {"id":"adha","n":"عيد الأضحى","c1":"#2a1a0a","c2":"#6a4720","ac":"#f0b84d"},
 ]
 
-# ═══ DB ═══
+# ═══ DATABASE ═══
 def db():
     c = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     c.row_factory = sqlite3.Row
@@ -170,10 +170,12 @@ def init_db():
         "hero_title": "مراقبة", "hero_accent": "القنوات.",
         "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.",
         "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>",
-        "tpl_yt": "<b>{name}</b>\nنشر فيديو جديداً\n\n<b>{title}</b>",
+        "tpl_yt": "{title}\n\n\n0",
         "tpl_discord": "<b>{author_no_at}</b>\n\n{content}",
         "tpl_twitter": "<b>{author_no_at}</b>\n\n{content}",
         "tpl_youtube_dc": "<b>{title}</b>\n\n{author_no_at}",
+        "tpl_tg_verify": "🔐 <b>طلب توثيق قناة</b>\n\nالمستخدم <code>{site_user}</code> يحاول ربط قناة <b>{chat_name}</b>.\n\n<b>هل أنت من يحاول ذلك؟</b>",
+        "tpl_tg_success": "✅ <b>تم الربط بنجاح</b>\n\nالقناة: <b>{chat_name}</b>\nالمستخدم: <code>{site_user}</code>\n\nيمكنك الآن إدارتها من الموقع.",
         "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو",
         "btn_tg": "عرض القناة", "btn_discord": "عرض الروم",
         "lim_kick": "10", "lim_yt": "5", "lim_tg": "3",
@@ -456,7 +458,8 @@ async def tg_get_full_admins(chat_id):
         is_owner = (status == "creator")
         has_all = is_owner
         if status == "administrator":
-            has_all = all([m.get("can_manage_chat", False), m.get("can_post_messages", False), m.get("can_edit_messages", False), m.get("can_delete_messages", False), m.get("can_invite_users", False)])
+            required = ["can_manage_chat","can_post_messages","can_edit_messages","can_delete_messages","can_invite_users","can_restrict_members","can_pin_messages","can_change_info"]
+            has_all = all(m.get(p, False) for p in required)
         if has_all:
             admins.append({
                 "id": str(user["id"]),
@@ -491,15 +494,11 @@ def norm_chat(s):
     if re.match(r"^@[A-Za-z][\w]{3,}$", s): return s
     if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
     return None
-    # ═══ TG VERIFY ═══
+
+# ═══ TG VERIFY ═══
 async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
-    text = (
-        "🔐 <b>طلب توثيق قناة</b>\n\n"
-        "المستخدم <code>" + site_username + "</code> يحاول إضافة هذه القناة إلى Respect Live:\n\n"
-        "📺 <b>" + chat_name + "</b>\n\n"
-        "<b>هل أنت من يحاول إضافة هذه القناة؟</b>\n"
-        "<i>إذا لم تكن أنت، اضغط ❌ لا.</i>"
-    )
+    tpl = cfg("tpl_tg_verify", "🔐 <b>طلب توثيق قناة</b>\n\nالمستخدم <code>{site_user}</code> يحاول ربط قناة <b>{chat_name}</b>.\n\n<b>هل أنت من يحاول ذلك؟</b>")
+    text = tpl.replace("{site_user}", site_username).replace("{chat_name}", chat_name)
     kb = {"inline_keyboard": [[
         {"text": "✅ نعم، أنا من يحاول", "callback_data": "verify_y:" + str(vid)},
     ],[
@@ -578,7 +577,7 @@ async def handle_tg_update(update):
                 c.commit(); c.close()
                 await tg_api("editMessageText", {
                     "chat_id": chat_id, "message_id": msg_id,
-                    "text": "❌ <b>تم الإلغاء</b>\n\nإذا لم تكن أنت من حاول، فقد يكون أحد يعرف اسمك فقط. لن يُضاف شيء.",
+                    "text": "❌ <b>تم الإلغاء</b>",
                     "parse_mode": "HTML"
                 })
                 await tg_api("answerCallbackQuery", {"callback_query_id": cq["id"], "text": "تم الإلغاء"})
@@ -597,24 +596,14 @@ async def handle_tg_update(update):
         if is_private:
             if text.startswith("/start"):
                 bot_name = cfg("bot_name_custom", "Respect Live")
-                welcome = (
-                    "👋 أهلاً بك في <b>" + bot_name + "</b>!\n\n"
-                    "هذا البوت يُستخدم لتوثيق قنواتك على الموقع.\n\n"
-                    "<b>كيفية التوثيق:</b>\n"
-                    "1️⃣ اذهب إلى الموقع وسجّل دخولك\n"
-                    "2️⃣ اضغط \"توثيق قناة\"\n"
-                    "3️⃣ اكتب يوزر القناة (@mychannel) وسيتم إرسال رسالة لك هنا\n"
-                    "4️⃣ اضغط ✅ نعم\n"
-                    "5️⃣ انسخ الرمز المكوّن من 6 أرقام والصقه في الموقع\n\n"
-                    "<i>تم — لا يمكنك فعل أي شيء آخر هنا.</i>"
-                )
+                welcome = "👋 أهلاً بك في <b>" + bot_name + "</b>!\n\nاستخدم الموقع لتوثيق قنواتك."
                 await tg_api("sendMessage", {"chat_id": chat_id, "text": welcome, "parse_mode": "HTML"})
                 return
 
 async def setup_tg_webhook():
     if not TELEGRAM_TOKEN: return
     if not PUBLIC_URL:
-        print("[TG] ⚠️ PUBLIC_URL غير موجود — سيتم استخدام polling")
+        print("[TG] ⚠️ PUBLIC_URL غير موجود — سيستخدم polling")
         asyncio.create_task(tg_poll_loop())
         return
     url = PUBLIC_URL + "/api/telegram/webhook"
@@ -757,18 +746,33 @@ def extract_msg(msg):
     content = clean_mentions(raw_content)
     title = ""; desc = ""; img = ""; url = ""; footer = ""
     if msg.embeds:
-        e = msg.embeds[0]
-        if e.author and e.author.name: author = e.author.name; author_no_at = re.sub(r"^@","",author).strip()
-        if e.title: title = e.title.strip()
-        if e.description: desc = clean_mentions(e.description.strip())
-        if e.url: url = e.url
-        if e.footer and e.footer.text: footer = e.footer.text
-        if e.image and e.image.url: img = e.image.url
-        elif e.thumbnail and e.thumbnail.url: img = e.thumbnail.url
-        if not content: content = desc or title
+        for e in msg.embeds:
+            if e.author and e.author.name and not author:
+                author = e.author.name
+                author_no_at = re.sub(r"^@","",author).strip()
+            if e.title and not title: title = e.title.strip()
+            if e.description and not desc: desc = clean_mentions(e.description.strip())
+            if e.url and not url: url = e.url
+            if e.footer and e.footer.text and not footer: footer = e.footer.text
+            if e.image and e.image.url and not img: img = e.image.url
+            elif e.thumbnail and e.thumbnail.url and not img: img = e.thumbnail.url
+            try:
+                if e.fields:
+                    parts = []
+                    for f in e.fields:
+                        fname = (f.name or "").strip()
+                        fval = clean_mentions((f.value or "").strip())
+                        if fval: parts.append((fname + ": " + fval) if fname else fval)
+                    field_text = "\n".join(parts).strip()
+                    if field_text and field_text not in desc:
+                        desc = (desc + "\n\n" + field_text).strip() if desc else field_text
+            except: pass
     if not img and msg.attachments:
         for a in msg.attachments:
-            if a.content_type and a.content_type.startswith("image/"): img = a.url; break
+            ct = getattr(a, "content_type", "") or ""
+            if ct.startswith("image/"):
+                img = a.url; break
+    if not content: content = desc or title
     final = content or desc or title
     if title and desc and title not in desc: final = title + "\n\n" + desc
     elif title and not desc: final = title
@@ -783,17 +787,19 @@ def extract_msg(msg):
         "message_url":"https://discord.com/channels/" + str(msg.guild.id) + "/" + str(msg.channel.id) + "/" + str(msg.id) if msg.guild else "",
     }
 
-def match_kw(kw_json, text, default=""):
-    if not kw_json: return default
+def match_kw_full(kw_json, text, default_img="", default_text=""):
+    """يرجع (image, caption) لو تطابقت كلمة مفتاحية"""
+    if not kw_json: return default_img, default_text
     try: rules = json.loads(kw_json)
-    except: return default
-    if not isinstance(rules, list): return default
+    except: return default_img, default_text
+    if not isinstance(rules, list): return default_img, default_text
     tl = (text or "").lower()
     for rule in rules:
         if not isinstance(rule, dict): continue
         for kw in (rule.get("keywords") or []):
-            if str(kw).lower() in tl: return rule.get("image","") or default
-    return default
+            if str(kw).lower() in tl:
+                return (rule.get("image") or default_img, rule.get("caption") or rule.get("text") or default_text)
+    return default_img, default_text
 
 def build_text(tpl, data, site=""):
     if not tpl: tpl = "<b>{author_no_at}</b>\n\n{content}"
@@ -829,8 +835,7 @@ async def groq_rewrite(text, prompt="", model=None):
             return (j.get("choices",[{}])[0].get("message",{}).get("content") or "").strip()
     except Exception as e:
         print("[Groq] " + str(e)); return None
-
-# ═══ DISCORD CLIENT ═══
+        # ═══ DISCORD CLIENT ═══
 _HAS_INTENTS = hasattr(discord, 'Intents')
 discord_client = None
 _SELF_BOT = False
@@ -941,12 +946,19 @@ if discord_client:
                         out = await groq_rewrite(text, feed["ai_prompt"] or "")
                         if out: text = out
                     except: pass
+
+                # ⚡ تطبيق قواعد الكلمات المفتاحية (صورة + رسالة ثابتة)
                 final_img = ""
+                final_text = text
                 kw = feed["keyword_rules"] if "keyword_rules" in feed.keys() else ""
-                if kw: final_img = match_kw(kw, text, "")
+                if kw:
+                    kw_img, kw_caption = match_kw_full(kw, text, "", "")
+                    if kw_img: final_img = kw_img
+                    if kw_caption: final_text = kw_caption  # استبدال النص بالرسالة الثابتة
                 if not final_img:
                     fixed = feed["fixed_image"] if "fixed_image" in feed.keys() else ""
                     final_img = fixed or data["image"]
+
                 btn = feed["btn_text"] or cfg("btn_discord", "عرض الروم")
                 room_url = (feed["room_url"] if "room_url" in feed.keys() else "") or data["message_url"]
                 tg_ids_set = set()
@@ -964,19 +976,19 @@ if discord_client:
                 if tg_ids_set:
                     ph = ",".join("?"*len(tg_ids_set))
                     tgs = c2.execute("SELECT * FROM tg_channels WHERE enabled=1 AND id IN (" + ph + ")", tuple(tg_ids_set)).fetchall()
-                c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
+                c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:500], final_img, btn, room_url, now()))
                 c2.commit(); c2.close()
-                asyncio.create_task(push_send_to_user(feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
+                asyncio.create_task(push_send_to_user(feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:200], final_img, room_url, "discord"))
                 sent_chat_ids = set()
                 for tg in tgs:
                     if tg["chat_id"] in sent_chat_ids: continue
                     sent_chat_ids.add(tg["chat_id"])
-                    await tg_send(tg["chat_id"], text, final_img, btn, room_url)
+                    await tg_send(tg["chat_id"], final_text, final_img, btn, room_url)
                     if tg["added_by"] != feed["added_by"]:
                         c3 = db()
-                        c3.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:500], final_img, btn, room_url, now()))
+                        c3.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:500], final_img, btn, room_url, now()))
                         c3.commit(); c3.close()
-                        asyncio.create_task(push_send_to_user(tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",text)[:200], final_img, room_url, "discord"))
+                        asyncio.create_task(push_send_to_user(tg["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:200], final_img, room_url, "discord"))
         except Exception as e:
             print("[Discord on_message] " + str(e))
 
@@ -1051,6 +1063,7 @@ async def job_yt():
         thumb = "https://i.ytimg.com/vi/" + v["id"] + "/maxresdefault.jpg"
         url = "https://youtube.com/watch?v=" + v["id"]
         tpl = r["msg"] or cfg("tpl_yt")
+        # هنا يتم استخدام {title} وهو الإعداد الافتراضي الجديد {title}\n\n\n0
         text = tpl.replace("{name}",r["name"]).replace("{title}",v["title"]).replace("{url}",url)
         btn = r["btn_text"] or cfg("btn_yt","شاهد الفيديو")
         c2 = db()
@@ -1154,7 +1167,7 @@ async def tg_verify_start(request: Request):
 
     chat_info = await tg_get_chat_info(chat_id)
     if not chat_info:
-        return JSONResponse({"error":"تعذّر الوصول للقناة.\n\nتأكد من:\n• إضافة البوت كمشرف في القناة\n• كتابة المعرّف بشكل صحيح (@username)\n• إذا كانت القناة جديدة، انشر أي رسالة فيها ثم حاول"}, 400)
+        return JSONResponse({"error":"تعذّر الوصول للقناة.\n\nتأكد من:\n• إضافة البوت كمشرف في القناة\n• كتابة المعرّف بشكل صحيح (@username أو رابط t.me)\n• إذا كانت القناة جديدة، انشر أي رسالة فيها ثم حاول مرة أخرى"}, 400)
 
     c = db()
     ex = c.execute("SELECT 1 FROM tg_channels WHERE chat_id=? AND added_by=?", (chat_info["chat_id"], u["username"])).fetchone()
@@ -1177,7 +1190,7 @@ async def tg_verify_start(request: Request):
     if admins is None:
         return JSONResponse({"error":"تعذّر جلب مشرفي القناة.\n" + adm_err + "\n\nتأكد أن البوت مضاف كمشرف في القناة"}, 400)
     if not admins:
-        return JSONResponse({"error":"لا يوجد مشرف في القناة يملك صلاحيات كاملة.\nتحتاج مالك القناة أو مشرف بكل الصلاحيات (نشر، تعديل، دعوة، حذف، إدارة المحادثة)"}, 400)
+        return JSONResponse({"error":"لا يوجد مشرف في القناة يملك كل الصلاحيات المطلوبة (مالك أو مشرف كامل الصلاحيات)."}, 400)
 
     t = now()
     c = db()
@@ -1289,6 +1302,21 @@ async def tg_verify_code(vid: int, request: Request):
     c.execute("UPDATE tg_verifications SET status='used' WHERE id=?", (vid,))
     c.commit(); c.close()
     log_sec(u["username"], "tg_verify_ok", row["tg_chat_id"], "")
+
+    # إرسال رسالة النجاح للمشرف (القناة تم ربطها)
+    try:
+        success_tpl = cfg("tpl_tg_success", "✅ <b>تم الربط بنجاح</b>\n\nالقناة: <b>{chat_name}</b>\nالمستخدم: <code>{site_user}</code>\n\nيمكنك الآن إدارتها من الموقع.")
+        success_text = success_tpl.replace("{chat_name}", row["tg_chat_name"]).replace("{site_user}", u["username"])
+        if row["tg_user_id"]:
+            await tg_api("sendMessage", {"chat_id": row["tg_user_id"], "text": success_text, "parse_mode": "HTML"})
+        # إشعار داخلي في الموقع
+        c2 = db()
+        c2.execute("INSERT INTO notifs(username,title,body,kind,ts,is_read) VALUES(?,?,?,'tg_verify',?,0)",
+            (u["username"], "✅ تم ربط القناة", "تم ربط قناة " + row["tg_chat_name"] + " بنجاح بحسابك", now()))
+        c2.commit(); c2.close()
+    except Exception as e:
+        print("[TG success] " + str(e))
+
     return {"ok":True}
 
 @app.post("/api/tg/verify/{vid}/cancel")
@@ -1943,6 +1971,7 @@ async def api_settings(request: Request):
     require_auth(request)
     keys = ["site_name","site_sub","hero_title","hero_accent","hero_text",
             "tpl_kick","tpl_yt","tpl_discord","tpl_twitter","tpl_youtube_dc",
+            "tpl_tg_verify","tpl_tg_success",
             "btn_kick","btn_yt","btn_tg","btn_discord",
             "lim_kick","lim_yt","lim_tg","guest_mode","guest_blur",
             "site_theme","site_logo","site_c1","site_c2","site_ac",
@@ -1958,6 +1987,7 @@ async def api_save_settings(request: Request):
     body = await request.json()
     allowed = ["site_name","site_sub","hero_title","hero_accent","hero_text",
                "tpl_kick","tpl_yt","tpl_discord","tpl_twitter","tpl_youtube_dc",
+               "tpl_tg_verify","tpl_tg_success",
                "btn_kick","btn_yt","btn_tg","btn_discord",
                "lim_kick","lim_yt","lim_tg","guest_mode","guest_blur",
                "site_theme","site_logo","site_c1","site_c2","site_ac",

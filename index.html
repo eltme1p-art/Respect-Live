@@ -559,8 +559,7 @@ const S = {
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
 const isLogged = () => !!(S.me && S.me.user);
-const canDiscord = () => isLogged() && (isOwner() || S.me.user.can_discord === 1);
-
+const canDiscord = () => isLogged() && (isOwner() || S.me.user.can_discord === true || S.me.user.can_discord === 1);
 function applyTheme(theme) {
   if (!theme) return;
   const root = document.documentElement.style;

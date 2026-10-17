@@ -1,4 +1,4 @@
-"""Respect Live — v6 (Complete + Stable)"""
+"""Respect Live — v7 (Bold Text + YouTube Format + Fixes)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -165,15 +165,16 @@ def init_db():
         c.execute("INSERT INTO users(username,display,pass_hash,salt,role,active,banned,can_discord,created) VALUES(?,?,?,?,'owner',1,0,1,?)", (ADMIN_USERNAME, ADMIN_USERNAME, h, salt, now()))
     else:
         c.execute("UPDATE users SET pass_hash=?, salt=?, role='owner', active=1, banned=0, can_discord=1 WHERE username=?", (h, salt, ADMIN_USERNAME))
+    
     defaults = {
         "site_name": SITE_NAME, "site_sub": "STREAM MONITOR",
         "hero_title": "مراقبة", "hero_accent": "القنوات.",
         "hero_text": "تابع قنواتك على كيك ويوتيوب وتيليجرام في مكان واحد.",
-        "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>",
-        "tpl_yt": "{title}\n\n\n0",
-        "tpl_discord": "<b>{author_no_at}</b>\n\n{content}",
-        "tpl_twitter": "<b>{author_no_at}</b>\n\n{content}",
-        "tpl_youtube_dc": "<b>{title}</b>\n\n{author_no_at}",
+        "tpl_kick": "<b>{name}</b>\nبدأ بثاً مباشراً الآن\n\n<b>{title}</b>\n\n⚪🔴",
+        "tpl_yt": "<b>{title}</b>\n\n\n⚪🔴",
+        "tpl_discord": "<b>{author_no_at}</b>\n\n<b>{content}</b>",
+        "tpl_twitter": "<b>{author_no_at}</b>\n\n<b>{content}</b>",
+        "tpl_youtube_dc": "<b>{title}</b>\n\n<b>{author_no_at}</b>",
         "tpl_tg_verify": "🔐 <b>طلب توثيق قناة</b>\n\nالمستخدم <code>{site_user}</code> يحاول ربط قناة <b>{chat_name}</b>.\n\n<b>هل أنت من يحاول ذلك؟</b>",
         "tpl_tg_success": "✅ <b>تم الربط بنجاح</b>\n\nالقناة: <b>{chat_name}</b>\nالمستخدم: <code>{site_user}</code>\n\nيمكنك الآن إدارتها من الموقع.",
         "btn_kick": "شاهد البث", "btn_yt": "شاهد الفيديو",
@@ -188,6 +189,14 @@ def init_db():
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
+        
+    # إجبار تحديث القوالب لتنسيق غامق في حال كانت النسخة القديمة
+    if cfg("v7_bold_format", "") != "done":
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('tpl_yt', '<b>{title}</b>\\n\\n\\n⚪🔴')")
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('tpl_discord', '<b>{author_no_at}</b>\\n\\n<b>{content}</b>')")
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('v7_bold_format', 'done')")
+        c.commit()
+        
     if cfg("tg_verify_migration", "") != "done":
         try:
             c.execute("UPDATE tg_channels SET verified=1 WHERE verified=0")
@@ -309,8 +318,7 @@ def limit_info(username, kind, role):
     used = c.execute("SELECT COUNT(*) n FROM " + table + " WHERE added_by=?", (username,)).fetchone()["n"]
     c.close()
     return {"used": used, "limit": limit, "remaining": max(0, limit - used)}
-
-# ═══ TELEGRAM ═══
+    # ═══ TELEGRAM ═══
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
@@ -745,6 +753,7 @@ def extract_msg(msg):
     raw_content = (msg.content or "").strip()
     content = clean_mentions(raw_content)
     title = ""; desc = ""; img = ""; url = ""; footer = ""
+    
     if msg.embeds:
         for e in msg.embeds:
             if e.author and e.author.name and not author:
@@ -767,15 +776,18 @@ def extract_msg(msg):
                     if field_text and field_text not in desc:
                         desc = (desc + "\n\n" + field_text).strip() if desc else field_text
             except: pass
+            
     if not img and msg.attachments:
         for a in msg.attachments:
             ct = getattr(a, "content_type", "") or ""
             if ct.startswith("image/"):
                 img = a.url; break
+                
     if not content: content = desc or title
     final = content or desc or title
     if title and desc and title not in desc: final = title + "\n\n" + desc
     elif title and not desc: final = title
+    
     return {
         "author":author[:200],"author_no_at":author_no_at[:200],"username":username[:100],
         "user_id":user_id,"is_bot":is_bot,"content":content[:4000],"content_raw":raw_content[:4000],
@@ -802,7 +814,7 @@ def match_kw_full(kw_json, text, default_img="", default_text=""):
     return default_img, default_text
 
 def build_text(tpl, data, site=""):
-    if not tpl: tpl = "<b>{author_no_at}</b>\n\n{content}"
+    if not tpl: tpl = "<b>{author_no_at}</b>\n\n<b>{content}</b>"
     v = {
         "name":data.get("author_no_at") or data.get("author") or "",
         "author":data.get("author") or "","author_no_at":data.get("author_no_at") or "",
@@ -835,7 +847,8 @@ async def groq_rewrite(text, prompt="", model=None):
             return (j.get("choices",[{}])[0].get("message",{}).get("content") or "").strip()
     except Exception as e:
         print("[Groq] " + str(e)); return None
-        # ═══ DISCORD CLIENT ═══
+
+# ═══ DISCORD CLIENT ═══
 _HAS_INTENTS = hasattr(discord, 'Intents')
 discord_client = None
 _SELF_BOT = False
@@ -928,23 +941,29 @@ if discord_client:
                 c.close(); return
             c.execute("INSERT INTO discord_seen(message_id,ts) VALUES(?,?)", (str(msg.id), now()))
             c.commit(); c.close()
+            
             data = extract_msg(msg)
             if not data["final_text"] and not data["image"]: return
             site = cfg("site_name", SITE_NAME)
+            
             for feed in feeds:
                 if data["is_bot"] and _feed_ignores_bot(feed, data["user_id"]): continue
                 if not rate_ok("discord:" + str(feed["id"]), max_per_min=MAX_PER_MIN_TG): continue
+                
                 use_orig = feed["use_original"] if "use_original" in feed.keys() else 1
                 if use_orig:
+                    # التنسيق الغامق الافتراضي للنص الأصلي
                     text = data["final_text"] or ""
-                    if data["author_no_at"]: text = "<b>" + data["author_no_at"] + "</b>\n\n" + text
+                    if data["author_no_at"]: text = "<b>" + data["author_no_at"] + "</b>\n\n<b>" + text + "</b>"
+                    else: text = "<b>" + text + "</b>"
                 else:
                     tpl = feed["template"] or cfg("tpl_discord")
                     text = build_text(tpl, data, site)
+                    
                 if (feed["use_ai"] if "use_ai" in feed.keys() else 0) and groq_available():
                     try:
                         out = await groq_rewrite(text, feed["ai_prompt"] or "")
-                        if out: text = out
+                        if out: text = "<b>" + out + "</b>"
                     except: pass
 
                 # ⚡ تطبيق قواعد الكلمات المفتاحية (صورة + رسالة ثابتة)
@@ -954,7 +973,7 @@ if discord_client:
                 if kw:
                     kw_img, kw_caption = match_kw_full(kw, text, "", "")
                     if kw_img: final_img = kw_img
-                    if kw_caption: final_text = kw_caption  # استبدال النص بالرسالة الثابتة
+                    if kw_caption: final_text = "<b>" + kw_caption + "</b>"  # استبدال النص بالرسالة الثابتة الغامقة
                 if not final_img:
                     fixed = feed["fixed_image"] if "fixed_image" in feed.keys() else ""
                     final_img = fixed or data["image"]
@@ -979,6 +998,7 @@ if discord_client:
                 c2.execute("INSERT INTO notifs(username,title,body,image,btn_text,btn_url,kind,ts,is_read) VALUES(?,?,?,?,?,?,'discord',?,0)", (feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:500], final_img, btn, room_url, now()))
                 c2.commit(); c2.close()
                 asyncio.create_task(push_send_to_user(feed["added_by"], data["author_no_at"] or "رسالة", re.sub(r"<[^>]+>","",final_text)[:200], final_img, room_url, "discord"))
+                
                 sent_chat_ids = set()
                 for tg in tgs:
                     if tg["chat_id"] in sent_chat_ids: continue
@@ -1063,7 +1083,7 @@ async def job_yt():
         thumb = "https://i.ytimg.com/vi/" + v["id"] + "/maxresdefault.jpg"
         url = "https://youtube.com/watch?v=" + v["id"]
         tpl = r["msg"] or cfg("tpl_yt")
-        # هنا يتم استخدام {title} وهو الإعداد الافتراضي الجديد {title}\n\n\n0
+        # هنا يتم استخدام {title} وهو الإعداد الافتراضي الجديد {title}\n\n\n⚪🔴
         text = tpl.replace("{name}",r["name"]).replace("{title}",v["title"]).replace("{url}",url)
         btn = r["btn_text"] or cfg("btn_yt","شاهد الفيديو")
         c2 = db()
@@ -1399,7 +1419,7 @@ async def api_me(request: Request):
     u = auth(request)
     if not u: return JSONResponse({"error":"غير مسجل","auth":False}, 401)
     return {
-        "user":{"username":u["username"],"display":u["display"],"role":u["role"],"avatar":u.get("avatar",""),"can_discord": u.get("can_discord",0)==1,},
+        "user":{"username":u["username"],"display":u["display"],"role":u["role"],"avatar":u.get("avatar",""),"can_discord":u.get("can_discord",0)==1},
         "limits":get_user_limits(u["username"], u["role"]),
         "usage":{"kick":limit_info(u["username"],"kick",u["role"])["used"],
                  "yt":limit_info(u["username"],"yt",u["role"])["used"],

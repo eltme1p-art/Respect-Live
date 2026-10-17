@@ -1399,7 +1399,7 @@ async def api_me(request: Request):
     u = auth(request)
     if not u: return JSONResponse({"error":"غير مسجل","auth":False}, 401)
     return {
-        "user":{"username":u["username"],"display":u["display"],"role":u["role"],"avatar":u.get("avatar",""),"can_discord":u.get("can_discord",0)==1},
+        "user":{"username":u["username"],"display":u["display"],"role":u["role"],"avatar":u.get("avatar",""),"can_discord": u.get("can_discord",0)==1,},
         "limits":get_user_limits(u["username"], u["role"]),
         "usage":{"kick":limit_info(u["username"],"kick",u["role"])["used"],
                  "yt":limit_info(u["username"],"yt",u["role"])["used"],

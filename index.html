@@ -559,7 +559,8 @@ const S = {
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
 const isLogged = () => !!(S.me && S.me.user);
-const canDiscord = () => isLogged() && (isOwner() || S.me.user.can_discord === true || S.me.user.can_discord === 1);
+const canDiscord = () => isLogged() && (isOwner() || !!S.me.user.can_discord);
+
 function applyTheme(theme) {
   if (!theme) return;
   const root = document.documentElement.style;
@@ -583,7 +584,7 @@ function showMaintenance(text) {
 }
 
 console.log('[RL] utils loaded');
-  /* ═══ PUSH ═══ */
+/* ═══ PUSH ═══ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
   navigator.serviceWorker.addEventListener('message', e => {
@@ -933,7 +934,7 @@ function chCard(kind, r) {
   const card = el('div', 'ch');
   const brandImg = r.banner || r.avatar || '';
   if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
-  
+
   if (!isLogged()) {
     card.innerHTML = `<div class="lock-blur" style="padding:14px"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
     return card;
@@ -948,7 +949,7 @@ function chCard(kind, r) {
   const verifiedBadge = (kind === 'tg' && r.verified) ? '<span class="ch-badge verified">✓ موثقة</span>' : '';
   const cover = r.banner || r.avatar || '';
   const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
-  
+
   card.innerHTML = `
     <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
     <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
@@ -995,8 +996,6 @@ async function editChannelMsg(kind, r) {
   const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
   const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
   let uploadedImage = curImg ? curImg[1] : '';
-  
-  // هنا القالب الافتراضي سيظهر بقيمة {title}\n\n\n0 إن لم يكن هناك مخصص
   const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || '');
   const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (S.me.btn_yt || 'شاهد الفيديو');
 
@@ -1129,7 +1128,7 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG VERIFY (تدفق المشرف) ═══ */
+/* ═══ TG VERIFY ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) {
@@ -1607,7 +1606,7 @@ async function editFeed(f) {
     onReady: () => {
       const ta = $('#__tp'), prev = $('#__tplPrev');
       const update = () => {
-        const tpl = ta.value.trim() || '<b>{author_no_at}</b>\n\n{content}';
+        const tpl = ta.value.trim() || '<b>{author_no_at}</b>\n\n<b>{content}</b>';
         const sample = tpl
           .replace(/\{name\}/g, 'DRB7H').replace(/\{author\}/g, 'DRB7H').replace(/\{author_no_at\}/g, 'DRB7H')
           .replace(/\{content\}/g, '🔥🔥 محتوى')
@@ -1777,7 +1776,7 @@ async function openAddFeed() {
     <label class="fld"><span>اختر الروم</span><select id="__chList">${available.map(([id, info]) => `<option value="${esc(id)}">#${esc(info.name)} — ${esc(info.guild||'')}</option>`).join('')}</select></label>
     <label class="fld"><span>نوع المصدر</span><select id="__src"><option value="generic">عام</option><option value="twitter">تويتر</option><option value="youtube">يوتيوب</option></select></label>
     <div class="switch-row"><div class="sw-txt"><b>نسخ الأصل</b><small>بدون قالب</small></div><label class="sw"><input type="checkbox" id="__useOrig" checked><i></i></label></div>
-    <label class="fld"><span>القالب (اختياري)</span><textarea id="__tpl" rows="4" class="mono" placeholder="<b>{author_no_at}</b>&#10;&#10;{content}"></textarea></label>
+    <label class="fld"><span>القالب (اختياري)</span><textarea id="__tpl" rows="4" class="mono" placeholder="<b>{author_no_at}</b>&#10;&#10;<b>{content}</b>"></textarea></label>
     <label class="fld"><span>نص الزر</span><input type="text" id="__bt" value="عرض الروم"></label>
     <label class="fld" style="margin-top:20px"><span>البوتات المستثناة</span></label>
     <div class="bot-list" id="__botList">${botListHTML}</div>`;

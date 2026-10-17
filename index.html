@@ -629,7 +629,7 @@ async function testPush() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ BOOT ═══ */
+/* ═══ BOOT & DATA LOADING ═══ */
 async function boot() {
   console.log('[RL] boot starting...');
   try {
@@ -1122,7 +1122,7 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG VERIFY ═══ */
+/* ═══ TG VERIFY (النسخة الجديدة) ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) {
@@ -1135,65 +1135,121 @@ async function openTgVerify() {
   const html = `
     <div class="tgv-box">
       <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">${IC.shieldCheck} خطوات التوثيق</b>
-      <div class="tgv-step active" data-step="1"><b>1</b> أدخل بيانات قناتك وحسابك</div>
-      <div class="tgv-step" data-step="2"><b>2</b> سنرسل لك رسالة في تيليجرام — اضغط "✅ نعم"</div>
-      <div class="tgv-step" data-step="3"><b>3</b> انسخ الرمز المكوّن من 6 أرقام والصقه هنا</div>
+      <div class="tgv-step active" data-step="1"><b>1</b> أدخل يوزر القناة</div>
+      <div class="tgv-step" data-step="2"><b>2</b> البوت يكتشف المالك/المشرف الأقوى</div>
+      <div class="tgv-step" data-step="3"><b>3</b> المشرف يؤكد ويحصل على رمز 6 أرقام</div>
     </div>
     <div style="padding:12px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:12px;margin-bottom:14px;font-size:12px;line-height:1.7">
       ⚠️ <b>قبل البدء:</b><br>
-      • يجب أن تكون قد ضغطت <code>/start</code> في بوت التيليجرام<br>
-      • يجب أن يكون البوت مشرفاً في قناتك
+      • البوت يجب أن يكون مشرفاً في القناة<br>
+      • المشرف المستلم يجب أن يفتح البوت ويضغط <code>/start</code> أول مرة
     </div>
     <label class="fld"><span>قناة تيليجرام</span>
       <input type="text" id="__tgc" placeholder="@mychannel أو رابط t.me">
       <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">أدخل يوزر القناة أو رابطها</small>
     </label>
-    <label class="fld"><span>حسابك في تيليجرام</span>
-      <input type="text" id="__tgu" placeholder="@myusername">
-      <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">يجب أن يبدأ بـ @ — سنرسل لك عليه رمز التأكيد</small>
-    </label>
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:12.5px;color:var(--muted)">
       <span>الحدود</span><span style="font-family:var(--font-en);color:var(--blue);font-weight:900">${lim.used} / ${lim.limit}</span>
     </div>`;
-  const r = await modal({ title:'توثيق قناة تيليجرام', sub:'اربط قناتك بحسابك على الموقع', html, okText:'إرسال طلب التوثيق', wide: true });
+  const r = await modal({ title:'توثيق قناة تيليجرام', sub:'البوت سيتحقق من مالك القناة تلقائياً', html, okText:'متابعة', wide: true });
   if (!r) return;
   const chatInput = ($('#__tgc')?.value || '').trim();
-  const userInput = ($('#__tgu')?.value || '').trim();
   if (!chatInput) return toast('أدخل قناة تيليجرام', 'bad');
-  if (!userInput || !userInput.startsWith('@')) return toast('أدخل حسابك ويبدأ بـ @', 'bad');
-  let verifyId = null, chatName = '', chatAvatar = '';
+
+  let result;
   try {
-    const res = await api('/api/tg/verify/start', { method:'POST', body: { chat_id: chatInput, tg_username: userInput } });
-    verifyId = res.verify_id;
-    chatName = res.chat_name || '';
-    chatAvatar = res.chat_avatar || '';
-    toast('تم إرسال الرسالة — تفقد تيليجرام', 'ok');
-    if (res.warn) setTimeout(() => toast(res.warn, ''), 700);
+    result = await api('/api/tg/verify/start', { method:'POST', body: { chat_id: chatInput } });
   } catch (e) {
     return toast(e.message, 'bad');
   }
-  await tgVerifyWait(verifyId, chatName, chatAvatar);
+
+  const verifyId = result.verify_id;
+  const chatName = result.chat_name;
+  const chatAvatar = result.chat_avatar;
+  const admins = result.admins || [];
+  const autoId = result.auto_admin_id;
+
+  if (admins.length === 1) {
+    await tgVerifySendAndWait(verifyId, autoId, chatName, chatAvatar, admins[0].name);
+  } else {
+    await tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar);
+  }
 }
 
-async function tgVerifyWait(verifyId, chatName, chatAvatar) {
+async function tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar) {
+  const adminHTML = admins.map(a => `
+    <label class="tg-pick-item" data-admin-id="${esc(a.id)}">
+      <div class="av">${esc((a.name||'?').charAt(0).toUpperCase())}</div>
+      <div class="if">
+        <b>${esc(a.name)}${a.is_owner ? ' 👑' : ''}</b>
+        <small>${esc(a.username || '')} ${a.is_owner ? '· المالك' : '· مشرف كامل'}</small>
+      </div>
+      <div class="ck">${IC.check}</div>
+    </label>`).join('');
   const html = `
     <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
     <div class="tgv-chat">
       <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
-      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>بانتظار تأكيدك...</small></div>
+      <div class="if"><b>${esc(chatName)}</b><small>${admins.length} مشرف بصلاحيات كاملة</small></div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:14px;font-size:12.5px;line-height:1.7">
+      اختر المشرف الذي تريد أن يستلم رمز التوثيق<br>
+      <span class="mu" style="font-size:11.5px">يجب أن يكون قد فتح البوت وضغط /start</span>
+    </div>
+    <label class="fld"><span>المشرفون</span></label>
+    <div class="tg-pick-grid" id="__adminList">${adminHTML}</div>`;
+  const r = await modal({ title:'اختر المشرف', sub:'سيستلم رسالة التأكيد', html, okText:'إرسال الرمز', wide: true,
+    onReady: () => {
+      $$('#__adminList .tg-pick-item').forEach(item => {
+        item.onclick = () => {
+          $$('#__adminList .tg-pick-item').forEach(x => x.classList.remove('on'));
+          item.classList.add('on');
+        };
+      });
+      const ownerItem = admins.find(a => a.is_owner);
+      const targetId = ownerItem ? ownerItem.id : admins[0].id;
+      const targetEl = document.querySelector('[data-admin-id="' + targetId + '"]');
+      if (targetEl) targetEl.classList.add('on');
+    }
+  });
+  if (!r) return;
+  const selected = document.querySelector('#__adminList .tg-pick-item.on');
+  if (!selected) return toast('اختر مشرفاً', 'bad');
+  const adminId = selected.dataset.adminId;
+  const adminName = (admins.find(a => a.id === adminId) || {}).name || '';
+  await tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName);
+}
+
+async function tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName) {
+  try {
+    await api('/api/tg/verify/' + verifyId + '/send', { method:'POST', body: { admin_id: adminId } });
+    toast('تم إرسال الرسالة — بانتظار تأكيد المشرف', 'ok');
+  } catch (e) {
+    return toast(e.message, 'bad');
+  }
+  await tgVerifyWait(verifyId, chatName, chatAvatar, adminName);
+}
+
+async function tgVerifyWait(verifyId, chatName, chatAvatar, adminName) {
+  const html = `
+    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
+    <div class="tgv-chat">
+      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
+      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>بانتظار تأكيد ${esc(adminName || 'المشرف')}...</small></div>
     </div>
     <div style="text-align:center;padding:16px 0">
       <div class="tgv-spinner"></div>
       <div class="mu" style="margin-top:12px;font-size:13px;line-height:1.8">
-        فتح <b>تيليجرام</b> وستجد رسالة من البوت<br>
-        اضغط <b style="color:var(--green)">✅ نعم، أنا من يحاول</b>
+        أرسلنا رسالة إلى <b style="color:var(--text)">${esc(adminName || 'المشرف')}</b> في تيليجرام<br>
+        عندما يضغط <b style="color:var(--green)">✅ نعم</b> سيحصل على رمز مكوّن من 6 أرقام<br>
+        <span style="font-size:12px;color:var(--muted-2)">اطلب منه الرمز والصقه في الخطوة التالية</span>
       </div>
     </div>
     <div class="tgv-timer" id="__vtimer">⏱ <span id="__vtsec">600</span> ثانية متبقية</div>
     <div style="text-align:center;margin-top:14px">
       <button class="btn sm ghost" id="__vcancel">إلغاء الطلب</button>
     </div>`;
-  modal({ title:'بانتظار التأكيد', sub:'تحقق من رسائل تيليجرام', html, okText:'لدي الرمز بالفعل', cancel:false, wide: true });
+  modal({ title:'بانتظار التأكيد', sub:'تحقق من تيليجرام', html, okText:'لدي الرمز بالفعل', cancel:false, wide: true });
   let left = 600;
   const timer = setInterval(() => {
     left--;
@@ -1220,7 +1276,7 @@ async function tgVerifyWait(verifyId, chatName, chatAvatar) {
         await tgVerifyCode(verifyId, chatName, chatAvatar);
       } else if (r.status === 'cancelled' || r.status === 'expired' || r.status === 'failed') {
         clearInterval(pollInterval); clearInterval(timer);
-        toast(r.status === 'cancelled' ? 'تم إلغاء التوثيق من تيليجرام' : 'انتهت مدة التوثيق', 'bad');
+        toast(r.status === 'cancelled' ? 'تم إلغاء التوثيق من المشرف' : 'انتهت مدة التوثيق', 'bad');
       }
     } catch (e) {}
   }, 3000);

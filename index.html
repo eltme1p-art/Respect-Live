@@ -177,9 +177,11 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .sec-title span{color:var(--blue);transform:skewX(-8deg);display:inline-block}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
-.ch{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r);transition:transform .32s var(--ease-soft),border-color .32s ease,box-shadow .32s ease}
-.ch::before{content:"";position:absolute;top:10px;left:10px;width:14px;height:14px;border-top:2px solid var(--blue);border-left:2px solid var(--blue);opacity:.4;pointer-events:none;border-radius:4px 0 0 0}
+.ch{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r);transition:transform .32s var(--ease-soft),border-color .32s ease,box-shadow .32s ease;isolation:isolate}
+.ch::after{content:"";position:absolute;inset:-40px;background-image:var(--ch-brand,none);background-size:cover;background-position:center;filter:blur(50px) saturate(1.8);opacity:.18;pointer-events:none;z-index:0;border-radius:var(--r)}
+.ch::before{content:"";position:absolute;top:10px;left:10px;width:14px;height:14px;border-top:2px solid var(--blue);border-left:2px solid var(--blue);opacity:.4;pointer-events:none;border-radius:4px 0 0 0;z-index:2}
 .ch:hover{transform:translateY(-3px);border-color:var(--blue-line);box-shadow:0 18px 44px rgba(var(--blue-rgb),.16)}
+.ch>.ch-cover,.ch>.ch-head,.ch>.ch-acts{position:relative;z-index:1}
 .ch-cover{height:118px;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(var(--blue-rgb),.28),rgba(0,0,0,.5))}
 .ch-cover img{width:100%;height:100%;object-fit:cover;transition:transform .55s var(--ease-soft)}
 .ch:hover .ch-cover img{transform:scale(1.05)}
@@ -198,7 +200,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ch-info{flex:1;min-width:0;padding-bottom:2px}
 .ch-info b{display:block;font-size:15.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 .ch-info small{display:inline-block;font-size:10.5px;color:var(--muted);font-family:var(--font-en);letter-spacing:1px;border:1px solid var(--line);border-radius:20px;padding:3px 11px;margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ch-live{margin:12px 18px 0;padding:11px 15px;border-radius:12px;background:rgba(239,68,68,.11);border:1px solid rgba(239,68,68,.28);font-size:12.5px;display:flex;justify-content:space-between;gap:10px;font-weight:700;align-items:center}
+.ch-live{margin:12px 18px 0;padding:11px 15px;border-radius:12px;background:rgba(239,68,68,.11);border:1px solid rgba(239,68,68,.28);font-size:12.5px;display:flex;justify-content:space-between;gap:10px;font-weight:700;align-items:center;position:relative;z-index:1}
 .ch-live div{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ch-live span{color:#f87171;white-space:nowrap;font-family:var(--font-en);font-weight:900;font-size:11.5px}
 .ch-acts{display:flex;gap:7px;flex-wrap:wrap;padding:14px 18px 18px}
@@ -629,7 +631,7 @@ async function testPush() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ BOOT & DATA LOADING ═══ */
+/* ═══ BOOT & DATA ═══ */
 async function boot() {
   console.log('[RL] boot starting...');
   try {
@@ -930,6 +932,9 @@ function viewChannels(v, kind) {
 
 function chCard(kind, r) {
   const card = el('div', 'ch');
+  const brandImg = r.banner || r.avatar || '';
+  if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
+  
   if (!isLogged()) {
     card.innerHTML = `<div class="lock-blur" style="padding:14px"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
     return card;
@@ -944,6 +949,7 @@ function chCard(kind, r) {
   const verifiedBadge = (kind === 'tg' && r.verified) ? '<span class="ch-badge verified">✓ موثقة</span>' : '';
   const cover = r.banner || r.avatar || '';
   const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
+  
   card.innerHTML = `
     <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
     <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
@@ -990,6 +996,8 @@ async function editChannelMsg(kind, r) {
   const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
   const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
   let uploadedImage = curImg ? curImg[1] : '';
+  
+  // هنا القالب الافتراضي سيظهر بقيمة {title}\n\n\n0 إن لم يكن هناك مخصص
   const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || '');
   const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (S.me.btn_yt || 'شاهد الفيديو');
 
@@ -1122,7 +1130,7 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG VERIFY (النسخة الجديدة) ═══ */
+/* ═══ TG VERIFY (تدفق المشرف) ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) {
@@ -1619,7 +1627,7 @@ async function editFeed(f) {
       });
       bindKwRules();
       $('#__addKw').onclick = () => {
-        keywordRules.push({ keywords: [], image: '' });
+        keywordRules.push({ keywords: [], image: '', caption: '' });
         $('#__kwList').innerHTML = keywordRules.map((rr, i) => renderKwRule(rr, i)).join('');
         bindKwRules();
       };
@@ -1651,6 +1659,9 @@ async function editFeed(f) {
             if (rule.image) prev.innerHTML = `<img src="${esc(rule.image)}" onerror="this.style.display='none'">`;
             else prev.textContent = 'لا صورة';
           };
+          const capInput = elr.querySelector('textarea[data-kwcap]');
+          if (capInput) capInput.oninput = () => { rule.caption = capInput.value.trim(); };
+          
           const upBtn = elr.querySelector('[data-kwimgup]');
           if (upBtn) upBtn.onclick = () => {
             const inp = document.createElement('input');
@@ -1695,7 +1706,9 @@ async function editFeed(f) {
   const useOrig = $('#__useOrig')?.checked ? 1 : 0;
   const useAi = $('#__useAi')?.checked ? 1 : 0;
   const aiPrompt = ($('#__aiPrompt')?.value || '').trim();
-  const finalRules = keywordRules.filter(rule => rule.keywords && rule.keywords.length > 0 && rule.image);
+  
+  // نأخذ فقط القواعد التي تحتوي على كلمات مفتاحية
+  const finalRules = keywordRules.filter(rule => rule.keywords && rule.keywords.length > 0);
   try {
     await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: {
       template: tpl, btn_text: btnText, ignore_bots: newIgBots,
@@ -1735,6 +1748,10 @@ function renderKwRule(rule, idx) {
             <input type="text" data-kwimg value="${esc(rule.image || '')}" placeholder="https://...">
             <button type="button" class="btn sm" data-kwimgup style="min-width:auto;padding:8px 12px">${IC.upload}</button>
           </div>
+        </div>
+        <div>
+          <div style="font-size:11.5px;color:var(--muted);font-weight:700;margin-bottom:6px">رسالة ثابتة (تستبدل النص الأصلي)</div>
+          <textarea data-kwcap class="mono" rows="2" style="width:100%;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text);font-size:12.5px;resize:vertical" placeholder="اتركه فارغاً للاحتفاظ بالنص الأصلي">${esc(rule.caption || '')}</textarea>
         </div>
       </div>
     </div>`;
@@ -2328,6 +2345,17 @@ async function renderAdminSettings(c) {
       <label class="fld"><span>رابط دعوة البوت</span><input type="text" id="__bi" value="${esc(s.bot_invite_url||'')}"></label>
     </div>
     <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">✉️ رسائل توثيق تيليجرام</div>
+      <label class="fld"><span>رسالة التحقق (تُرسل للمشرف)</span>
+        <textarea id="__ttv" rows="4" class="mono">${esc(s.tpl_tg_verify||'')}</textarea>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
+      <label class="fld"><span>رسالة النجاح (تُرسل بعد الربط)</span>
+        <textarea id="__tts" rows="4" class="mono">${esc(s.tpl_tg_success||'')}</textarea>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
+    </div>
+    <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود والزوار</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${esc(s.lim_kick||'10')}"></label>
@@ -2343,6 +2371,7 @@ async function renderAdminSettings(c) {
         site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value, hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
         btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc').value,
         tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_discord: $('#__td').value,
+        tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value,
         bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
         lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
         guest_mode: $('#__gm').checked ? '1' : '0',

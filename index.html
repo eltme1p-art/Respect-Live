@@ -53,18 +53,6 @@ img{display:block;max-width:100%}
 @keyframes spBounce{0%,80%,100%{transform:scale(.35);opacity:.35}40%{transform:scale(1);opacity:1}}
 .sp-foot{font-family:var(--font-en);font-size:11px;letter-spacing:4px;font-weight:800;color:var(--muted);opacity:0;animation:fadeIn .8s .9s forwards}
 @keyframes fadeIn{to{opacity:1}}
-#maintenance{position:fixed;inset:0;z-index:9500;display:none;place-items:center;text-align:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(var(--blue-rgb),.20),transparent 62%),var(--bg)}
-#maintenance.on{display:grid}
-.mnt-wrap{max-width:520px;display:flex;flex-direction:column;align-items:center;gap:24px}
-.mnt-gear{width:96px;height:96px;border-radius:26px;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);display:grid;place-items:center;color:var(--blue);animation:mntSpin 4s linear infinite}
-.mnt-gear svg{width:48px;height:48px}
-@keyframes mntSpin{to{transform:rotate(360deg)}}
-.mnt-title{font-family:var(--font-en);font-size:clamp(28px,7vw,48px);font-weight:900;letter-spacing:4px;margin-bottom:8px}
-.mnt-title span{color:var(--blue);text-shadow:var(--glow)}
-.mnt-text{color:var(--muted);font-size:15px;line-height:1.9;max-width:420px}
-.mnt-bar{width:220px;height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:16px}
-.mnt-bar b{display:block;height:100%;width:30%;background:linear-gradient(90deg,var(--blue),var(--blue2));border-radius:99px;animation:mntSlide 1.8s ease-in-out infinite}
-@keyframes mntSlide{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
 .page{display:none}
 .page.on{display:block;animation:pageIn .45s var(--ease) both}
 @keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -91,25 +79,33 @@ img{display:block;max-width:100%}
 .avatar-btn .st{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
 .avatar-btn.guest{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);box-shadow:none}
 .avatar-btn.guest svg{width:19px;height:19px}
-.tabbar{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(92%,460px);height:66px;background:rgba(10,15,24,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:36px;display:flex;justify-content:space-around;align-items:center;z-index:100;padding:0 8px;box-shadow:0 20px 44px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05)}
-.tabbar button{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;color:var(--muted);position:relative;transition:.28s var(--ease-soft)}
-.tabbar button svg{width:22px;height:22px;color:currentColor;transition:.28s var(--ease-soft)}
+.tabbar{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(94%,500px);height:66px;background:rgba(10,15,24,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:36px;display:flex;justify-content:space-around;align-items:center;z-index:100;padding:0 6px;box-shadow:0 20px 44px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05)}
+.tabbar button{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--muted);position:relative;transition:.28s var(--ease-soft)}
+.tabbar button svg{width:21px;height:21px;color:currentColor;transition:.28s var(--ease-soft)}
 .tabbar button:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .tabbar button:active{transform:scale(.92)}
 .tabbar button.on{color:var(--blue2)}
 .tabbar button.on svg{transform:translateY(-2px) scale(1.15);filter:drop-shadow(0 0 8px var(--blue))}
-.tabbar button.on::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:22px;height:3px;background:var(--blue);border-radius:3px;box-shadow:var(--glow-sm)}
+.tabbar button.on::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--blue);border-radius:3px;box-shadow:var(--glow-sm)}
+.mnt-banner{position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 16px;background:linear-gradient(90deg,rgba(239,68,68,.96),rgba(220,38,38,.96));color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(239,68,68,.4);animation:mntSlideDown .4s var(--ease)}
+@keyframes mntSlideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.mnt-banner svg{width:18px;height:18px;flex-shrink:0}
+.mnt-banner b{font-family:var(--font-en);letter-spacing:1px}
+.mnt-banner small{opacity:.9;font-weight:600;font-size:11.5px}
 .login-page{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 20px;position:relative;animation:pageIn .6s var(--ease) both}
 .login-card{position:relative;width:min(430px,100%);padding:38px 30px 32px;background:var(--card);border:1px solid var(--line-2);border-radius:26px;box-shadow:var(--shadow-lg),0 0 80px rgba(var(--blue-rgb),.10)}
 .login-card::before{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);box-shadow:var(--glow);border-radius:2px}
 .login-logo{width:92px;height:92px;border-radius:26px;margin:0 auto 20px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;box-shadow:0 0 0 0 rgba(var(--blue-rgb),.6),0 20px 60px rgba(var(--blue-rgb),.45);animation:spGlow 2.6s infinite;overflow:hidden}
 .login-logo img{width:100%;height:100%;object-fit:cover}
 .login-logo svg{width:46px;height:46px}
-.login-head{text-align:center;margin-bottom:28px}
+.login-head{text-align:center;margin-bottom:20px}
 .login-head h1{font-family:var(--font-en);font-size:22px;letter-spacing:3px;font-weight:900;margin-bottom:8px}
 .login-head h1 span{color:var(--blue);text-shadow:var(--glow-sm)}
 .login-head p{color:var(--muted);font-size:12.5px;letter-spacing:.3px}
-.fld{display:block;margin:16px 0}
+.auth-tabs{display:flex;gap:6px;margin-bottom:20px;padding:5px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px}
+.auth-tabs button{flex:1;padding:11px;border-radius:10px;font-size:13px;font-weight:900;color:var(--muted);transition:.22s var(--ease-soft)}
+.auth-tabs button.on{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(var(--blue-rgb),.35)}
+.fld{display:block;margin:14px 0}
 .fld>span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:9px;font-weight:800;letter-spacing:.3px}
 input[type="text"],input[type="password"],input[type="number"],input[type="email"],input[type="search"],input[type="url"],textarea,select{-webkit-appearance:none;appearance:none;display:block;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--text);background:rgba(5,8,16,.85);border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;min-height:52px;line-height:1.4;transition:border-color .22s var(--ease-soft),box-shadow .22s var(--ease-soft),background .22s var(--ease-soft);outline:none}
 input::placeholder,textarea::placeholder{color:var(--muted-2);font-weight:500}
@@ -215,8 +211,17 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .guest-banner .gb-ico svg{width:22px;height:22px}
 .guest-banner .gb-txt{flex:1;min-width:160px;font-size:13.5px;font-weight:700;color:var(--text);line-height:1.6}
 .guest-banner .gb-txt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:3px}
+.member-banner{margin:18px var(--pad) 0;padding:16px 20px;border-radius:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:pageIn .5s var(--ease) both}
+.member-banner.ok{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.02));border:1px solid rgba(16,185,129,.4)}
+.member-banner.warn{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.02));border:1px solid rgba(245,158,11,.4)}
+.member-banner.info{background:linear-gradient(135deg,rgba(var(--blue-rgb),.12),rgba(var(--blue-rgb),.02));border:1px solid var(--blue-line)}
+.member-banner .mb-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
+.member-banner.ok .mb-ico{background:rgba(16,185,129,.15);color:var(--green)}
+.member-banner.warn .mb-ico{background:rgba(245,158,11,.15);color:var(--orange)}
+.member-banner.info .mb-ico{background:rgba(var(--blue-rgb),.15);color:var(--blue)}
+.member-banner .mb-txt{flex:1;min-width:200px;font-size:13.5px;font-weight:700;line-height:1.65}
+.member-banner .mb-txt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:4px}
 .locked{position:relative}
-.locked .lock-blur{filter:blur(14px) saturate(.7);pointer-events:none;user-select:none;transition:filter .3s ease}
 .lock-cover{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:linear-gradient(180deg,rgba(3,5,8,.15),rgba(3,5,8,.72));backdrop-filter:blur(2px);border-radius:var(--r)}
 .lock-cover .lc-icon{width:66px;height:66px;border-radius:20px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;margin-bottom:14px;box-shadow:0 12px 34px rgba(var(--blue-rgb),.45);animation:lcFloat 3.4s ease-in-out infinite}
 .lock-cover .lc-icon svg{width:32px;height:32px}
@@ -251,21 +256,6 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .notif b{display:block;font-size:14px;font-weight:900;margin-bottom:4px}
 .notif p{font-size:12.5px;color:var(--muted);white-space:pre-wrap;line-height:1.7;margin-top:3px}
 .notif .nt-t{font-size:11px;color:var(--muted-2);font-family:var(--font-en);letter-spacing:1px;margin-top:8px}
-.sug-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
-.sug-item{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1.5px solid var(--line);cursor:pointer;transition:.22s var(--ease-soft)}
-.sug-item:hover{border-color:var(--blue);background:rgba(var(--blue-rgb),.06)}
-.sug-item.on{border-color:var(--blue);background:rgba(var(--blue-rgb),.10);box-shadow:0 4px 16px rgba(var(--blue-rgb),.22)}
-.sug-item .av{width:40px;height:40px;border-radius:11px;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);display:grid;place-items:center;color:var(--blue);flex-shrink:0;font-weight:900;font-family:var(--font-en);font-size:15px;overflow:hidden}
-.sug-item .av img{width:100%;height:100%;object-fit:cover}
-.sug-item .if{flex:1;min-width:0}
-.sug-item .if b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sug-item .if small{display:block;font-size:11px;color:var(--muted);font-family:var(--font-en);letter-spacing:.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sug-item .ck{width:24px;height:24px;border-radius:7px;flex-shrink:0;border:2px solid var(--line-2);display:grid;place-items:center;color:transparent;transition:.2s var(--ease-soft)}
-.sug-item.on .ck{background:var(--blue);border-color:var(--blue);color:#fff}
-.sug-item .ck svg{width:14px;height:14px}
-.sug-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:12px;border-radius:14px;background:rgba(var(--blue-rgb),.06);border:1px solid rgba(var(--blue-rgb),.20);font-size:12.5px;font-weight:800}
-.sug-toolbar button{padding:7px 14px;border-radius:18px;background:transparent;border:1.5px dashed rgba(var(--blue-rgb),.5);color:var(--blue);font-size:11.5px;font-weight:900;transition:.2s var(--ease-soft)}
-.sug-toolbar button:hover{background:rgba(var(--blue-rgb),.12)}
 .acc-menu{position:fixed;top:calc(72px + env(safe-area-inset-top));left:var(--pad);min-width:300px;max-width:calc(100vw - 2 * var(--pad));background:var(--card);border:1px solid var(--blue-line);border-radius:20px;box-shadow:0 32px 64px rgba(0,0,0,.6),0 0 60px rgba(var(--blue-rgb),.15);padding:8px;z-index:1500;opacity:0;transform:translateY(-12px) scale(.96);transition:.26s var(--ease-soft);pointer-events:none;max-height:calc(100vh - 100px);overflow-y:auto}
 .acc-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 .acc-head{padding:16px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px;display:flex;gap:12px;align-items:center}
@@ -287,6 +277,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .acc-item .badge-mini{margin-right:auto;font-size:10.5px;padding:2px 8px;border-radius:10px;font-family:var(--font-en);font-weight:900}
 .acc-item .badge-mini.ok{background:rgba(16,185,129,.15);color:var(--green)}
 .acc-item .badge-mini.off{background:rgba(124,135,153,.15);color:var(--muted)}
+.acc-item .badge-mini.warn{background:rgba(245,158,11,.15);color:var(--orange)}
 .acc-sep{height:1px;background:var(--line);margin:6px 6px}
 .admin-h{display:flex;gap:8px;padding:10px var(--pad) 0;overflow-x:auto;scrollbar-width:none}
 .admin-h::-webkit-scrollbar{display:none}
@@ -298,7 +289,8 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ad-user-head .av{width:44px;height:44px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:16px;overflow:hidden}
 .ad-user-head .av img{width:100%;height:100%;object-fit:cover}
 .ad-user-head .if{flex:1;min-width:0}
-.ad-user-head b{display:block;font-size:14.5px;font-weight:900}
+.ad-user-head b{display:block;font-size:14.5px;font-weight:900;cursor:pointer}
+.ad-user-head b:hover{color:var(--blue)}
 .ad-user-head small{font-size:11.5px;color:var(--muted);font-family:var(--font-en);letter-spacing:.5px;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ad-user-acts{display:flex;gap:7px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:16px;background:rgba(var(--blue-rgb),.12);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-size:11px;font-weight:900;letter-spacing:.5px}
@@ -397,7 +389,36 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .tgv-timer{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-en);font-weight:900;color:var(--blue);font-size:13px;margin:10px 0}
 .tgv-spinner{width:20px;height:20px;border:2.5px solid rgba(var(--blue-rgb),.2);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.tgv-box > b > svg, .tgv-step > svg { width:16px; height:16px; max-width:16px; max-height:16px; flex-shrink:0; }
+.news-card{padding:18px;border-radius:18px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px;position:relative;transition:.22s var(--ease-soft)}
+.news-card:hover{border-color:var(--blue-line)}
+.news-card.unread{border-color:var(--blue-line);background:linear-gradient(155deg,rgba(var(--blue-rgb),.08),var(--panel))}
+.news-card.kind-update{border-right:4px solid var(--blue)}
+.news-card.kind-maintenance{border-right:4px solid var(--orange)}
+.news-card.kind-warning{border-right:4px solid var(--red)}
+.news-card.kind-news{border-right:4px solid var(--green)}
+.news-card h4{font-size:16px;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.news-card .nc-body{font-size:13.5px;line-height:1.8;color:var(--text-2);white-space:pre-wrap}
+.news-card .nc-img{max-height:200px;border-radius:12px;margin:12px 0;object-fit:cover}
+.news-card .nc-time{font-size:11px;color:var(--muted-2);font-family:var(--font-en);margin-top:10px;letter-spacing:1px}
+.news-card .nc-kind{font-family:var(--font-en);font-size:10px;letter-spacing:1.2px;padding:3px 10px;border-radius:10px;font-weight:900}
+.kind-update .nc-kind{background:rgba(var(--blue-rgb),.15);color:var(--blue)}
+.kind-maintenance .nc-kind{background:rgba(245,158,11,.15);color:var(--orange)}
+.kind-warning .nc-kind{background:rgba(239,68,68,.15);color:var(--red)}
+.kind-news .nc-kind{background:rgba(16,185,129,.15);color:var(--green)}
+.user-detail-grid{display:grid;gap:10px;margin-top:12px}
+.user-detail-item{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.user-detail-item .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.user-detail-item .ic.kick{background:rgba(83,252,24,.12);color:#53fc18}
+.user-detail-item .ic.yt{background:rgba(255,0,0,.12);color:#ff0000}
+.user-detail-item .ic.tg{background:rgba(0,136,204,.12);color:#0088cc}
+.user-detail-item .ic.dc{background:rgba(88,101,242,.12);color:#5865f2}
+.user-detail-item .if{flex:1;min-width:120px}
+.user-detail-item b{display:block;font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-detail-item small{display:block;font-size:11px;color:var(--muted);font-family:var(--font-en);margin-top:2px}
+.user-detail-item .st{font-size:10.5px;padding:3px 9px;border-radius:10px;font-weight:900;font-family:var(--font-en)}
+.user-detail-item .st.on{background:rgba(16,185,129,.15);color:var(--green)}
+.user-detail-item .st.off{background:rgba(124,135,153,.15);color:var(--muted)}
+.user-detail-item .st.live{background:rgba(239,68,68,.15);color:var(--red)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -414,19 +435,6 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
     </div>
     <div class="sp-dots"><i></i><i></i><i></i></div>
     <div class="sp-foot" id="spFoot">STREAM MONITOR</div>
-  </div>
-</div>
-
-<div id="maintenance">
-  <div class="mnt-wrap">
-    <div class="mnt-gear">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-    </div>
-    <div>
-      <div class="mnt-title">قيد <span>الصيانة</span></div>
-      <div class="mnt-text" id="mntText">الموقع في صيانة مؤقتة — نرجع قريباً</div>
-    </div>
-    <div class="mnt-bar"><b></b></div>
   </div>
 </div>
 
@@ -469,13 +477,13 @@ const IC = {
   users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
   ai:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>',
-  robot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
-  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
   cog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
-  filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
   sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/></svg>',
   warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   shieldCheck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+  mega:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-4 18-5-6-9-4z"/></svg>',
+  newsp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
 };
 
 /* ═══ UTILS ═══ */
@@ -547,19 +555,21 @@ const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد',
 const S = {
   boot: {}, me: null, guest: false, view: 'home',
   channels: { kick: [], yt: [], tg: [] },
-  limits: { kick: {used:0,limit:10,remaining:10}, yt: {used:0,limit:5,remaining:5}, tg: {used:0,limit:3,remaining:3} },
+  limits: { kick: {used:0,limit:10,remaining:10}, yt: {used:0,limit:5,remaining:5}, tg: {used:0,limit:1,remaining:1} },
   feeds: [], knownChannels: {}, knownGuilds: {}, watching: [], autoDiscovery: false,
   botReady: false, botInfo: {}, myTgs: [], knownBots: [], isOwnerView: false,
   notifs: [], unread: 0, settings: {},
-  admin: { users: [], defaults: [], suggestions: [], stats: {}, sec: [], tab: 'stats' },
+  admin: { users: [], defaults: [], suggestions: [], stats: {}, sec: [], news: [], tab: 'stats' },
   preview: null, pushEnabled: false,
   homeStats: null, maintenance: false,
   aiStatus: { available: false, model: '', source: 'none' },
+  news: [], newsUnread: 0, tgLink: null,
 };
 
 const isOwner = () => S.me && S.me.user && S.me.user.role === 'owner';
 const isLogged = () => !!(S.me && S.me.user);
 const canDiscord = () => isLogged() && (isOwner() || !!S.me.user.can_discord);
+const canWrite = () => isOwner() || !S.maintenance;
 
 function applyTheme(theme) {
   if (!theme) return;
@@ -577,13 +587,6 @@ function applyTheme(theme) {
   if (meta && theme.c1) meta.setAttribute('content', theme.c1);
 }
 
-function showMaintenance(text) {
-  const m = $('#maintenance'); if (!m) return;
-  $('#mntText').textContent = text || 'الموقع في صيانة مؤقتة — نرجع قريباً';
-  m.classList.add('on'); $('#app').style.display = 'none';
-}
-
-console.log('[RL] utils loaded');
 /* ═══ PUSH ═══ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -643,7 +646,7 @@ async function boot() {
     const sp = $('#spLogo');
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
     if (b.theme) applyTheme(b.theme);
-    console.log('[RL] boot loaded');
+    console.log('[RL] boot loaded, maintenance=', S.maintenance);
   } catch (e) {
     console.log('[RL] boot failed:', e.message);
     S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false };
@@ -651,21 +654,16 @@ async function boot() {
   try {
     const me = await api('/api/me');
     S.me = me;
-    console.log('[RL] logged in as', me.user.username);
-    if (S.maintenance && S.me.user.role !== 'owner') {
-      setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
-      showMaintenance(S.boot.maintenance_text); return;
-    }
+    S.maintenance = !!me.maintenance;
+    console.log('[RL] logged in as', me.user.username, 'is_member=', me.user.is_member);
     await loadAll();
     await checkPushStatus();
     renderApp();
     console.log('[RL] app rendered');
+    // عرض نافذة الأخبار إن وجدت غير مقروء
+    setTimeout(() => { if (S.newsUnread > 0) showNewsPopup(); }, 800);
   } catch (e) {
     console.log('[RL] not logged in:', e.message);
-    if (S.maintenance) {
-      setTimeout(() => { const sp = $('#splash'); if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); } }, 600);
-      showMaintenance(S.boot.maintenance_text); return;
-    }
     S.guest = true;
     if (S.boot.guest_mode) { await loadPreview(); renderApp(); }
     else { renderAuth(); }
@@ -677,7 +675,7 @@ async function boot() {
 }
 
 async function loadAll() {
-  await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadNotifs(), loadSettings(), loadHomeStats()]);
+  await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadNotifs(), loadSettings(), loadHomeStats(), loadNews()]);
   if (canDiscord()) await loadFeeds();
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
 }
@@ -722,44 +720,63 @@ async function loadSettings() {
 async function loadHomeStats() {
   try { S.homeStats = await api('/api/home-stats'); } catch (e) { S.homeStats = null; }
 }
+async function loadNews() {
+  try { const r = await api('/api/news'); S.news = r.rows || []; S.newsUnread = r.unread_count || 0; }
+  catch (e) { S.news = []; S.newsUnread = 0; }
+}
 function updateBadge() {
   const b = $('#notifBadge'); if (!b) return;
   if (S.unread > 0) { b.textContent = S.unread > 99 ? '99+' : S.unread; b.style.display = 'grid'; }
   else b.style.display = 'none';
 }
 
-/* ═══ AUTH ═══ */
-function renderAuth() {
+/* ═══ AUTH (LOGIN + REGISTER) ═══ */
+function renderAuth(mode) {
+  mode = mode || 'login';
   $('#app').style.display = '';
+  const regEnabled = S.boot.registration_enabled !== false;
+  const isReg = mode === 'register';
   $('#app').innerHTML = `
     <div class="login-page">
       <div class="login-card">
         <div class="login-logo">${S.boot.site_logo ? '<img src="'+esc(S.boot.site_logo)+'">' : IC.logo}</div>
         <div class="login-head">
           <h1>RESPECT <span>LIVE</span></h1>
-          <p>سجّل دخولك للوصول إلى لوحتك</p>
+          <p>${isReg ? 'أنشئ حساباً جديداً' : 'سجّل دخولك للوصول إلى لوحتك'}</p>
         </div>
+        ${regEnabled ? `<div class="auth-tabs"><button type="button" class="${!isReg?'on':''}" data-m="login">دخول</button><button type="button" class="${isReg?'on':''}" data-m="register">حساب جديد</button></div>` : ''}
         <form id="authForm" autocomplete="on">
           <label class="fld"><span>اسم المستخدم</span>
             <input type="text" name="u" autocomplete="username" placeholder="أدخل اسم المستخدم" required></label>
+          ${isReg ? `<label class="fld"><span>الاسم المعروض (اختياري)</span><input type="text" name="d" placeholder="كيف تريد أن يظهر اسمك"></label>` : ''}
           <label class="fld"><span>كلمة المرور</span>
-            <input type="password" name="p" autocomplete="current-password" placeholder="أدخل كلمة المرور" required></label>
-          <button class="btn pri wide" type="submit" id="authBtn" style="margin-top:8px">دخول</button>
+            <input type="password" name="p" autocomplete="${isReg?'new-password':'current-password'}" placeholder="${isReg?'6 أحرف على الأقل':'أدخل كلمة المرور'}" required></label>
+          <button class="btn pri wide" type="submit" id="authBtn" style="margin-top:8px">${isReg ? 'إنشاء الحساب' : 'دخول'}</button>
           <div class="err" id="authErr"></div>
         </form>
+        ${isReg ? `<div style="margin-top:16px;padding:14px;border-radius:12px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);font-size:12px;line-height:1.75"><b style="color:var(--blue)">ملاحظة الصلاحيات:</b><br><span class="mu">الحساب الجديد يمنحك: كيك 10، يوتيوب 5، تليجرام 1، وبدون ديسكورد. اربط تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.</span></div>` : ''}
         ${S.boot.guest_mode ? `<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);text-align:center"><button type="button" id="skipBtn" class="btn ghost wide">${IC.eye} تصفح كزائر</button></div>` : ''}
       </div>
     </div>`;
+  $$('.auth-tabs button').forEach(b => { b.onclick = () => renderAuth(b.dataset.m); });
   const form = $('#authForm'), btn = $('#authBtn'), err = $('#authErr');
   form.onsubmit = async (e) => {
     e.preventDefault(); err.textContent = ''; btn.disabled = true;
     try {
       const fd = new FormData();
-      fd.append('u', form.u.value.trim());
-      fd.append('p', form.p.value);
-      const r = await fetch('/api/login', { method:'POST', body: fd, credentials:'include' });
+      fd.append('username', form.u.value.trim());
+      fd.append('password', form.p.value);
+      if (isReg && form.d) fd.append('display', form.d.value.trim());
+      const endpoint = isReg ? '/api/register' : '/api/login';
+      const body = isReg ? fd : new FormData();
+      if (!isReg) { body.append('u', form.u.value.trim()); body.append('p', form.p.value); }
+      const r = await fetch(endpoint, { method:'POST', body, credentials:'include' });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error || j.detail || 'فشل الدخول');
+      if (!r.ok) throw new Error(j.error || j.detail || (isReg ? 'فشل التسجيل' : 'فشل الدخول'));
+      if (isReg && j.message) {
+        // حفظ الرسالة لعرضها بعد reload
+        try { sessionStorage.setItem('rl_welcome', j.message); } catch (e) {}
+      }
       location.reload();
     } catch (e2) { err.textContent = e2.message; toast(e2.message, 'bad'); btn.disabled = false; }
   };
@@ -778,9 +795,16 @@ function renderApp() {
     ? '<div class="avatar-btn" id="accBtn" role="button">' + (userAvatar ? '<img src="'+esc(userAvatar)+'" alt="">' : esc(S.me.user.username.charAt(0).toUpperCase())) + '<div class="st"></div></div>'
     : '<div class="avatar-btn guest" id="accBtn" role="button">' + IC.user + '</div>';
   const showDcTab = canDiscord();
+  const showMaintenanceBanner = S.maintenance && !isOwner();
+
+  // استرجاع رسالة ترحيب التسجيل
+  let welcomeMsg = '';
+  try { welcomeMsg = sessionStorage.getItem('rl_welcome') || ''; sessionStorage.removeItem('rl_welcome'); } catch (e) {}
+  if (welcomeMsg) setTimeout(() => toast(welcomeMsg, 'ok'), 500);
 
   $('#app').innerHTML = `
-    <div class="top" id="top">
+    ${showMaintenanceBanner ? `<div class="mnt-banner">${IC.warn}<div style="flex:1"><b>${esc(S.boot.maintenance_title || 'صيانة مؤقتة')}</b> <small>— ${esc(S.boot.maintenance_text || 'الموقع في صيانة، يمكنك التصفح لكن لا يمكن الإضافة/الإرسال')}</small></div></div>` : ''}
+    <div class="top" id="top" style="${showMaintenanceBanner?'margin-top:52px':''}">
       <div class="brand">
         <div class="brand-logo">${logoHTML}</div>
         <div class="brand-txt">
@@ -789,24 +813,35 @@ function renderApp() {
         </div>
       </div>
       <div class="hdr-acts">
-        ${isLogged() ? `<button class="hdr-btn" id="sendBtn" title="إرسال رسالة">${IC.send}</button>` : ''}
+        ${isLogged() ? `<button class="hdr-btn" id="newsBtn" title="الأخبار">${IC.newsp}${S.newsUnread > 0 ? `<span class="badge">${S.newsUnread}</span>` : ''}</button>` : ''}
+        ${isLogged() ? `<button class="hdr-btn" id="sendBtn" title="إرسال رسالة" ${!canWrite() ? 'disabled style="opacity:.4"' : ''}>${IC.send}</button>` : ''}
         ${isLogged() ? `<button class="hdr-btn" id="notifBtn">${IC.bell}<span class="badge" id="notifBadge" style="${S.unread > 0 ? '' : 'display:none'}">${S.unread > 99 ? '99+' : S.unread}</span></button>` : ''}
         ${avatarHTML}
       </div>
     </div>
     ${S.guest ? `<div class="guest-banner"><div class="gb-ico">${IC.eye}</div><div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل</small></div><button class="btn pri sm" id="loginNow">دخول</button></div>` : ''}
+    ${isLogged() && !S.guest && S.me.user.is_member && S.limits.kick.limit > 10 ? `<div class="member-banner ok"><div class="mb-ico">${IC.shieldCheck}</div><div class="mb-txt">${IC.check} أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!<small>كيك: ${S.limits.kick.limit} · يوتيوب: ${S.limits.yt.limit} · تيليجرام: ${S.limits.tg.limit}</small></div></div>` : ''}
+    ${isLogged() && !S.guest && S.boot.required_channel_url && !S.me.user.is_member ? `<div class="member-banner warn"><div class="mb-ico">${IC.megaphone || IC.mega}</div><div class="mb-txt">${esc(S.boot.required_channel_msg || 'انضم إلى قناتنا الرسمية للحصول على صلاحيات مضاعفة.')}<small>اضغط الزر للانضمام ثم أعد التحقق من قائمة الحساب</small></div><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم</a></div>` : ''}
     <div id="view"></div>
     <div class="tabbar">
       <button data-v="home" class="${S.view==='home'?'on':''}">${IC.home}</button>
       <button data-v="kick" class="${S.view==='kick'?'on':''}">${IC.kick}</button>
       <button data-v="yt" class="${S.view==='yt'?'on':''}">${IC.yt}</button>
       <button data-v="tg" class="${S.view==='tg'?'on':''}">${IC.tg}</button>
-      ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}">${IC.dc}</button>` : `<button data-v="acc">${IC.user}</button>`}
+      ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}">${IC.dc}</button>` : ''}
+      <button data-v="acc">${IC.user}</button>
     </div>`;
-  $$('[data-v]').forEach(b => { b.onclick = () => { S.view = b.dataset.v; renderApp(); }; });
+  $$('[data-v]').forEach(b => {
+    b.onclick = () => {
+      const v = b.dataset.v;
+      if (v === 'acc') { openAccountMenu(); return; }
+      S.view = v; renderApp();
+    };
+  });
   const ab = $('#accBtn'); if (ab) ab.onclick = openAccountMenu;
   const nb = $('#notifBtn'); if (nb) nb.onclick = () => { S.view = 'notifs'; renderApp(); };
-  const sb = $('#sendBtn'); if (sb) sb.onclick = openSendModal;
+  const sb = $('#sendBtn'); if (sb) sb.onclick = () => { if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال الآن', 'bad'); openSendModal(); };
+  const nws = $('#newsBtn'); if (nws) nws.onclick = () => { S.view = 'news'; renderApp(); };
   const ln = $('#loginNow'); if (ln) ln.onclick = () => { S.guest = false; renderAuth(); };
   window.addEventListener('scroll', () => { const t = $('#top'); if (t) t.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
   renderView();
@@ -816,10 +851,61 @@ function renderView() {
   const v = $('#view'); if (!v) return;
   if (S.view === 'home') return viewHome(v);
   if (S.view === 'notifs') return viewNotifs(v);
+  if (S.view === 'news') return viewNews(v);
   if (S.view === 'dc') { if (!canDiscord()) { S.view = 'home'; return renderView(); } return viewDiscord(v); }
-  if (S.view === 'acc') { S.view = 'home'; renderView(); setTimeout(() => openAccountMenu(), 50); return; }
   if (S.view === 'admin') return openAdmin();
   return viewChannels(v, S.view);
+}
+
+/* ═══ NEWS PAGE ═══ */
+function viewNews(v) {
+  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
+  v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الأخبار والإعلانات <span>.</span></div></div>${S.news.length ? '<div id="newsList"></div>' : `<div class="empty"><div class="em-icon">${IC.newsp}</div><h3>لا أخبار</h3></div>`}</div>`;
+  const list = $('#newsList'); if (!list) return;
+  S.news.forEach(n => {
+    const card = el('div', 'news-card kind-' + (n.kind || 'news') + (n.is_read ? '' : ' unread'));
+    card.innerHTML = `
+      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span>${!n.is_read ? '<span class="pill warn">جديد</span>' : ''}</h4>
+      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
+      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+      <div class="nc-time">${fmtTime(n.created)}</div>`;
+    card.onclick = async () => {
+      if (!n.is_read) {
+        try { await api('/api/news/' + n.id + '/read', { method:'POST' }); } catch (e) {}
+        n.is_read = true; S.newsUnread = Math.max(0, S.newsUnread - 1);
+        card.classList.remove('unread');
+      }
+    };
+    list.appendChild(card);
+  });
+}
+
+async function showNewsPopup() {
+  const unread = S.news.filter(n => !n.is_read);
+  if (!unread.length) return;
+  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
+  const itemsHTML = unread.slice(0, 5).map(n => `
+    <div class="news-card kind-${n.kind || 'news'}" data-nid="${n.id}">
+      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span></h4>
+      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
+      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+      <div class="nc-time">${fmtTime(n.created)}</div>
+    </div>`).join('');
+  const r = await modal({
+    title: '📢 إعلانات جديدة',
+    sub: `لديك ${unread.length} إعلان غير مقروء`,
+    html: itemsHTML,
+    okText: 'قرأت الكل',
+    cancelText: 'لاحقاً',
+    wide: true
+  });
+  if (r) {
+    try {
+      for (const n of unread) { await api('/api/news/' + n.id + '/read', { method:'POST' }); n.is_read = true; }
+      S.newsUnread = 0;
+      if (S.view === 'news' || S.view === 'home') renderApp();
+    } catch (e) {}
+  }
 }
 
 /* ═══ HOME ═══ */
@@ -906,20 +992,22 @@ function viewChannels(v, kind) {
   const titleMap = { kick:'قنوات كيك', yt:'قنوات يوتيوب', tg:'قنوات تيليجرام' };
   const lim = isLogged() ? limitBarHTML(kind) : null;
   const isTg = kind === 'tg';
+  const memberBonus = S.limits[kind]?.is_member;
+  const canAdd = canWrite();
 
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
         <div class="sec-title">${titleMap[kind]} <span>.</span></div>
-        ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull ? 'disabled' : ''}>${IC.plus} ${isTg ? 'توثيق قناة' : 'إضافة'}</button>` : ''}
+        ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull || !canAdd ? 'disabled' : ''}>${IC.plus} ${isTg ? 'توثيق قناة' : 'إضافة'}</button>` : ''}
       </div>
-      ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
-      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green);display:inline-flex;align-items:center;gap:6px">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل لك رمز على تيليجرام للتأكد أنك صاحبها.</span></div>` : ''}
+      ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود ${memberBonus ? '<span class="pill ok" style="margin-right:6px;padding:2px 8px">+Bonus</span>' : ''}</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
+      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green);display:inline-flex;align-items:center;gap:6px">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل رمز لمشرف القناة على تيليجرام للتأكد من ملكيتها.</span></div>` : ''}
       <div id="cList"></div>
     </div>`;
   const list = $('#cList');
   if (!rows.length) {
-    list.innerHTML = `<div class="empty"><div class="em-icon">${IC[kind]||IC.home}</div><h3>لا توجد قنوات بعد</h3><p>${isLogged()?(isTg?'ابدأ بتوثيق أول قناة':'ابدأ بإضافة أول قناة'):'سجّل دخولك'}</p>${isLogged() && !lim.isFull ? `<button class="btn pri" id="emptyAdd">${IC.plus} ${isTg?'توثيق قناة':'إضافة'}</button>` : ''}${!isLogged() ? `<button class="btn pri" id="emptyLogin">تسجيل الدخول</button>` : ''}</div>`;
+    list.innerHTML = `<div class="empty"><div class="em-icon">${IC[kind]||IC.home}</div><h3>لا توجد قنوات بعد</h3><p>${isLogged()?(isTg?'ابدأ بتوثيق أول قناة':'ابدأ بإضافة أول قناة'):'سجّل دخولك'}</p>${isLogged() && !lim.isFull && canAdd ? `<button class="btn pri" id="emptyAdd">${IC.plus} ${isTg?'توثيق قناة':'إضافة'}</button>` : ''}${!isLogged() ? `<button class="btn pri" id="emptyLogin">تسجيل الدخول</button>` : ''}</div>`;
     const eb = $('#emptyAdd'); if (eb) eb.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
     const elb = $('#emptyLogin'); if (elb) elb.onclick = () => { S.guest = false; renderAuth(); };
   } else {
@@ -927,7 +1015,7 @@ function viewChannels(v, kind) {
     rows.forEach(r => grid.appendChild(chCard(kind, r)));
     list.appendChild(grid);
   }
-  const ab = $('#addBtn'); if (ab && !lim.isFull) ab.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
+  const ab = $('#addBtn'); if (ab && !lim.isFull && canAdd) ab.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
 }
 
 function chCard(kind, r) {
@@ -936,7 +1024,7 @@ function chCard(kind, r) {
   if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
 
   if (!isLogged()) {
-    card.innerHTML = `<div class="lock-blur" style="padding:14px"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
+    card.innerHTML = `<div style="padding:14px;filter:blur(14px) saturate(.7);pointer-events:none"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
     return card;
   }
   let slug = '', title = '';
@@ -945,7 +1033,7 @@ function chCard(kind, r) {
   else { slug = r.username || r.chat_id || ''; title = r.name || r.chat_id || ''; }
   const liveBadge = kind === 'kick' && r.live && r.enabled ? '<span class="ch-badge live">مباشر</span>' : '';
   const offBadge = !r.enabled ? '<span class="ch-badge off">موقوف</span>' : '';
-  const noSend = (kind !== 'tg' && r.auto_send === 0) ? '<span class="ch-badge nosend">🔕 بدون إرسال</span>' : '';
+  const noSend = (kind !== 'tg' && r.auto_send === 0) ? '<span class="ch-badge nosend">🔕</span>' : '';
   const verifiedBadge = (kind === 'tg' && r.verified) ? '<span class="ch-badge verified">✓ موثقة</span>' : '';
   const cover = r.banner || r.avatar || '';
   const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
@@ -982,8 +1070,8 @@ function chCard(kind, r) {
       } else if (act === 'edit') { await editChannelMsg(kind, r); }
       else if (act === 'refresh') {
         try {
-          const ep = kind === 'tg' ? '/api/channels/tg/' + r.id + '/refresh' : '/api/channels/yt/' + r.id + '/refresh';
-          await api(ep, { method:'POST' }); toast('تم التحديث', 'ok');
+          await api('/api/channels/' + kind + '/' + r.id + '/refresh', { method:'POST' });
+          toast('تم التحديث', 'ok');
           await loadChannels(kind); renderApp();
         } catch (e2) { toast(e2.message, 'bad'); }
       }
@@ -1069,6 +1157,7 @@ async function editChannelMsg(kind, r) {
 
 async function openAddChannel(kind) {
   if (!isLogged()) return;
+  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإضافة', 'bad');
   if (kind === 'tg') return openTgVerify();
   let suggestions = [];
   try { const r = await api('/api/channels/' + kind + '/suggestions'); suggestions = r.rows || []; } catch (e) {}
@@ -1131,12 +1220,13 @@ async function openAddChannel(kind) {
 /* ═══ TG VERIFY ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
+  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن التوثيق', 'bad');
   if (!S.boot.has_telegram) {
     return modal({ title:'تيليجرام غير مضبوط', sub:'توكن تيليجرام غير موجود في السيرفر — تواصل مع الإدارة', okText:'حسناً', cancel:false });
   }
-  const lim = S.limits.tg || { used:0, limit:3, remaining:3 };
+  const lim = S.limits.tg || { used:0, limit:1, remaining:1 };
   if (lim.remaining <= 0) {
-    return modal({ title:'وصلت الحد', sub:`الحد الأقصى ${lim.limit} قنوات تيليجرام`, okText:'حسناً', cancel:false });
+    return modal({ title:'وصلت الحد', sub:`الحد الأقصى ${lim.limit} قناة تيليجرام.${S.me.user.is_member ? '' : ' اربط حسابك وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.'}`, okText:'حسناً', cancel:false });
   }
   const html = `
     <div class="tgv-box">
@@ -1247,7 +1337,7 @@ async function tgVerifyWait(verifyId, chatName, chatAvatar, adminName) {
       <div class="tgv-spinner"></div>
       <div class="mu" style="margin-top:12px;font-size:13px;line-height:1.8">
         أرسلنا رسالة إلى <b style="color:var(--text)">${esc(adminName || 'المشرف')}</b> في تيليجرام<br>
-        عندما يضغط <b style="color:var(--green)">✅ نعم</b> سيحصل على رمز مكوّن من 6 أرقام<br>
+        عندما يضغط <b style="color:var(--green)">✅ نعم</b> سيحصل على رمز 6 أرقام<br>
         <span style="font-size:12px;color:var(--muted-2)">اطلب منه الرمز والصقه في الخطوة التالية</span>
       </div>
     </div>
@@ -1326,9 +1416,118 @@ async function tgVerifyCode(verifyId, chatName, chatAvatar) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
+/* ═══ TG ACCOUNT LINK (ربط حساب تيليجرام للعضوية) ═══ */
+async function openLinkTgModal() {
+  if (!isLogged()) return;
+  if (!S.boot.has_telegram) return toast('تيليجرام غير مضبوط في السيرفر', 'bad');
+  const u = S.me.user;
+  // إذا مربوط
+  if (u.linked_tg_id) {
+    const html = `
+      <div class="tgv-chat">
+        <div class="av">${IC.tg}</div>
+        <div class="if"><b>${esc(u.linked_tg_username || u.linked_tg_name || 'حساب تيليجرام')}</b><small>${u.is_member ? 'عضو في القناة الرسمية ✓' : 'غير عضو في القناة المطلوبة'}</small></div>
+        <span class="pill ${u.is_member ? 'ok' : 'warn'}">${u.is_member ? 'عضو ✓' : 'غير عضو'}</span>
+      </div>
+      ${!u.is_member && S.boot.required_channel_url ? `
+        <div style="padding:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;margin:14px 0;font-size:13px;line-height:1.8">
+          <b style="color:var(--orange)">${IC.warn} أنت لست عضواً في القناة</b><br>
+          <span class="mu">${esc(S.boot.required_channel_msg || 'انضم للقناة ثم اضغط تحقق')}</span>
+          <div style="margin-top:10px"><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم للقناة</a></div>
+        </div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button type="button" class="btn" id="__tglCheck">${IC.refresh} إعادة فحص العضوية</button>
+        <button type="button" class="btn ghost danger" id="__tglUnlink">${IC.x} إلغاء الربط</button>
+      </div>`;
+    const r = await modal({ title:'حساب تيليجرام مربوط', html, okText:'تم', cancel:false,
+      onReady: () => {
+        $('#__tglCheck').onclick = async () => {
+          try {
+            const res = await api('/api/link-tg/refresh-membership', { method:'POST' });
+            toast(res.is_member ? '🎉 أنت عضو — صلاحياتك مضاعفة!' : 'لا تزال غير عضو', res.is_member ? 'ok' : 'bad');
+            await loadMe();
+            const m = $('#modal'); if (m) m.classList.remove('on');
+            renderApp();
+          } catch (e) { toast(e.message, 'bad'); }
+        };
+        $('#__tglUnlink').onclick = async () => {
+          const ok = await dlgConfirm('إلغاء ربط حساب تيليجرام؟', 'تأكيد', true); if (!ok) return;
+          try { await api('/api/link-tg/unlink', { method:'POST' }); toast('تم الإلغاء', 'ok'); await loadMe(); const m = $('#modal'); if (m) m.classList.remove('on'); renderApp(); }
+          catch (e) { toast(e.message, 'bad'); }
+        };
+      }
+    });
+    return;
+  }
+  // لم يُربط — أدخل اليوزر
+  const html = `
+    <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
+      <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px">${IC.link} كيف يعمل؟</b><br>
+      <span class="mu">1. اكتب يوزر حسابك في تيليجرام<br>2. البوت يرسل لك رمز تحقق<br>3. أدخل الرمز هنا<br>4. البوت يفحص عضويتك في القناة الرسمية</span>
+    </div>
+    <label class="fld"><span>يوزر تيليجرام</span>
+      <input type="text" id="__tgu" placeholder="username بدون @">
+      <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">⚠️ يجب أن تكون قد فتحت البوت @${esc(S.boot.bot_name_custom || 'Respect Live')} وضغطت /start أولاً</small>
+    </label>`;
+  const r = await modal({ title:'ربط حساب تيليجرام', sub:'للحصول على صلاحيات مضاعفة', html, okText:'إرسال الرمز', wide: true });
+  if (!r) return;
+  const tgUsername = ($('#__tgu')?.value || '').trim().replace(/^@/, '');
+  if (!/^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(tgUsername)) return toast('يوزر تيليجرام غير صالح', 'bad');
+  let res;
+  try {
+    res = await api('/api/link-tg/start', { method:'POST', body: { tg_username: tgUsername } });
+  } catch (e) { return toast(e.message, 'bad'); }
+  // عرض إدخال الرمز
+  const linkId = res.link_id;
+  const tgName = res.tg_name || tgUsername;
+  const html2 = `
+    <div class="tgv-chat">
+      <div class="av">${IC.tg}</div>
+      <div class="if"><b>@${esc(tgUsername)}</b><small>${esc(tgName)}</small></div>
+    </div>
+    <div style="text-align:center;padding:12px 0;font-size:13px;line-height:1.8" class="mu">
+      أرسلنا رمز تحقق إلى حسابك في تيليجرام<br>
+      <b style="color:var(--blue)">افتح البوت وانسخ الرمز ثم الصقه هنا</b>
+    </div>
+    <div class="tgv-code">
+      <input type="text" id="__tlcode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
+    </div>`;
+  const r2 = await modal({ title:'أدخل رمز التحقق', sub:'صالح لمدة 10 دقائق', html: html2, okText:'تأكيد الربط', wide: true,
+    onReady: () => {
+      setTimeout(() => {
+        const inp = $('#__tlcode');
+        if (inp) { inp.focus(); inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,6); }; }
+      }, 100);
+    }
+  });
+  if (!r2) return;
+  const code = ($('#__tlcode')?.value || '').trim();
+  if (!/^\d{6}$/.test(code)) return toast('الرمز 6 أرقام', 'bad');
+  try {
+    const verify = await api('/api/link-tg/' + linkId + '/verify', { method:'POST', body: { code } });
+    await loadMe();
+    renderApp();
+    if (verify.is_member) {
+      toast('🎉 تم الربط والعضوية مؤكدة — صلاحياتك مضاعفة!', 'ok');
+    } else {
+      toast('✅ تم الربط. ' + (verify.message || 'انضم للقناة الرسمية للحصول على مضاعفة'), 'ok');
+    }
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+async function loadMe() {
+  try {
+    const me = await api('/api/me');
+    S.me = me;
+    S.maintenance = !!me.maintenance;
+    await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg')]);
+  } catch (e) {}
+}
+
 /* ═══ SEND MODAL ═══ */
 async function openSendModal() {
   if (!isLogged()) return;
+  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال', 'bad');
   let pre = { tgs: [], users: [], is_owner: isOwner() };
   try { pre = await api('/api/send/prefill'); } catch (e) { return toast(e.message, 'bad'); }
   const tgHTML = pre.tgs.length ? pre.tgs.map(t => `
@@ -1704,8 +1903,6 @@ async function editFeed(f) {
   const useOrig = $('#__useOrig')?.checked ? 1 : 0;
   const useAi = $('#__useAi')?.checked ? 1 : 0;
   const aiPrompt = ($('#__aiPrompt')?.value || '').trim();
-  
-  // نأخذ فقط القواعد التي تحتوي على كلمات مفتاحية
   const finalRules = keywordRules.filter(rule => rule.keywords && rule.keywords.length > 0);
   try {
     await api('/api/discord/feeds/' + f.id, { method:'PATCH', body: {
@@ -1833,16 +2030,25 @@ function openAccountMenu() {
   const u = S.me.user;
   const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg;
   const pushBadge = S.pushEnabled ? '<span class="badge-mini ok">مفعّل</span>' : '<span class="badge-mini off">معطل</span>';
+  const tgBadge = u.linked_tg_id ? (u.is_member ? '<span class="badge-mini ok">عضو ✓</span>' : '<span class="badge-mini warn">غير عضو</span>') : '<span class="badge-mini off">غير مربوط</span>';
   const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc(u.username.charAt(0).toUpperCase());
+  const memberBonus = u.is_member && u.linked_tg_id;
   m.innerHTML = `
     <div class="acc-head">
       <div class="av-btn" id="accAvatar" title="تغيير الصورة">${avHTML}</div>
       <div class="if">
         <div class="nm" id="accDisplay" title="تعديل الاسم">${esc(u.display || u.username)} <span style="color:var(--muted);font-size:11px">${IC.edit}</span></div>
         <div class="mt">@${esc(u.username)} · ${u.role==='owner'?'الإدارة':'مستخدم'}</div>
-        <div class="stats-mini"><span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span><span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span><span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span></div>
+        <div class="stats-mini">
+          <span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span>
+          <span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span>
+          <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
+          ${memberBonus ? '<span class="pill ok" style="padding:2px 8px;font-size:10px">🎁 مضاعف</span>' : ''}
+        </div>
       </div>
     </div>
+    <button class="acc-item" data-a="linktg">${IC.link} ربط حساب تيليجرام ${tgBadge}</button>
+    ${u.linked_tg_id && !u.is_member && S.boot.required_channel_url ? `<button class="acc-item" data-a="joinch" style="color:var(--orange)">${IC.mega} انضم للقناة الرسمية</button>` : ''}
     <button class="acc-item" data-a="push">${IC.bell} إشعارات المتصفح ${pushBadge}</button>
     ${S.pushEnabled ? `<button class="acc-item" data-a="pushtest">${IC.send} اختبار الإشعارات</button>` : ''}
     <button class="acc-item" data-a="send">${IC.send} إرسال رسالة</button>
@@ -1855,14 +2061,17 @@ function openAccountMenu() {
   $('#accAvatar').onclick = () => changeProfileAvatar();
   $('#accDisplay').onclick = () => changeProfileDisplay();
   m.querySelectorAll('[data-a]').forEach(b => {
-    b.onclick = () => {
+    b.onclick = async () => {
       const a = b.dataset.a;
-      if (a === 'logout') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); doLogout(); }
-      else if (a === 'suggest') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); openSuggestion(); }
-      else if (a === 'send') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); openSendModal(); }
-      else if (a === 'admin') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); S.view = 'admin'; renderApp(); }
-      else if (a === 'push') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); S.pushEnabled ? disablePush() : enablePush(); }
-      else if (a === 'pushtest') { m.classList.remove('on'); setTimeout(() => m.remove(), 260); testPush(); }
+      const closeM = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 260); };
+      if (a === 'logout') { closeM(); doLogout(); }
+      else if (a === 'suggest') { closeM(); openSuggestion(); }
+      else if (a === 'send') { closeM(); if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال', 'bad'); openSendModal(); }
+      else if (a === 'admin') { closeM(); S.view = 'admin'; renderApp(); }
+      else if (a === 'push') { closeM(); S.pushEnabled ? disablePush() : enablePush(); }
+      else if (a === 'pushtest') { closeM(); testPush(); }
+      else if (a === 'linktg') { closeM(); openLinkTgModal(); }
+      else if (a === 'joinch') { closeM(); window.open(S.boot.required_channel_url, '_blank'); }
     };
   });
   setTimeout(() => {
@@ -1924,12 +2133,13 @@ async function openAdmin() {
 }
 async function loadAdminData() {
   try {
-    const [users, defaults, stats, suggestions, sec] = await Promise.all([
+    const [users, defaults, stats, suggestions, sec, newsRes] = await Promise.all([
       api('/api/admin/users'), api('/api/admin/default-channels'), api('/api/admin/stats'),
-      api('/api/admin/suggestions'), api('/api/admin/security')
+      api('/api/admin/suggestions'), api('/api/admin/security'), api('/api/admin/news')
     ]);
     S.admin.users = users.rows || []; S.admin.defaults = defaults.rows || [];
     S.admin.stats = stats || {}; S.admin.suggestions = suggestions.rows || []; S.admin.sec = sec.rows || [];
+    S.admin.news = newsRes.rows || [];
   } catch (e) { toast(e.message, 'bad'); }
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
 }
@@ -1945,6 +2155,7 @@ function renderAdmin() {
     <div class="admin-h" id="adTabs">
       <button class="ad-tab ${S.admin.tab==='stats'?'on':''}" data-t="stats">الإحصائيات</button>
       <button class="ad-tab ${S.admin.tab==='users'?'on':''}" data-t="users">المستخدمون</button>
+      <button class="ad-tab ${S.admin.tab==='news'?'on':''}" data-t="news">📢 الأخبار</button>
       <button class="ad-tab ${S.admin.tab==='defaults'?'on':''}" data-t="defaults">الافتراضية</button>
       <button class="ad-tab ${S.admin.tab==='suggestions'?'on':''}" data-t="suggestions">الاقتراحات</button>
       <button class="ad-tab ${S.admin.tab==='sec'?'on':''}" data-t="sec">الأمان</button>
@@ -1964,6 +2175,7 @@ function renderAdminContent() {
   const c = $('#adContent'); if (!c) return;
   if (S.admin.tab === 'stats') return renderAdminStats(c);
   if (S.admin.tab === 'users') return renderAdminUsers(c);
+  if (S.admin.tab === 'news') return renderAdminNews(c);
   if (S.admin.tab === 'defaults') return renderAdminDefaults(c);
   if (S.admin.tab === 'suggestions') return renderAdminSuggestions(c);
   if (S.admin.tab === 'sec') return renderAdminSec(c);
@@ -1999,11 +2211,13 @@ function renderAdminStats(c) {
       <div style="font-size:13.5px;color:var(--muted);line-height:2">
         النشطون: <b style="color:var(--green)">${s.users_active||0}</b><br>
         المحظورون: <b style="color:var(--red)">${s.users_banned||0}</b><br>
+        مربوطو تيليجرام: <b style="color:var(--blue)">${s.users_linked_tg||0}</b><br>
+        أعضاء القناة: <b style="color:var(--green)">${s.users_members||0}</b><br>
         قنوات TG موثّقة: <b style="color:var(--green)">${s.tg_verified||0}</b><br>
-        قنوات TG معروفة للبوت: <b style="color:var(--purple)">${s.tg_known||0}</b><br>
         روابط DC: <b>${s.feeds_total||0}</b> · اشتراكات: <b>${s.feed_subs_total||0}</b><br>
         اشتراكات Push: <b>${s.push_subs||0}</b><br>
         اقتراحات: <b style="color:var(--orange)">${s.suggestions_unread||0}</b><br>
+        الأخبار: <b style="color:var(--purple)">${s.news_total||0}</b><br>
         Webhook TG: <b style="color:${s.webhook_set?'var(--green)':'var(--red)'}">${s.webhook_set?'مفعّل':'غير مفعّل'}</b><br>
         ${s.bot_info?.name ? 'اسم البوت: <b>'+esc(s.bot_info.name)+'</b><br>' : ''}
       </div>
@@ -2019,26 +2233,109 @@ function renderAdminUsers(c) {
     const ly = u.lim_yt != null ? u.lim_yt : '—';
     const lt = u.lim_tg != null ? u.lim_tg : '—';
     const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc((u.display||u.username||'?').charAt(0).toUpperCase());
+    const tgBadge = u.linked_tg_id ? (u.is_member ? ' <span class="pill ok">عضو ✓</span>' : ' <span class="pill warn">TG مربوط</span>') : '';
     card.innerHTML = `
       <div class="ad-user-head">
         <div class="av">${avHTML}</div>
-        <div class="if"><b>${esc(u.display||u.username)}${u.banned ? ' <span class="pill bad">محظور</span>' : ''}${u.role==='owner' ? ' <span class="pill">إدارة</span>' : ''}${u.can_discord ? ' <span class="pill ok">DC</span>' : ''}</b><small>@${esc(u.username)} · K:${lk} Y:${ly} T:${lt}</small></div>
+        <div class="if">
+          <b data-uid="${u.id}">${esc(u.display||u.username)} <span style="color:var(--muted);font-size:11px">${IC.eye} عرض</span>${u.banned ? ' <span class="pill bad">محظور</span>' : ''}${u.role==='owner' ? ' <span class="pill">إدارة</span>' : ''}${u.can_discord ? ' <span class="pill ok">DC</span>' : ''}${tgBadge}</b>
+          <small>@${esc(u.username)} · K:${lk} Y:${ly} T:${lt}</small>
+        </div>
       </div>
       <div class="ad-user-acts">
+        <button class="btn sm ghost" data-ua="details">${IC.eye} تفاصيل</button>
         <button class="btn sm ghost" data-ua="edit">${IC.edit}</button>
         ${u.role!=='owner' ? `<button class="btn sm ${u.banned?'ghost':'danger'}" data-ua="ban">${u.banned?'إلغاء':'حظر'}</button>` : ''}
         ${u.role!=='owner' ? `<button class="btn sm danger" data-ua="del">${IC.trash}</button>` : ''}
       </div>`;
     card.querySelectorAll('[data-ua]').forEach(b => { b.onclick = () => adminUserAction(u, b.dataset.ua); });
+    const clickName = card.querySelector('[data-uid]');
+    if (clickName) clickName.onclick = () => showUserDetails(u.id);
     wrap.appendChild(card);
   });
   $('#adAddUser').onclick = adminAddUser;
 }
 
+async function showUserDetails(uid) {
+  let d;
+  try { d = await api('/api/admin/users/' + uid + '/details'); }
+  catch (e) { return toast(e.message, 'bad'); }
+  const u = d.user;
+  const kickHTML = d.kick.length ? d.kick.map(k => `
+    <div class="user-detail-item">
+      <div class="ic kick">${IC.kick}</div>
+      <div class="if"><b>${esc(k.name || k.slug)}</b><small>@${esc(k.slug)} ${k.viewers ? '· ' + k.viewers + ' 👁' : ''}</small></div>
+      <span class="st ${k.live ? 'live' : (k.enabled ? 'on' : 'off')}">${k.live ? 'مباشر' : (k.enabled ? 'نشط' : 'موقوف')}</span>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا قنوات كيك</div>';
+  const ytHTML = d.yt.length ? d.yt.map(y => `
+    <div class="user-detail-item">
+      <div class="ic yt">${IC.yt}</div>
+      <div class="if"><b>${esc(y.name || y.channel_id)}</b><small>${esc(y.channel_id)}</small></div>
+      <span class="st ${y.enabled ? 'on' : 'off'}">${y.enabled ? 'نشط' : 'موقوف'}</span>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا قنوات يوتيوب</div>';
+  const tgHTML = d.tg.length ? d.tg.map(t => `
+    <div class="user-detail-item">
+      <div class="ic tg">${IC.tg}</div>
+      <div class="if"><b>${esc(t.name || t.username || t.chat_id)}</b><small>${esc(t.username || t.chat_id)}</small></div>
+      <span class="st ${t.verified ? 'on' : 'off'}">${t.verified ? 'موثقة' : 'غير موثقة'}</span>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا قنوات تيليجرام</div>';
+  const feedsHTML = d.discord_feeds.length ? d.discord_feeds.map(f => `
+    <div class="user-detail-item">
+      <div class="ic dc">${IC.dc}</div>
+      <div class="if"><b>#${esc(f.channel_name || f.channel_id)}</b><small>${esc(f.channel_id)}</small></div>
+      <span class="st ${f.enabled ? 'on' : 'off'}">${f.enabled ? 'نشط' : 'موقوف'}</span>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا روابط DC</div>';
+  const subsHTML = d.feed_subs.length ? d.feed_subs.map(s => `
+    <div class="user-detail-item">
+      <div class="ic dc">${IC.link}</div>
+      <div class="if"><b>${esc(s.tg_name || s.tg_channel_id)}</b><small>متابع: #${esc(s.channel_name || s.feed_id)}</small></div>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا اشتراكات DC</div>';
+  const avatar = u.avatar ? `<img src="${esc(u.avatar)}" style="width:100%;height:100%;object-fit:cover">` : esc((u.display || u.username).charAt(0).toUpperCase());
+  const html = `
+    <div class="ad-user-card" style="margin-bottom:14px">
+      <div class="ad-user-head">
+        <div class="av" style="width:56px;height:56px;font-size:20px">${avatar}</div>
+        <div class="if">
+          <b style="font-size:16px">${esc(u.display || u.username)}</b>
+          <small>@${esc(u.username)} · ${u.role === 'owner' ? 'مالك' : 'مستخدم'}</small>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+        ${u.banned ? '<span class="pill bad">محظور</span>' : '<span class="pill ok">نشط</span>'}
+        ${u.can_discord ? '<span class="pill ok">Discord ✓</span>' : '<span class="pill off">بدون Discord</span>'}
+        ${u.linked_tg_id ? `<span class="pill">${IC.tg} ${esc(u.linked_tg_username || u.linked_tg_id)}</span>` : '<span class="pill warn">تيليجرام غير مربوط</span>'}
+        ${u.is_member ? '<span class="pill ok">عضو القناة ✓</span>' : '<span class="pill warn">غير عضو</span>'}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8">
+        حد كيك: <b>${u.lim_kick ?? 'افتراضي'}</b> · حد يوتيوب: <b>${u.lim_yt ?? 'افتراضي'}</b> · حد تيليجرام: <b>${u.lim_tg ?? 'افتراضي'}</b><br>
+        أُنشئ: ${fmtTime(u.created)} · آخر دخول: ${u.last_login ? fmtTime(u.last_login) : 'لم يدخل'}<br>
+        إشعارات: <b>${d.notifs_count}</b>
+      </div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.kick} قنوات كيك (${d.kick.length})</div>
+      <div class="user-detail-grid">${kickHTML}</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.yt} قنوات يوتيوب (${d.yt.length})</div>
+      <div class="user-detail-grid">${ytHTML}</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.tg} قنوات تيليجرام (${d.tg.length})</div>
+      <div class="user-detail-grid">${tgHTML}</div>
+    </div>
+    ${d.discord_feeds.length || d.feed_subs.length ? `
+      <div style="margin-bottom:20px">
+        <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.dc} ديسكورد</div>
+        <div class="user-detail-grid">${feedsHTML}${subsHTML}</div>
+      </div>` : ''}`;
+  await modal({ title:'تفاصيل المستخدم', sub: '@' + u.username, html, okText:'حسناً', cancel:false, wide: true });
+}
+
 async function adminAddUser() {
   const ok = await modal({
     title:'إنشاء مستخدم',
-    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="3"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
+    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="1"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
     okText:'إنشاء'
   });
   if (!ok) return;
@@ -2049,6 +2346,7 @@ async function adminAddUser() {
 }
 
 async function adminUserAction(u, act) {
+  if (act === 'details') { return showUserDetails(u.id); }
   if (act === 'edit') {
     const ok = await modal({
       title:'تعديل ' + u.username,
@@ -2066,6 +2364,98 @@ async function adminUserAction(u, act) {
     const ok = await dlgConfirm('حذف المستخدم؟', 'تأكيد', true); if (!ok) return;
     try { await api('/api/admin/users/' + u.id, { method:'DELETE' }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); } catch (e) { toast(e.message, 'bad'); }
   }
+}
+
+/* ═══ ADMIN NEWS ═══ */
+function renderAdminNews(c) {
+  const rows = S.admin.news || [];
+  c.innerHTML = `<div class="sec-h"><div class="sec-title">الأخبار <span>(${rows.length})</span></div><button class="btn pri sm" id="adAddNews">${IC.plus} خبر جديد</button></div><div id="adNewsList"></div>`;
+  const list = $('#adNewsList');
+  if (!rows.length) { list.innerHTML = `<div class="empty"><div class="em-icon">${IC.newsp}</div><h3>لا أخبار</h3><p>أضف أول خبر ليظهر للمستخدمين</p></div>`; }
+  else {
+    rows.forEach(n => {
+      const card = el('div', 'news-card kind-' + (n.kind || 'news'));
+      const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
+      card.innerHTML = `
+        <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span>${!n.enabled ? ' <span class="pill bad">موقوف</span>' : ''}</h4>
+        ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
+        ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+        <div class="nc-time">${fmtTime(n.created)}</div>
+        <div class="ad-user-acts" style="margin-top:12px">
+          <button class="btn sm ghost" data-na="edit">${IC.edit} تعديل</button>
+          <button class="btn sm ghost" data-na="toggle">${n.enabled ? 'إيقاف' : 'تفعيل'}</button>
+          <button class="btn sm danger" data-na="del">${IC.trash} حذف</button>
+        </div>`;
+      card.querySelectorAll('[data-na]').forEach(b => {
+        b.onclick = async () => {
+          const act = b.dataset.na;
+          if (act === 'del') {
+            const ok = await dlgConfirm('حذف الخبر؟', 'تأكيد', true); if (!ok) return;
+            try { await api('/api/admin/news/' + n.id, { method:'DELETE' }); toast('تم', 'ok'); await loadAdminData(); renderAdminContent(); } catch (e) { toast(e.message, 'bad'); }
+          } else if (act === 'toggle') {
+            try { await api('/api/admin/news/' + n.id, { method:'PATCH', body: { enabled: !n.enabled } }); await loadAdminData(); renderAdminContent(); } catch (e) { toast(e.message, 'bad'); }
+          } else if (act === 'edit') {
+            await editNews(n);
+          }
+        };
+      });
+      list.appendChild(card);
+    });
+  }
+  $('#adAddNews').onclick = () => editNews(null);
+}
+
+async function editNews(n) {
+  const isNew = !n;
+  const html = `
+    <label class="fld"><span>العنوان</span><input type="text" id="__nt" value="${esc(n?.title || '')}" placeholder="مثال: تحديث جديد"></label>
+    <label class="fld"><span>النوع</span>
+      <select id="__nk">
+        <option value="news" ${n?.kind==='news'?'selected':''}>📰 خبر عام</option>
+        <option value="update" ${n?.kind==='update'?'selected':''}>🆕 تحديث</option>
+        <option value="maintenance" ${n?.kind==='maintenance'?'selected':''}>🔧 صيانة</option>
+        <option value="warning" ${n?.kind==='warning'?'selected':''}>⚠️ تحذير</option>
+      </select>
+    </label>
+    <label class="fld"><span>المحتوى</span><textarea id="__nb" rows="6" placeholder="نص الخبر...">${esc(n?.body || '')}</textarea></label>
+    <label class="fld"><span>صورة (رابط اختياري)</span><input type="text" id="__ni" value="${esc(n?.image || '')}" placeholder="https://..."></label>
+    <div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:8px"><button type="button" class="btn sm" id="__nimgUp">${IC.camera} رفع صورة</button><input type="file" id="__nimgFile" accept="image/*" style="display:none"></div>
+    <div class="img-preview-box ${n?.image ? '' : 'empty'}" id="__nimgBox">${n?.image ? `<img src="${esc(n.image)}">` : '<div>لا صورة</div>'}</div>`;
+  const r = await modal({ title: isNew ? 'خبر جديد' : 'تعديل الخبر', html, okText: isNew ? 'إضافة' : 'حفظ', wide: true,
+    onReady: () => {
+      $('#__nimgUp').onclick = () => $('#__nimgFile').click();
+      $('#__nimgFile').onchange = async (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        if (f.size > 2 * 1024 * 1024) return toast('أكبر من 2MB', 'bad');
+        const fd = new FormData(); fd.append('file', f);
+        try {
+          const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
+          const j = await res.json();
+          if (!res.ok) throw new Error(j.error || 'فشل');
+          $('#__ni').value = j.url;
+          const box = $('#__nimgBox'); box.classList.remove('empty');
+          box.innerHTML = `<img src="${esc(j.url)}">`;
+          toast('تم الرفع', 'ok');
+        } catch (err) { toast(err.message, 'bad'); }
+      };
+    }
+  });
+  if (!r) return;
+  const body = {
+    title: ($('#__nt')?.value || '').trim(),
+    body: ($('#__nb')?.value || '').trim(),
+    image: ($('#__ni')?.value || '').trim(),
+    kind: $('#__nk')?.value || 'news',
+  };
+  if (!body.title) return toast('العنوان مطلوب', 'bad');
+  try {
+    if (isNew) await api('/api/admin/news', { method:'POST', body });
+    else await api('/api/admin/news/' + n.id, { method:'PATCH', body });
+    toast('تم الحفظ', 'ok');
+    await loadAdminData();
+    await loadNews();
+    renderAdminContent();
+  } catch (e) { toast(e.message, 'bad'); }
 }
 
 function renderAdminDefaults(c) {
@@ -2314,6 +2704,46 @@ async function renderAdminSettings(c) {
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الإعدادات <span>.</span></div></div>
     <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🔐 التسجيل والصلاحيات</div>
+      <div class="switch-row">
+        <div class="sw-txt"><b>تفعيل التسجيل</b><small>السماح للزوار بإنشاء حسابات</small></div>
+        <label class="sw"><input type="checkbox" id="__regen" ${s.registration_enabled==='1'?'checked':''}><i></i></label>
+      </div>
+      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--muted)">الحدود الافتراضية (عند التسجيل)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <label class="fld"><span>حد كيك</span><input type="number" id="__dlk" value="${esc(s.default_lim_kick||'10')}"></label>
+        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__dly" value="${esc(s.default_lim_yt||'5')}"></label>
+        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__dlt" value="${esc(s.default_lim_tg||'1')}"></label>
+      </div>
+      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--green)">🎁 حدود الأعضاء المضاعفة (لمن انضم للقناة الرسمية)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <label class="fld"><span>حد كيك</span><input type="number" id="__blk" value="${esc(s.bonus_lim_kick||'50')}"></label>
+        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__bly" value="${esc(s.bonus_lim_yt||'25')}"></label>
+        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__blt" value="${esc(s.bonus_lim_tg||'5')}"></label>
+      </div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📢 القناة الرسمية (للعضوية)</div>
+      <label class="fld"><span>معرّف القناة (chat_id أو @username)</span>
+        <input type="text" id="__rchid" value="${esc(s.required_channel_id||'')}" placeholder="-1001234567890 أو @mychannel">
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:10px">البوت يجب أن يكون مشرفاً في القناة. بعد الحفظ، فعّل webhook أو انتظر polling.</div>
+      <label class="fld"><span>اسم القناة (يظهر للمستخدمين)</span>
+        <input type="text" id="__rchnm" value="${esc(s.required_channel_name||'')}" placeholder="قناتنا الرسمية">
+      </label>
+      <label class="fld"><span>رابط القناة (لزر الانضمام)</span>
+        <input type="text" id="__rchurl" value="${esc(s.required_channel_url||'')}" placeholder="https://t.me/mychannel">
+      </label>
+      <label class="fld"><span>رسالة تشجيعية للانضمام</span>
+        <textarea id="__rchmsg" rows="3">${esc(s.required_channel_msg||'')}</textarea>
+      </label>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📄 نصوص الترحيب بعد التسجيل</div>
+      <label class="fld"><span>العنوان</span><input type="text" id="__swt" value="${esc(s.signup_welcome_title||'')}"></label>
+      <label class="fld"><span>النص</span><textarea id="__swx" rows="3">${esc(s.signup_welcome_text||'')}</textarea></label>
+    </div>
+    <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">معلومات الموقع</div>
       <label class="fld"><span>اسم الموقع</span><input type="text" id="__sn" value="${esc(s.site_name||'')}"></label>
       <label class="fld"><span>العنوان الفرعي</span><input type="text" id="__ss" value="${esc(s.site_sub||'')}"></label>
@@ -2343,22 +2773,25 @@ async function renderAdminSettings(c) {
       <label class="fld"><span>رابط دعوة البوت</span><input type="text" id="__bi" value="${esc(s.bot_invite_url||'')}"></label>
     </div>
     <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">✉️ رسائل توثيق تيليجرام</div>
-      <label class="fld"><span>رسالة التحقق (تُرسل للمشرف)</span>
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">✉️ رسائل تيليجرام</div>
+      <label class="fld"><span>رسالة التحقق (لتوثيق القناة)</span>
         <textarea id="__ttv" rows="4" class="mono">${esc(s.tpl_tg_verify||'')}</textarea>
       </label>
       <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
-      <label class="fld"><span>رسالة النجاح (تُرسل بعد الربط)</span>
+      <label class="fld"><span>رسالة النجاح (بعد توثيق القناة)</span>
         <textarea id="__tts" rows="4" class="mono">${esc(s.tpl_tg_success||'')}</textarea>
       </label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
+      <label class="fld"><span>رسالة ربط الحساب (تحتوي رمز)</span>
+        <textarea id="__ttl" rows="4" class="mono">${esc(s.tpl_tg_link||'')}</textarea>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغير: <code>{code}</code></div>
     </div>
     <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود والزوار</div>
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود العامة والزوار</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${esc(s.lim_kick||'10')}"></label>
-        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${esc(s.lim_yt||'5')}"></label>
-        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${esc(s.lim_tg||'3')}"></label>
+        <label class="fld"><span>حد كيك (المالك)</span><input type="number" id="__lk" value="${esc(s.lim_kick||'10')}"></label>
+        <label class="fld"><span>حد يوتيوب (المالك)</span><input type="number" id="__ly" value="${esc(s.lim_yt||'5')}"></label>
+        <label class="fld"><span>حد تيليجرام (المالك)</span><input type="number" id="__lt" value="${esc(s.lim_tg||'3')}"></label>
       </div>
       <label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__gm" ${s.guest_mode==='1'?'checked':''}> السماح بالتصفح كزائر</label>
     </div>
@@ -2366,10 +2799,16 @@ async function renderAdminSettings(c) {
   $('#adSaveSettings').onclick = async () => {
     try {
       await api('/api/settings', { method:'POST', body: {
+        registration_enabled: $('#__regen').checked ? '1' : '0',
+        default_lim_kick: $('#__dlk').value, default_lim_yt: $('#__dly').value, default_lim_tg: $('#__dlt').value,
+        bonus_lim_kick: $('#__blk').value, bonus_lim_yt: $('#__bly').value, bonus_lim_tg: $('#__blt').value,
+        required_channel_id: $('#__rchid').value.trim(), required_channel_name: $('#__rchnm').value.trim(),
+        required_channel_url: $('#__rchurl').value.trim(), required_channel_msg: $('#__rchmsg').value.trim(),
+        signup_welcome_title: $('#__swt').value.trim(), signup_welcome_text: $('#__swx').value.trim(),
         site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value, hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
         btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc').value,
         tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_discord: $('#__td').value,
-        tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value,
+        tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value, tpl_tg_link: $('#__ttl').value,
         bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
         lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
         guest_mode: $('#__gm').checked ? '1' : '0',
@@ -2388,7 +2827,10 @@ async function renderAdminSystem(c) {
     <div class="sec-h"><div class="sec-title">النظام <span>.</span></div></div>
     <div class="ad-user-card" style="${isMnt ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)' : ''}">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:8px;display:flex;align-items:center;gap:10px">${IC.wrench} وضع الصيانة ${isMnt ? '<span class="pill bad">مفعّل</span>' : '<span class="pill ok">معطّل</span>'}</div>
-      <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">الزوار والمستخدمون يشوفون شاشة "صيانة" — الأدمن فقط يدخل.</div>
+      <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">
+        ✅ <b>لم يعد يقفل الموقع</b> — يظهر شريط تنبيه أحمر أعلى الصفحة للمستخدمين، وتُقيَّد عمليات الإضافة/الإرسال. المالك يمكنه العمل بحرية.
+      </div>
+      <label class="fld"><span>عنوان النافذة</span><input type="text" id="__mttl" value="${esc(s.maintenance_title||'🔧 صيانة مؤقتة')}"></label>
       <label class="fld"><span>نص الصيانة</span><textarea id="__mtxt" rows="3">${esc(s.maintenance_text||'الموقع في صيانة مؤقتة — نرجع قريباً')}</textarea></label>
       <button class="btn ${isMnt?'ghost':'pri'} wide" id="__mtoggle" style="margin-bottom:8px">${isMnt ? IC.x + ' إيقاف' : IC.check + ' تفعيل'}</button>
     </div>
@@ -2409,8 +2851,10 @@ async function renderAdminSystem(c) {
   $('#__mtoggle').onclick = async () => {
     try {
       const nv = !isMnt;
-      await api('/api/admin/maintenance', { method:'POST', body: { enabled: nv, text: $('#__mtxt').value } });
+      await api('/api/admin/maintenance', { method:'POST', body: { enabled: nv, text: $('#__mtxt').value, title: $('#__mttl').value } });
       toast(nv ? 'تم تفعيل الصيانة' : 'تم إيقاف', 'ok');
+      await loadSettings();
+      S.maintenance = nv;
       renderAdminSystem(c);
     } catch (e) { toast(e.message, 'bad'); }
   };

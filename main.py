@@ -342,13 +342,29 @@ def limit_info(username, kind, role):
 # ═══ TELEGRAM ═══
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
+    
+    # ⚡ إصلاح إرسال الصور: إذا كان الرابط نسبياً نضيف الدومين
+    if image and image.startswith('/'):
+        if PUBLIC_URL:
+            image = PUBLIC_URL + image
+        else:
+            image = ""
+
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
     base = {"chat_id": str(chat_id), "parse_mode": "HTML"}
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
-                r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image,"caption":(text or ".")[:1024],"reply_markup":markup})
-                if r.status_code == 200: return True
+                # ⚡ إذا كان النص طويلاً نرسل الصورة أولاً ثم النص
+                if len(text) > 1024:
+                    await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image})
+                    r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
+                    return r.status_code == 200
+                else:
+                    r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image,"caption":(text or "."),"reply_markup":markup})
+                    if r.status_code == 200: return True
+                    print(f"[TG sendPhoto] Failed: {r.text}")
+            
             r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
             return r.status_code == 200
     except Exception as e:
@@ -715,7 +731,11 @@ def clean_mentions(text):
     t = str(text)
     t = _MENTION_RE.sub("", t); t = _ROLE_RE.sub("", t); t = _CHAN_RE.sub("", t)
     t = re.sub(r"@everyone\b", "", t); t = re.sub(r"@here\b", "", t); t = _EMOJI_RE.sub("", t)
-    return re.sub(r"\s+", " ", t).strip()
+    
+    # ⚡ إصلاح السطور المتعددة: الحفاظ على الأسطر وعدم استبدالها بمسافة واحدة
+    t = re.sub(r"[ \t]+", " ", t)
+    t = re.sub(r"\n\s*\n", "\n\n", t)
+    return t.strip()
 
 def extract_msg(msg):
     author = msg.author.display_name or msg.author.name or ""
@@ -1059,8 +1079,7 @@ async def job_cleanup():
     c.execute("DELETE FROM tg_link_codes WHERE created<?", (now()-3600,))
     c.execute("DELETE FROM tg_known_channels WHERE last_seen<?", (now()-30*86400,))
     c.commit(); c.close()
-
-# ═══ APP + SCHEDULER ═══
+    # ═══ APP + SCHEDULER ═══
 scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
@@ -1138,7 +1157,6 @@ async def api_login(request: Request, response: Response, u: str = Form(...), p:
     if not row["active"]: return JSONResponse({"error":"حساب معطل"}, 403)
     if not secrets.compare_digest(hash_pw(p, row["salt"]), row["pass_hash"]):
         log_sec(u, "login_fail", "bad pass", ip); return JSONResponse({"error":"بيانات خاطئة"}, 401)
-    # ⚠️ لم نعد نحظر تسجيل الدخول بسبب الصيانة — سيتم عرض popup فقط
     tok = new_session(row["username"])
     c = db(); c.execute("UPDATE users SET last_login=? WHERE id=?", (now(), row["id"])); c.commit(); c.close()
     log_sec(u, "login_ok", "", ip)
@@ -1212,7 +1230,6 @@ async def api_link_tg_start(request: Request):
     tg_username = (body.get("tg_username") or "").strip().lstrip("@")[:64]
     if not re.match(r"^[A-Za-z][A-Za-z0-9_]{3,31}$", tg_username):
         return JSONResponse({"error":"يوزر تيليجرام غير صالح"}, 400)
-    # جلب معلومات المستخدم
     j = await tg_api("getChat", {"chat_id": "@" + tg_username})
     if not j.get("ok") or not j.get("result"):
         return JSONResponse({"error":"لم يتم العثور على المستخدم.\n\nتأكد أن:\n• اليوزر صحيح\n• بدأت البوت (/start) مرة واحدة على الأقل في حسابك"}, 400)
@@ -1221,10 +1238,8 @@ async def api_link_tg_start(request: Request):
     first_name = res.get("first_name", "") or ""
     if not tg_user_id:
         return JSONResponse({"error":"تعذّر جلب معرّف المستخدم"}, 400)
-    # كود تحقق
     code = "{:06d}".format(secrets.randbelow(1000000))
     c = db()
-    # مسح أي أكواد معلقة قديمة لنفس المستخدم
     c.execute("DELETE FROM tg_link_codes WHERE site_username=? AND status='pending'", (u["username"],))
     c.execute("INSERT INTO tg_link_codes(site_username, tg_user_id, tg_username, tg_first_name, code, status, created, expires) VALUES(?,?,?,?,?,'pending',?,?)",
         (u["username"], tg_user_id, "@" + tg_username, first_name, code, now(), now() + LINK_CODE_TTL))
@@ -1257,12 +1272,10 @@ async def api_link_tg_verify(lid: int, request: Request):
         return JSONResponse({"error":"انتهت المهلة"}, 400)
     if row["code"] != code:
         c.close(); return JSONResponse({"error":"الرمز غير صحيح"}, 400)
-    # ربط الحساب
     c.execute("UPDATE users SET linked_tg_id=?, linked_tg_username=?, linked_tg_name=?, member_checked=0 WHERE username=?",
         (row["tg_user_id"], row["tg_username"], row["tg_first_name"], u["username"]))
     c.execute("UPDATE tg_link_codes SET status='used' WHERE id=?", (lid,))
     c.commit(); c.close()
-    # فحص عضوية فوري
     req_ch = cfg("required_channel_id", "").strip()
     is_mem = False
     if req_ch:
@@ -1601,7 +1614,7 @@ async def api_refresh_channel(kind: str, cid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ TG VERIFY FLOW (channel ownership — unchanged) ═══
+# ═══ TG VERIFY FLOW ═══
 @app.post("/api/tg/verify/start")
 async def tg_verify_start(request: Request):
     u = require_auth(request)
@@ -2259,7 +2272,6 @@ async def api_admin_users(request: Request):
 
 @app.get("/api/admin/users/{uid}/details")
 async def api_admin_user_details(uid: int, request: Request):
-    """تفاصيل مستخدم كاملة عند الضغط على اسمه في لوحة المالك"""
     require_owner(request)
     c = db()
     user = c.execute("SELECT id,username,display,avatar,role,active,banned,lim_kick,lim_yt,lim_tg,can_discord,created,last_login,linked_tg_id,linked_tg_username,linked_tg_name,is_member,member_checked FROM users WHERE id=?", (uid,)).fetchone()

@@ -1,4 +1,4 @@
-"""Respect Live — v8.2 (Part 1)"""
+"""Respect Live — v8 (Signup + TG Link + Membership + News + Maintenance Popup)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -297,10 +297,12 @@ def require_discord(request):
     raise HTTPException(403, "غير مصرح — تحتاج وصول الديسكورد")
 
 def is_maintenance_blocking_write(u):
+    """يرجع True إذا كانت الصيانة مفعلة والمستخدم ليس مالك"""
     if cfg("maintenance", "0") != "1": return False
     return u["role"] != "owner"
 
 def get_user_limits(username, role):
+    """الأولوية: admin override → bonus (عضو) → default"""
     if role == "owner": return {"kick":9999,"yt":9999,"tg":9999}
     c = db()
     u = c.execute("SELECT lim_kick,lim_yt,lim_tg,is_member,linked_tg_id FROM users WHERE username=?", (username,)).fetchone()
@@ -340,29 +342,13 @@ def limit_info(username, kind, role):
 # ═══ TELEGRAM ═══
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
-    
-    # إصلاح إرسال الصور
-    if image and image.startswith('/'):
-        if PUBLIC_URL:
-            image = PUBLIC_URL + image
-        else:
-            image = ""
-
     markup = {"inline_keyboard": [[{"text": btn[:60], "url": url}]]} if (btn and url) else None
     base = {"chat_id": str(chat_id), "parse_mode": "HTML"}
-    
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
-                if len(text) > 1024:
-                    await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image})
-                    r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
-                    return r.status_code == 200
-                else:
-                    r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image,"caption":(text or "."),"reply_markup":markup})
-                    if r.status_code == 200: return True
-                    print(f"[TG sendPhoto] Failed: {r.text}")
-            
+                r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image,"caption":(text or ".")[:1024],"reply_markup":markup})
+                if r.status_code == 200: return True
             r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
             return r.status_code == 200
     except Exception as e:
@@ -524,7 +510,7 @@ def norm_chat(s):
     if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
     return None
 
-# ═══ TG VERIFY ═══
+# ═══ TG VERIFY (channel ownership) ═══
 async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     tpl = cfg("tpl_tg_verify", "🔐 <b>طلب توثيق قناة</b>\n\nالمستخدم <code>{site_user}</code> يحاول ربط قناة <b>{chat_name}</b>.\n\n<b>هل أنت من يحاول ذلك؟</b>")
     text = tpl.replace("{site_user}", site_username).replace("{chat_name}", chat_name)
@@ -532,6 +518,7 @@ async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     j = await tg_api("sendMessage", {"chat_id": tg_user_id, "text": text, "parse_mode": "HTML", "reply_markup": kb})
     return j["result"]["message_id"] if j.get("ok") else 0
 
+# ═══ TG LINK (account linking for membership) ═══
 async def send_link_code_dm(tg_user_id, code):
     tpl = cfg("tpl_tg_link", "🔐 <b>ربط حساب</b>\n\nرمز التحقق الخاص بك:\n\n<code>{code}</code>\n\n<i>صالح لمدة 10 دقائق.</i>")
     text = tpl.replace("{code}", code)
@@ -726,15 +713,9 @@ _EMOJI_RE = re.compile(r"<a?:\w+:\d+>")
 def clean_mentions(text):
     if not text: return ""
     t = str(text)
-    t = _MENTION_RE.sub("", t)
-    t = _ROLE_RE.sub("", t)
-    t = _CHAN_RE.sub("", t)
-    t = re.sub(r"@everyone\b", "", t)
-    t = re.sub(r"@here\b", "", t)
-    t = _EMOJI_RE.sub("", t)
-    t = re.sub(r"[ \t]+", " ", t)
-    t = re.sub(r"\n\s*\n", "\n\n", t)
-    return t.strip()
+    t = _MENTION_RE.sub("", t); t = _ROLE_RE.sub("", t); t = _CHAN_RE.sub("", t)
+    t = re.sub(r"@everyone\b", "", t); t = re.sub(r"@here\b", "", t); t = _EMOJI_RE.sub("", t)
+    return re.sub(r"\s+", " ", t).strip()
 
 def extract_msg(msg):
     author = msg.author.display_name or msg.author.name or ""
@@ -1042,6 +1023,7 @@ async def job_yt():
     await asyncio.gather(*(notify(r, v) for r, v in new_vids), return_exceptions=True)
 
 async def job_membership_check():
+    """فحص عضوية المستخدمين المرتبطين في القناة المطلوبة"""
     req_ch = cfg("required_channel_id", "").strip()
     if not req_ch or not TELEGRAM_TOKEN: return
     c = db()
@@ -1077,7 +1059,7 @@ async def job_cleanup():
     c.execute("DELETE FROM tg_link_codes WHERE created<?", (now()-3600,))
     c.execute("DELETE FROM tg_known_channels WHERE last_seen<?", (now()-30*86400,))
     c.commit(); c.close()
-    
+
 # ═══ APP + SCHEDULER ═══
 scheduler = AsyncIOScheduler()
 
@@ -1156,6 +1138,7 @@ async def api_login(request: Request, response: Response, u: str = Form(...), p:
     if not row["active"]: return JSONResponse({"error":"حساب معطل"}, 403)
     if not secrets.compare_digest(hash_pw(p, row["salt"]), row["pass_hash"]):
         log_sec(u, "login_fail", "bad pass", ip); return JSONResponse({"error":"بيانات خاطئة"}, 401)
+    # ⚠️ لم نعد نحظر تسجيل الدخول بسبب الصيانة — سيتم عرض popup فقط
     tok = new_session(row["username"])
     c = db(); c.execute("UPDATE users SET last_login=? WHERE id=?", (now(), row["id"])); c.commit(); c.close()
     log_sec(u, "login_ok", "", ip)
@@ -1229,6 +1212,7 @@ async def api_link_tg_start(request: Request):
     tg_username = (body.get("tg_username") or "").strip().lstrip("@")[:64]
     if not re.match(r"^[A-Za-z][A-Za-z0-9_]{3,31}$", tg_username):
         return JSONResponse({"error":"يوزر تيليجرام غير صالح"}, 400)
+    # جلب معلومات المستخدم
     j = await tg_api("getChat", {"chat_id": "@" + tg_username})
     if not j.get("ok") or not j.get("result"):
         return JSONResponse({"error":"لم يتم العثور على المستخدم.\n\nتأكد أن:\n• اليوزر صحيح\n• بدأت البوت (/start) مرة واحدة على الأقل في حسابك"}, 400)
@@ -1237,8 +1221,10 @@ async def api_link_tg_start(request: Request):
     first_name = res.get("first_name", "") or ""
     if not tg_user_id:
         return JSONResponse({"error":"تعذّر جلب معرّف المستخدم"}, 400)
+    # كود تحقق
     code = "{:06d}".format(secrets.randbelow(1000000))
     c = db()
+    # مسح أي أكواد معلقة قديمة لنفس المستخدم
     c.execute("DELETE FROM tg_link_codes WHERE site_username=? AND status='pending'", (u["username"],))
     c.execute("INSERT INTO tg_link_codes(site_username, tg_user_id, tg_username, tg_first_name, code, status, created, expires) VALUES(?,?,?,?,?,'pending',?,?)",
         (u["username"], tg_user_id, "@" + tg_username, first_name, code, now(), now() + LINK_CODE_TTL))
@@ -1271,10 +1257,12 @@ async def api_link_tg_verify(lid: int, request: Request):
         return JSONResponse({"error":"انتهت المهلة"}, 400)
     if row["code"] != code:
         c.close(); return JSONResponse({"error":"الرمز غير صحيح"}, 400)
+    # ربط الحساب
     c.execute("UPDATE users SET linked_tg_id=?, linked_tg_username=?, linked_tg_name=?, member_checked=0 WHERE username=?",
         (row["tg_user_id"], row["tg_username"], row["tg_first_name"], u["username"]))
     c.execute("UPDATE tg_link_codes SET status='used' WHERE id=?", (lid,))
     c.commit(); c.close()
+    # فحص عضوية فوري
     req_ch = cfg("required_channel_id", "").strip()
     is_mem = False
     if req_ch:
@@ -1613,7 +1601,7 @@ async def api_refresh_channel(kind: str, cid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ TG VERIFY FLOW ═══
+# ═══ TG VERIFY FLOW (channel ownership — unchanged) ═══
 @app.post("/api/tg/verify/start")
 async def tg_verify_start(request: Request):
     u = require_auth(request)
@@ -2271,6 +2259,7 @@ async def api_admin_users(request: Request):
 
 @app.get("/api/admin/users/{uid}/details")
 async def api_admin_user_details(uid: int, request: Request):
+    """تفاصيل مستخدم كاملة عند الضغط على اسمه في لوحة المالك"""
     require_owner(request)
     c = db()
     user = c.execute("SELECT id,username,display,avatar,role,active,banned,lim_kick,lim_yt,lim_tg,can_discord,created,last_login,linked_tg_id,linked_tg_username,linked_tg_name,is_member,member_checked FROM users WHERE id=?", (uid,)).fetchone()
@@ -2349,8 +2338,8 @@ async def api_admin_del_user(uid: int, request: Request):
     for t in ("kick_channels","yt_channels","tg_channels","recent_videos"):
         c.execute("DELETE FROM " + t + " WHERE added_by=?", (un,))
     c.execute("DELETE FROM feed_subs WHERE username=?", (un,))
-    for t in ("notifs","sessions","suggestions","push_subs"):
-        c.execute("DELETE FROM " + t + " WHERE username=?", (un,))
+    for t in ("notifs","sessions","suggestions","push_subs","tg_link_codes"):
+        c.execute("DELETE FROM " + t + " WHERE site_username=?" if t == "tg_link_codes" else "DELETE FROM " + t + " WHERE username=?", (un,))
     c.execute("DELETE FROM tg_link_codes WHERE site_username=?", (un,))
     c.execute("DELETE FROM users WHERE id=?", (uid,))
     c.commit(); c.close()

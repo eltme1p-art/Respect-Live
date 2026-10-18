@@ -38,6 +38,7 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,textarea,select{font:inherit;color:inherit}
 img{display:block;max-width:100%}
+svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:middle}
 ::selection{background:rgba(var(--blue-rgb),.35);color:#fff}
 #splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 40%,rgba(var(--blue-rgb),.20),transparent 62%),var(--bg);transition:opacity .75s var(--ease),transform .75s var(--ease)}
 #splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
@@ -281,7 +282,8 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .acc-sep{height:1px;background:var(--line);margin:6px 6px}
 .admin-h{display:flex;gap:8px;padding:10px var(--pad) 0;overflow-x:auto;scrollbar-width:none}
 .admin-h::-webkit-scrollbar{display:none}
-.ad-tab{flex-shrink:0;padding:9px 16px;border-radius:22px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:800;transition:.22s var(--ease-soft)}
+.ad-tab{flex-shrink:0;padding:9px 16px;border-radius:22px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:800;transition:.22s var(--ease-soft);display:inline-flex;align-items:center;gap:6px}
+.ad-tab svg{width:16px;height:16px}
 .ad-tab.on{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 6px 18px rgba(var(--blue-rgb),.35)}
 .ad-user-card{padding:16px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px;display:flex;flex-direction:column;gap:12px;transition:.22s var(--ease-soft)}
 .ad-user-card:hover{border-color:var(--blue-line)}
@@ -289,11 +291,13 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .ad-user-head .av{width:44px;height:44px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:16px;overflow:hidden}
 .ad-user-head .av img{width:100%;height:100%;object-fit:cover}
 .ad-user-head .if{flex:1;min-width:0}
-.ad-user-head b{display:block;font-size:14.5px;font-weight:900;cursor:pointer}
+.ad-user-head b{display:block;font-size:14.5px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ad-user-head b svg{width:14px;height:14px}
 .ad-user-head b:hover{color:var(--blue)}
 .ad-user-head small{font-size:11.5px;color:var(--muted);font-family:var(--font-en);letter-spacing:.5px;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ad-user-acts{display:flex;gap:7px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:16px;background:rgba(var(--blue-rgb),.12);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-size:11px;font-weight:900;letter-spacing:.5px}
+.pill svg{width:14px;height:14px}
 .pill.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.32);color:var(--green)}
 .pill.bad{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.32);color:var(--red)}
 .pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.32);color:var(--orange)}
@@ -368,6 +372,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .bot-item.on .st{background:rgba(239,68,68,.2);color:var(--red)}
 .bot-item:not(.on) .st{background:rgba(255,255,255,.05);color:var(--muted)}
 .ai-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;font-size:12.5px;font-weight:800;margin-bottom:12px}
+.ai-status svg{width:18px;height:18px;flex-shrink:0}
 .ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
 .ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
 .ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
@@ -408,6 +413,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 .user-detail-grid{display:grid;gap:10px;margin-top:12px}
 .user-detail-item{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .user-detail-item .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.user-detail-item .ic svg{width:18px;height:18px}
 .user-detail-item .ic.kick{background:rgba(83,252,24,.12);color:#53fc18}
 .user-detail-item .ic.yt{background:rgba(255,0,0,.12);color:#ff0000}
 .user-detail-item .ic.tg{background:rgba(0,136,204,.12);color:#0088cc}
@@ -431,7 +437,7 @@ input[type="color"]::-webkit-color-swatch{border:1.5px solid var(--line-2);borde
 <div id="splash">
   <div class="sp-wrap">
     <div class="sp-logo" id="spLogo">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>
+      <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>
     </div>
     <div class="sp-dots"><i></i><i></i><i></i></div>
     <div class="sp-foot" id="spFoot">STREAM MONITOR</div>
@@ -448,42 +454,42 @@ console.log('[RL] script start');
 
 /* ═══ ICONS ═══ */
 const IC = {
-  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
-  kick:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
-  yt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6c.3 1 1.1 1.8 2 2 1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4c1-.3 1.8-1 2-2 .5-1.8.5-5.6.5-5.6zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>',
-  tg:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.05 3.1 2.44 10.66c-1.03.4-1.02 1.83.01 2.21l4.76 1.76 1.83 5.85c.28.9 1.42 1.13 2.02.4l2.4-2.94 5.06 3.72c.66.48 1.6.1 1.76-.7l3.02-15.6c.18-.94-.75-1.7-1.25-1.06z"/></svg>',
-  dc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 2.2 17 17 0 0 0-15-.1A18 18 0 0 1 8.8 3.4L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.6 9-.2 13.6.2 18a19.8 19.8 0 0 0 6 3l1.3-1.7a13 13 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4a13 13 0 0 1-2 1l1.3 1.7a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.7-3.5-13.6zM8.5 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>',
-  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
-  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
-  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
-  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
-  logo:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>',
-  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/><path d="M20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
-  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
-  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
-  palette:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
-  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
-  wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
-  ai:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>',
-  cog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
-  sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/></svg>',
-  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-  shieldCheck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
-  mega:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-4 18-5-6-9-4z"/></svg>',
-  newsp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
-  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+  home:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
+  kick:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
+  yt:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6c.3 1 1.1 1.8 2 2 1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4c1-.3 1.8-1 2-2 .5-1.8.5-5.6.5-5.6zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>',
+  tg:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M22.05 3.1 2.44 10.66c-1.03.4-1.02 1.83.01 2.21l4.76 1.76 1.83 5.85c.28.9 1.42 1.13 2.02.4l2.4-2.94 5.06 3.72c.66.48 1.6.1 1.76-.7l3.02-15.6c.18-.94-.75-1.7-1.25-1.06z"/></svg>',
+  dc:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 2.2 17 17 0 0 0-15-.1A18 18 0 0 1 8.8 3.4L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.6 9-.2 13.6.2 18a19.8 19.8 0 0 0 6 3l1.3-1.7a13 13 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4a13 13 0 0 1-2 1l1.3 1.7a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.7-3.5-13.6zM8.5 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  user:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  play:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  logo:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.35 2.76a1 1 0 0 1 1.3 0l9 7.5a1 1 0 0 1 .35.74V20a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.99a1 1 0 0 1 .35-.75l8-7.5z"/></svg>',
+  x:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/><path d="M20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  msg:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  send:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  palette:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  wrench:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  link:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  users:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  bar:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+  ai:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>',
+  cog:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  sparkle:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  shieldCheck:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+  mega:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-4 18-5-6-9-4z"/></svg>',
+  newsp:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+  info:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
 };
 
 /* ═══ UTILS ═══ */
@@ -516,10 +522,10 @@ async function api(path, opts={}) {
 function toast(msg, kind) {
   const t = el('div', 'toast ' + (kind || ''));
   const icon = kind === 'ok'
-    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>'
+    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
     : kind === 'bad'
-    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
-    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
+    : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
   t.innerHTML = icon + '<span>' + esc(msg) + '</span>';
   $('#toasts').appendChild(t);
   requestAnimationFrame(() => t.classList.add('on'));
@@ -660,7 +666,6 @@ async function boot() {
     await checkPushStatus();
     renderApp();
     console.log('[RL] app rendered');
-    // عرض نافذة الأخبار إن وجدت غير مقروء
     setTimeout(() => { if (S.newsUnread > 0) showNewsPopup(); }, 800);
   } catch (e) {
     console.log('[RL] not logged in:', e.message);
@@ -730,7 +735,7 @@ function updateBadge() {
   else b.style.display = 'none';
 }
 
-/* ═══ AUTH (LOGIN + REGISTER) ═══ */
+/* ═══ AUTH ═══ */
 function renderAuth(mode) {
   mode = mode || 'login';
   $('#app').style.display = '';
@@ -774,7 +779,6 @@ function renderAuth(mode) {
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || j.detail || (isReg ? 'فشل التسجيل' : 'فشل الدخول'));
       if (isReg && j.message) {
-        // حفظ الرسالة لعرضها بعد reload
         try { sessionStorage.setItem('rl_welcome', j.message); } catch (e) {}
       }
       location.reload();
@@ -797,7 +801,6 @@ function renderApp() {
   const showDcTab = canDiscord();
   const showMaintenanceBanner = S.maintenance && !isOwner();
 
-  // استرجاع رسالة ترحيب التسجيل
   let welcomeMsg = '';
   try { welcomeMsg = sessionStorage.getItem('rl_welcome') || ''; sessionStorage.removeItem('rl_welcome'); } catch (e) {}
   if (welcomeMsg) setTimeout(() => toast(welcomeMsg, 'ok'), 500);
@@ -821,7 +824,7 @@ function renderApp() {
     </div>
     ${S.guest ? `<div class="guest-banner"><div class="gb-ico">${IC.eye}</div><div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل</small></div><button class="btn pri sm" id="loginNow">دخول</button></div>` : ''}
     ${isLogged() && !S.guest && S.me.user.is_member && S.limits.kick.limit > 10 ? `<div class="member-banner ok"><div class="mb-ico">${IC.shieldCheck}</div><div class="mb-txt">${IC.check} أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!<small>كيك: ${S.limits.kick.limit} · يوتيوب: ${S.limits.yt.limit} · تيليجرام: ${S.limits.tg.limit}</small></div></div>` : ''}
-    ${isLogged() && !S.guest && S.boot.required_channel_url && !S.me.user.is_member ? `<div class="member-banner warn"><div class="mb-ico">${IC.megaphone || IC.mega}</div><div class="mb-txt">${esc(S.boot.required_channel_msg || 'انضم إلى قناتنا الرسمية للحصول على صلاحيات مضاعفة.')}<small>اضغط الزر للانضمام ثم أعد التحقق من قائمة الحساب</small></div><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم</a></div>` : ''}
+    ${isLogged() && !S.guest && S.boot.required_channel_url && !S.me.user.is_member ? `<div class="member-banner warn"><div class="mb-ico">${IC.mega || IC.mega}</div><div class="mb-txt">${esc(S.boot.required_channel_msg || 'انضم إلى قناتنا الرسمية للحصول على صلاحيات مضاعفة.')}<small>اضغط الزر للانضمام ثم أعد التحقق من قائمة الحساب</small></div><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم</a></div>` : ''}
     <div id="view"></div>
     <div class="tabbar">
       <button data-v="home" class="${S.view==='home'?'on':''}">${IC.home}</button>
@@ -1416,12 +1419,11 @@ async function tgVerifyCode(verifyId, chatName, chatAvatar) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG ACCOUNT LINK (ربط حساب تيليجرام للعضوية) ═══ */
+/* ═══ TG ACCOUNT LINK ═══ */
 async function openLinkTgModal() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) return toast('تيليجرام غير مضبوط في السيرفر', 'bad');
   const u = S.me.user;
-  // إذا مربوط
   if (u.linked_tg_id) {
     const html = `
       <div class="tgv-chat">
@@ -1459,7 +1461,6 @@ async function openLinkTgModal() {
     });
     return;
   }
-  // لم يُربط — أدخل اليوزر
   const html = `
     <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
       <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px">${IC.link} كيف يعمل؟</b><br>
@@ -1477,7 +1478,6 @@ async function openLinkTgModal() {
   try {
     res = await api('/api/link-tg/start', { method:'POST', body: { tg_username: tgUsername } });
   } catch (e) { return toast(e.message, 'bad'); }
-  // عرض إدخال الرمز
   const linkId = res.link_id;
   const tgName = res.tg_name || tgUsername;
   const html2 = `
@@ -1858,7 +1858,6 @@ async function editFeed(f) {
           };
           const capInput = elr.querySelector('textarea[data-kwcap]');
           if (capInput) capInput.oninput = () => { rule.caption = capInput.value.trim(); };
-          
           const upBtn = elr.querySelector('[data-kwimgup]');
           if (upBtn) upBtn.onclick = () => {
             const inp = document.createElement('input');
@@ -2153,16 +2152,16 @@ function renderAdmin() {
       <button class="hdr-btn" id="adBack">${IC.x}</button>
     </div>
     <div class="admin-h" id="adTabs">
-      <button class="ad-tab ${S.admin.tab==='stats'?'on':''}" data-t="stats">الإحصائيات</button>
-      <button class="ad-tab ${S.admin.tab==='users'?'on':''}" data-t="users">المستخدمون</button>
-      <button class="ad-tab ${S.admin.tab==='news'?'on':''}" data-t="news">📢 الأخبار</button>
-      <button class="ad-tab ${S.admin.tab==='defaults'?'on':''}" data-t="defaults">الافتراضية</button>
-      <button class="ad-tab ${S.admin.tab==='suggestions'?'on':''}" data-t="suggestions">الاقتراحات</button>
-      <button class="ad-tab ${S.admin.tab==='sec'?'on':''}" data-t="sec">الأمان</button>
-      <button class="ad-tab ${S.admin.tab==='appearance'?'on':''}" data-t="appearance">المظهر</button>
-      <button class="ad-tab ${S.admin.tab==='ai'?'on':''}" data-t="ai">Groq AI</button>
-      <button class="ad-tab ${S.admin.tab==='settings'?'on':''}" data-t="settings">الإعدادات</button>
-      <button class="ad-tab ${S.admin.tab==='system'?'on':''}" data-t="system">النظام</button>
+      <button class="ad-tab ${S.admin.tab==='stats'?'on':''}" data-t="stats">${IC.bar} الإحصائيات</button>
+      <button class="ad-tab ${S.admin.tab==='users'?'on':''}" data-t="users">${IC.users} المستخدمون</button>
+      <button class="ad-tab ${S.admin.tab==='news'?'on':''}" data-t="news">${IC.newsp} الأخبار</button>
+      <button class="ad-tab ${S.admin.tab==='defaults'?'on':''}" data-t="defaults">${IC.plus} الافتراضية</button>
+      <button class="ad-tab ${S.admin.tab==='suggestions'?'on':''}" data-t="suggestions">${IC.msg} الاقتراحات</button>
+      <button class="ad-tab ${S.admin.tab==='sec'?'on':''}" data-t="sec">${IC.lock} الأمان</button>
+      <button class="ad-tab ${S.admin.tab==='appearance'?'on':''}" data-t="appearance">${IC.palette} المظهر</button>
+      <button class="ad-tab ${S.admin.tab==='ai'?'on':''}" data-t="ai">${IC.ai} Groq AI</button>
+      <button class="ad-tab ${S.admin.tab==='settings'?'on':''}" data-t="settings">${IC.cog} الإعدادات</button>
+      <button class="ad-tab ${S.admin.tab==='system'?'on':''}" data-t="system">${IC.wrench} النظام</button>
     </div>
     <div id="adContent" class="sec" style="padding-top:16px"></div>
     <div class="tabbar" style="justify-content:center"><button id="adBack2">${IC.home}</button></div>`;

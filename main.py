@@ -341,7 +341,7 @@ def limit_info(username, kind, role):
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
     
-    # ⚡ إصلاح إرسال الصور: إذا كان الرابط نسبياً نضيف الدومين
+    # إصلاح إرسال الصور
     if image and image.startswith('/'):
         if PUBLIC_URL:
             image = PUBLIC_URL + image
@@ -354,7 +354,6 @@ async def tg_send(chat_id, text, image="", btn="", url=""):
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
-                # إذا كان النص طويلاً (أكثر من 1024) نرسل الصورة أولاً ثم النص
                 if len(text) > 1024:
                     await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image})
                     r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
@@ -364,7 +363,6 @@ async def tg_send(chat_id, text, image="", btn="", url=""):
                     if r.status_code == 200: return True
                     print(f"[TG sendPhoto] Failed: {r.text}")
             
-            # Fallback: إرسال النص فقط
             r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
             return r.status_code == 200
     except Exception as e:
@@ -734,7 +732,6 @@ def clean_mentions(text):
     t = re.sub(r"@everyone\b", "", t)
     t = re.sub(r"@here\b", "", t)
     t = _EMOJI_RE.sub("", t)
-    # ⚡ إصلاح السطور المتعددة
     t = re.sub(r"[ \t]+", " ", t)
     t = re.sub(r"\n\s*\n", "\n\n", t)
     return t.strip()

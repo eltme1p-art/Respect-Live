@@ -2681,4 +2681,209 @@ async function renderAdminSettings(c) {
       </label>
       <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px;line-height:1.7">
         ⚠️ <b>ملاحظة:</b> تويتر يفرض قيوداً على الخطة المجانية (1500 تغريدة/شهر).<br>
-        للحصول على المفتاح: اذهب إلى <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color:
+        للحصول على المفتاح: اذهب إلى <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color:var(--blue)">Twitter Developer Portal</a> > قم بإنشاء تطبيق > انسخ <b>Bearer Token</b>.
+      </div>
+      <button class="btn pri sm" id="__twsave">${IC.check} حفظ المفتاح</button>
+      <span class="pill ${twConfigured ? 'ok' : 'bad'}" style="margin-right:8px">${twConfigured ? 'مفعّل' : 'غير مفعّل'}</span>
+    </div>
+
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🔐 التسجيل والصلاحيات</div>
+      <div class="switch-row">
+        <div class="sw-txt"><b>تفعيل التسجيل</b><small>السماح للزوار بإنشاء حسابات</small></div>
+        <label class="sw"><input type="checkbox" id="__regen" ${s.registration_enabled==='1'?'checked':''}><i></i></label>
+      </div>
+      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--muted)">الحدود الافتراضية (عند التسجيل)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label class="fld"><span>حد كيك</span><input type="number" id="__dlk" value="${esc(s.default_lim_kick||'10')}"></label>
+        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__dly" value="${esc(s.default_lim_yt||'5')}"></label>
+        <label class="fld"><span>حد تويتر</span><input type="number" id="__dltw" value="${esc(s.default_lim_tw||'1')}"></label>
+        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__dlt" value="${esc(s.default_lim_tg||'1')}"></label>
+      </div>
+      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--green)">🎁 حدود الأعضاء المضاعفة (لمن انضم للقناة الرسمية)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label class="fld"><span>حد كيك</span><input type="number" id="__blk" value="${esc(s.bonus_lim_kick||'50')}"></label>
+        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__bly" value="${esc(s.bonus_lim_yt||'25')}"></label>
+        <label class="fld"><span>حد تويتر</span><input type="number" id="__bltw" value="${esc(s.bonus_lim_tw||'5')}"></label>
+        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__blt" value="${esc(s.bonus_lim_tg||'5')}"></label>
+      </div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📢 القناة الرسمية (للعضوية)</div>
+      <label class="fld"><span>معرّف القناة (chat_id أو @username)</span>
+        <input type="text" id="__rchid" value="${esc(s.required_channel_id||'')}" placeholder="-1001234567890 أو @mychannel">
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:10px">البوت يجب أن يكون مشرفاً في القناة. بعد الحفظ، فعّل webhook أو انتظر polling.</div>
+      <label class="fld"><span>اسم القناة (يظهر للمستخدمين)</span>
+        <input type="text" id="__rchnm" value="${esc(s.required_channel_name||'')}" placeholder="قناتنا الرسمية">
+      </label>
+      <label class="fld"><span>رابط القناة (لزر الانضمام)</span>
+        <input type="text" id="__rchurl" value="${esc(s.required_channel_url||'')}" placeholder="https://t.me/mychannel">
+      </label>
+      <label class="fld"><span>رسالة تشجيعية للانضمام</span>
+        <textarea id="__rchmsg" rows="3">${esc(s.required_channel_msg||'')}</textarea>
+      </label>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📄 نصوص الترحيب بعد التسجيل</div>
+      <label class="fld"><span>العنوان</span><input type="text" id="__swt" value="${esc(s.signup_welcome_title||'')}"></label>
+      <label class="fld"><span>النص</span><textarea id="__swx" rows="3">${esc(s.signup_welcome_text||'')}</textarea></label>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">معلومات الموقع</div>
+      <label class="fld"><span>اسم الموقع</span><input type="text" id="__sn" value="${esc(s.site_name||'')}"></label>
+      <label class="fld"><span>العنوان الفرعي</span><input type="text" id="__ss" value="${esc(s.site_sub||'')}"></label>
+      <label class="fld"><span>عنوان الهيرو</span><input type="text" id="__ht" value="${esc(s.hero_title||'')}"></label>
+      <label class="fld"><span>الجزء المميز</span><input type="text" id="__ha" value="${esc(s.hero_accent||'')}"></label>
+      <label class="fld"><span>نص الهيرو</span><textarea id="__hx" rows="2">${esc(s.hero_text||'')}</textarea></label>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">نصوص الأزرار</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label class="fld"><span>كيك</span><input type="text" id="__bk" value="${esc(s.btn_kick||'')}"></label>
+        <label class="fld"><span>يوتيوب</span><input type="text" id="__by" value="${esc(s.btn_yt||'')}"></label>
+        <label class="fld"><span>تويتر</span><input type="text" id="__btw" value="${esc(s.btn_tw||'')}"></label>
+        <label class="fld"><span>تيليجرام</span><input type="text" id="__btg" value="${esc(s.btn_tg||'')}"></label>
+      </div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">قوالب الإشعارات</div>
+      <label class="fld"><span>قالب كيك</span><textarea id="__tk" rows="3" class="mono">${esc(s.tpl_kick||'')}</textarea></label>
+      <label class="fld"><span>قالب يوتيوب</span><textarea id="__ty" rows="3" class="mono">${esc(s.tpl_yt||'')}</textarea></label>
+      <label class="fld"><span>قالب تويتر</span><textarea id="__ttw" rows="3" class="mono">${esc(s.tpl_twitter||'')}</textarea></label>
+      <label class="fld"><span>قالب ديسكورد</span><textarea id="__td" rows="3" class="mono">${esc(s.tpl_discord||'')}</textarea></label>
+      <div class="mu" style="font-size:11.5px;margin-top:-4px">المتغيرات: {name} {title} {content} {author} {author_no_at} {url} {channel}</div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">البوت</div>
+      <label class="fld"><span>اسم البوت المخصص</span><input type="text" id="__bn" value="${esc(s.bot_name_custom||'')}"></label>
+      <label class="fld"><span>رابط دعوة البوت</span><input type="text" id="__bi" value="${esc(s.bot_invite_url||'')}"></label>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">✉️ رسائل تيليجرام</div>
+      <label class="fld"><span>رسالة التحقق (لتوثيق القناة)</span>
+        <textarea id="__ttv" rows="4" class="mono">${esc(s.tpl_tg_verify||'')}</textarea>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
+      <label class="fld"><span>رسالة النجاح (بعد توثيق القناة)</span>
+        <textarea id="__tts" rows="4" class="mono">${esc(s.tpl_tg_success||'')}</textarea>
+      </label>
+      <label class="fld"><span>رسالة ربط الحساب (تحتوي رمز)</span>
+        <textarea id="__ttl" rows="4" class="mono">${esc(s.tpl_tg_link||'')}</textarea>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغير: <code>{code}</code></div>
+    </div>
+    <button class="btn pri wide" id="adSaveSettings" style="margin-bottom:20px">${IC.check} حفظ الإعدادات</button>`;
+    
+  $('#__twsave').onclick = async () => {
+    const token = $('#__twkey').value.trim();
+    try {
+      await api('/api/admin/twitter', { method:'POST', body: { bearer_token: token } });
+      toast('تم الحفظ', 'ok'); await loadSettings(); renderAdminSettings(c);
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+
+  $('#adSaveSettings').onclick = async () => {
+    try {
+      await api('/api/settings', { method:'POST', body: {
+        registration_enabled: $('#__regen').checked ? '1' : '0',
+        default_lim_kick: $('#__dlk').value, default_lim_yt: $('#__dly').value, default_lim_tw: $('#__dltw').value, default_lim_tg: $('#__dlt').value,
+        bonus_lim_kick: $('#__blk').value, bonus_lim_yt: $('#__bly').value, bonus_lim_tw: $('#__bltw').value, bonus_lim_tg: $('#__blt').value,
+        required_channel_id: $('#__rchid').value.trim(), required_channel_name: $('#__rchnm').value.trim(),
+        required_channel_url: $('#__rchurl').value.trim(), required_channel_msg: $('#__rchmsg').value.trim(),
+        signup_welcome_title: $('#__swt').value.trim(), signup_welcome_text: $('#__swx').value.trim(),
+        site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value, hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
+        btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tw: $('#__btw').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc')?.value || 'عرض الروم',
+        tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_twitter: $('#__ttw').value, tpl_discord: $('#__td').value,
+        tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value, tpl_tg_link: $('#__ttl').value,
+        bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
+        lim_kick: $('#__lk')?.value || '10', lim_yt: $('#__ly')?.value || '5', lim_tw: $('#__ltw')?.value || '3', lim_tg: $('#__lt')?.value || '3',
+        guest_mode: '1',
+      }});
+      toast('تم الحفظ', 'ok'); await loadSettings();
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+}
+
+async function renderAdminSystem(c) {
+  await loadSettings();
+  const s = S.settings || {};
+  const isMnt = s.maintenance === '1';
+  const stats = S.admin.stats || {};
+  c.innerHTML = `
+    <div class="sec-h"><div class="sec-title">النظام <span>.</span></div></div>
+    <div class="ad-user-card" style="${isMnt ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)' : ''}">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:8px;display:flex;align-items:center;gap:10px">${IC.wrench} وضع الصيانة ${isMnt ? '<span class="pill bad">مفعّل</span>' : '<span class="pill ok">معطّل</span>'}</div>
+      <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">
+        ✅ <b>لم يعد يقفل الموقع</b> — يظهر شريط تنبيه أحمر أعلى الصفحة للمستخدمين، وتُقيَّد عمليات الإضافة/الإرسال. المالك يمكنه العمل بحرية.
+      </div>
+      <label class="fld"><span>عنوان النافذة</span><input type="text" id="__mttl" value="${esc(s.maintenance_title||'🔧 صيانة مؤقتة')}"></label>
+      <label class="fld"><span>نص الصيانة</span><textarea id="__mtxt" rows="3">${esc(s.maintenance_text||'الموقع في صيانة مؤقتة — نرجع قريباً')}</textarea></label>
+      <button class="btn ${isMnt?'ghost':'pri'} wide" id="__mtoggle" style="margin-bottom:8px">${isMnt ? IC.x + ' إيقاف' : IC.check + ' تفعيل'}</button>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:8px">${IC.refresh} أدوات</div>
+      <button class="btn ghost wide" id="__refreshDC" style="margin-bottom:8px">${IC.refresh} تحديث كاش ديسكورد</button>
+      <button class="btn ghost wide" id="__setupWH">${IC.link} إعادة ضبط Webhook تيليجرام</button>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:10px">معلومات تيليجرام</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
+        Public URL: <b style="font-family:var(--font-en);color:var(--text)">${esc(stats.public_url || 'غير مضبوط')}</b><br>
+        Webhook: <b style="color:${stats.webhook_set?'var(--green)':'var(--red)'}">${stats.webhook_set?'مفعّل':'غير مفعّل (يعمل polling)'}</b><br>
+        قنوات معروفة للبوت: <b style="color:var(--purple)">${stats.tg_known||0}</b><br>
+        <span class="mu" style="font-size:11.5px">لتفعيل Webhook أضف متغير <code>PUBLIC_URL</code> في Railway</span>
+      </div>
+    </div>`;
+  $('#__mtoggle').onclick = async () => {
+    try {
+      const nv = !isMnt;
+      await api('/api/admin/maintenance', { method:'POST', body: { enabled: nv, text: $('#__mtxt').value, title: $('#__mttl').value } });
+      toast(nv ? 'تم تفعيل الصيانة' : 'تم إيقاف', 'ok');
+      await loadSettings();
+      S.maintenance = nv;
+      renderAdminSystem(c);
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+  $('#__refreshDC').onclick = async () => {
+    try { const r = await api('/api/discord/refresh', { method:'POST' }); toast('تم — ' + (r.channels||0) + ' روم', 'ok'); await loadFeeds(); } catch (e) { toast(e.message, 'bad'); }
+  };
+  $('#__setupWH').onclick = async () => {
+    try { const r = await api('/api/telegram/setup-webhook', { method:'POST' }); toast(r.ok ? 'تم ضبط Webhook ✅' : 'فشل: ' + (r.description || ''), r.ok ? 'ok' : 'bad'); } catch (e) { toast(e.message, 'bad'); }
+  };
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.sug-item');
+  if (item) {
+    item.classList.toggle('on');
+    const grid = item.closest('.sug-grid');
+    if (grid) {
+      const sel = grid.querySelectorAll('.sug-item.on').length;
+      const counter = document.getElementById('sugCount');
+      if (counter) counter.textContent = sel + ' محددة';
+    }
+    return;
+  }
+  const toggleAll = e.target.closest('#sugToggleAll');
+  if (toggleAll) {
+    const grid = document.getElementById('sugGrid');
+    if (grid) {
+      const items = grid.querySelectorAll('.sug-item');
+      const allOn = Array.from(items).every(x => x.classList.contains('on'));
+      items.forEach(x => x.classList.toggle('on', !allOn));
+      const counter = document.getElementById('sugCount');
+      if (counter) counter.textContent = (allOn ? 0 : items.length) + ' محددة';
+    }
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Escape') { const m = $('#modal'); if (m && m.classList.contains('on')) m.classList.remove('on'); }
+});
+
+boot().catch(e => { console.error('[RL] boot error:', e); });
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-"""Respect Live — v9 (Admin Grid + Twitter + TG Info + Global Dup Check + Modals)"""
+"""Respect Live — v10 (App UX + Deep Link TG + Fixes)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS tg_known_channels (chat_id TEXT PRIMARY KEY, username
 CREATE INDEX IF NOT EXISTS idx_tkc_un ON tg_known_channels(username);
 CREATE TABLE IF NOT EXISTS tg_verifications (id INTEGER PRIMARY KEY AUTOINCREMENT, site_username TEXT NOT NULL, tg_username TEXT NOT NULL DEFAULT '', tg_user_id TEXT DEFAULT '', tg_chat_id TEXT DEFAULT '', tg_chat_name TEXT DEFAULT '', tg_chat_avatar TEXT DEFAULT '', code TEXT DEFAULT '', status TEXT DEFAULT 'pending', tg_msg_id INTEGER DEFAULT 0, created INTEGER, expires INTEGER);
 CREATE INDEX IF NOT EXISTS idx_tgv_status ON tg_verifications(status, expires);
-CREATE TABLE IF NOT EXISTS tg_link_codes (id INTEGER PRIMARY KEY AUTOINCREMENT, site_username TEXT NOT NULL, tg_user_id TEXT NOT NULL, tg_username TEXT DEFAULT '', tg_first_name TEXT DEFAULT '', code TEXT NOT NULL, status TEXT DEFAULT 'pending', created INTEGER, expires INTEGER);
+CREATE TABLE IF NOT EXISTS tg_link_codes (id INTEGER PRIMARY KEY AUTOINCREMENT, site_username TEXT NOT NULL, tg_user_id TEXT DEFAULT '', tg_username TEXT DEFAULT '', tg_first_name TEXT DEFAULT '', token TEXT UNIQUE NOT NULL, status TEXT DEFAULT 'pending', created INTEGER, expires INTEGER);
 CREATE INDEX IF NOT EXISTS idx_tlc_status ON tg_link_codes(status, expires);
 CREATE TABLE IF NOT EXISTS feed_subs (id INTEGER PRIMARY KEY AUTOINCREMENT, feed_id INTEGER NOT NULL, tg_channel_id INTEGER NOT NULL, username TEXT NOT NULL, enabled INTEGER DEFAULT 1, created INTEGER, UNIQUE(feed_id, tg_channel_id));
 CREATE INDEX IF NOT EXISTS idx_fs_feed ON feed_subs(feed_id, enabled);
@@ -206,9 +206,8 @@ def init_db():
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     
-    if cfg("v9_migration", "") != "done":
-        # Add TW limits to existing users default setup
-        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('v9_migration', 'done')")
+    if cfg("v10_migration", "") != "done":
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('v10_migration', 'done')")
         c.commit()
         
     c.close()
@@ -522,13 +521,6 @@ async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     j = await tg_api("sendMessage", {"chat_id": tg_user_id, "text": text, "parse_mode": "HTML", "reply_markup": kb})
     return j["result"]["message_id"] if j.get("ok") else 0
 
-# ═══ TG LINK (account linking for membership) ═══
-async def send_link_code_dm(tg_user_id, code):
-    tpl = cfg("tpl_tg_link", "🔐 <b>ربط حساب</b>\n\nرمز التحقق الخاص بك:\n\n<code>{code}</code>\n\n<i>صالح لمدة 10 دقائق.</i>")
-    text = tpl.replace("{code}", code)
-    j = await tg_api("sendMessage", {"chat_id": tg_user_id, "text": text, "parse_mode": "HTML"})
-    return j.get("ok", False)
-
 async def handle_tg_update(update):
     mcm = update.get("my_chat_member")
     if mcm:
@@ -588,7 +580,40 @@ async def handle_tg_update(update):
         chat_id = chat.get("id")
         is_private = chat.get("type") == "private"
         if is_private:
-            if text.startswith("/start"):
+            if text.startswith("/start link_"):
+                # Deep link for account linking
+                token = text.replace("/start link_", "").strip()
+                tg_user_id = str(msg["from"]["id"])
+                tg_username = "@" + msg["from"].get("username", "") if msg["from"].get("username") else ""
+                tg_first_name = msg["from"].get("first_name", "")
+                
+                c = db()
+                row = c.execute("SELECT * FROM tg_link_codes WHERE token=? AND status='pending' AND expires>?", (token, now())).fetchone()
+                if row:
+                    site_username = row["site_username"]
+                    c.execute("UPDATE users SET linked_tg_id=?, linked_tg_username=?, linked_tg_name=?, member_checked=0 WHERE username=?", (tg_user_id, tg_username, tg_first_name, site_username))
+                    c.execute("UPDATE tg_link_codes SET status='used', tg_user_id=?, tg_username=? WHERE id=?", (tg_user_id, tg_username, row["id"]))
+                    c.commit()
+                    c.close()
+                    
+                    # Check membership immediately
+                    req_ch = cfg("required_channel_id", "").strip()
+                    is_mem = False
+                    if req_ch:
+                        is_mem = await tg_check_membership(tg_user_id, req_ch)
+                    c = db()
+                    c.execute("UPDATE users SET is_member=?, member_checked=? WHERE username=?", (1 if is_mem else 0, now(), site_username))
+                    c.commit(); c.close()
+                    
+                    bot_name = cfg("bot_name_custom", "Respect Live")
+                    success_msg = f"✅ <b>تم ربط حسابك بنجاح في {bot_name}!</b>\n\nيمكنك العودة إلى الموقع الآن."
+                    if is_mem:
+                        success_msg += "\n🎁 أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!"
+                    await tg_api("sendMessage", {"chat_id": chat_id, "text": success_msg, "parse_mode": "HTML"})
+                else:
+                    await tg_api("sendMessage", {"chat_id": chat_id, "text": "⚠️ الرابط منتهي الصلاحية أو مستخدم مسبقاً. يرجى المحاولة من الموقع مرة أخرى.", "parse_mode": "HTML"})
+                return
+            elif text.startswith("/start"):
                 bot_name = cfg("bot_name_custom", "Respect Live")
                 welcome = "👋 أهلاً بك في <b>" + bot_name + "</b>!\n\n• لربط حسابك: استخدم زر ربط الحساب في الموقع.\n• لتوثيق قناتك: استخدم زر توثيق القناة في الموقع."
                 await tg_api("sendMessage", {"chat_id": chat_id, "text": welcome, "parse_mode": "HTML"})
@@ -1062,10 +1087,6 @@ async def job_twitter():
     updates, new_tweets = [], []
     t = now()
     for r in rows:
-        tweets = await twitter_feed(r["username"], bearer) # We'll use user_id in db actually
-        # But for simplicity, let's resolve handle to id if needed, or just use handle
-        # Twitter API v2 requires user ID.
-        # Let's write a quick resolver inside the loop
         user = await twitter_resolve(r["username"], bearer)
         if not user: updates.append((t, r["id"])); continue
         tweets = await twitter_feed(user["id"], bearer)
@@ -1078,12 +1099,11 @@ async def job_twitter():
                 if tw["id"] == r["last_tweet"]: break
                 fresh.append(tw)
             
-            # Apply keyword filter
             filter_kws = [k.strip().lower() for k in (r["filter_kw"] or "").split(",") if k.strip()]
             for tw in reversed(fresh[:3]):
                 text_lower = tw["text"].lower()
                 if any(kw in text_lower for kw in filter_kws):
-                    continue # Skip filtered
+                    continue
                 new_tweets.append((r, tw))
                 
         updates.append((latest, t, r["id"]))
@@ -1146,7 +1166,7 @@ async def job_cleanup():
     c.execute("DELETE FROM tg_verifications WHERE created<?", (now()-3600,))
     c.execute("DELETE FROM tg_link_codes WHERE created<?", (now()-3600,))
     c.execute("DELETE FROM tg_known_channels WHERE last_seen<?", (now()-30*86400,))
-    c.execute("DELETE FROM sent_messages WHERE ts<?", (now()-14*86400,)) # Keep 14 days of info logs
+    c.execute("DELETE FROM sent_messages WHERE ts<?", (now()-14*86400,))
     c.commit(); c.close()
 
 # ═══ APP + SCHEDULER ═══
@@ -1255,7 +1275,7 @@ async def api_me(request: Request):
                 "linked_tg_id":u.get("linked_tg_id",""),"linked_tg_username":u.get("linked_tg_username",""),
                 "linked_tg_name":u.get("linked_tg_name",""),"is_member":bool(u.get("is_member",0))},
         "limits":lim,
-        "usage":{"kick":limit_info(u["username"],"kick",u["role"])["used"],"yt":limit_info(u["username"],"yt",u["role"])["used"],"tg":limit_info(u["username"],"tg",u["role"])["used"],"tw":limit_info(u["username"],"tw",u["role"])["used"]},
+        "usage":{"kick":limit_info(u["username"],"kick",u["role"])["used"],"yt":limit_info(u["username"],"yt",u["role"])["used"],"tg":limit_info(u["username"],"tg",u["role"])["used"],"tw":limit_info(u["username"],"twitter",u["role"])["used"]},
         "tpl_kick":cfg("tpl_kick"),"tpl_yt":cfg("tpl_yt"),
         "tpl_discord":cfg("tpl_discord"),"tpl_twitter":cfg("tpl_twitter"),"tpl_youtube_dc":cfg("tpl_youtube_dc"),
         "btn_kick":cfg("btn_kick","شاهد البث"),"btn_yt":cfg("btn_yt","شاهد الفيديو"),
@@ -1291,96 +1311,48 @@ async def api_profile(request: Request):
     c = db(); c.execute("UPDATE users SET " + ", ".join(sets) + " WHERE username=?", vals); c.commit(); c.close()
     return {"ok":True}
 
-# ═══ TG ACCOUNT LINKING ═══
-@app.post("/api/link-tg/start")
-async def api_link_tg_start(request: Request):
+# ═══ TG ACCOUNT LINKING (Deep Link) ═══
+@app.post("/api/link-tg/deeplink")
+async def api_link_tg_deeplink(request: Request):
     u = require_auth(request)
     if not TELEGRAM_TOKEN:
         return JSONResponse({"error":"توكن تيليجرام غير مضبوط"}, 400)
     if not rate_ok("linktg:" + u["username"], 5):
         return JSONResponse({"error":"عدد كبير من المحاولات"}, 429)
-    body = await request.json()
-    tg_username = (body.get("tg_username") or "").strip().lstrip("@")[:64]
-    if not re.match(r"^[A-Za-z][A-Za-z0-9_]{3,31}$", tg_username):
-        return JSONResponse({"error":"يوزر تيليجرام غير صالح"}, 400)
-    j = await tg_api("getChat", {"chat_id": "@" + tg_username})
-    if not j.get("ok") or not j.get("result"):
-        return JSONResponse({"error":"لم يتم العثور على المستخدم.\n\nتأكد أن:\n• اليوزر صحيح\n• بدأت البوت (/start) مرة واحدة على الأقل في حسابك"}, 400)
-    res = j["result"]
-    tg_user_id = str(res.get("id", ""))
-    first_name = res.get("first_name", "") or ""
-    if not tg_user_id:
-        return JSONResponse({"error":"تعذّر جلب معرّف المستخدم"}, 400)
-    code = "{:06d}".format(secrets.randbelow(1000000))
+    
+    token = secrets.token_urlsafe(16)
     c = db()
     c.execute("DELETE FROM tg_link_codes WHERE site_username=? AND status='pending'", (u["username"],))
-    c.execute("INSERT INTO tg_link_codes(site_username, tg_user_id, tg_username, tg_first_name, code, status, created, expires) VALUES(?,?,?,?,?,'pending',?,?)",
-        (u["username"], tg_user_id, "@" + tg_username, first_name, code, now(), now() + LINK_CODE_TTL))
+    c.execute("INSERT INTO tg_link_codes(site_username, token, status, created, expires) VALUES(?,?,'pending',?,?)",
+        (u["username"], token, now(), now() + 600)) # 10 minutes expiry
     c.commit()
-    lid = c.execute("SELECT last_insert_rowid() as id").fetchone()["id"]
     c.close()
-    ok = await send_link_code_dm(tg_user_id, code)
-    if not ok:
-        c = db(); c.execute("DELETE FROM tg_link_codes WHERE id=?", (lid,)); c.commit(); c.close()
-        return JSONResponse({"error":"تعذّر إرسال الرسالة.\n\nافتح البوت @"+cfg("bot_name_custom","Respect Live")+" واضغط /start أولاً في حسابك "+ "@"+tg_username}, 400)
-    log_sec(u["username"], "link_tg_start", "@" + tg_username, "")
-    return {"ok":True, "link_id":lid, "tg_username":"@" + tg_username, "tg_name":first_name}
+    
+    bot_username = cfg("bot_name_custom", "Respect Live").replace(" ", "_") # Fallback if user didn't set actual bot username
+    # Try to get real bot username
+    try:
+        bot_info = await tg_api("getMe", {})
+        if bot_info.get("ok"):
+            bot_username = bot_info["result"]["username"]
+    except: pass
+    
+    url = f"https://t.me/{bot_username}?start=link_{token}"
+    return {"ok": True, "url": url, "token": token}
 
-@app.post("/api/link-tg/{lid}/verify")
-async def api_link_tg_verify(lid: int, request: Request):
+@app.get("/api/link-tg/check/{token}")
+async def api_link_tg_check(token: str, request: Request):
     u = require_auth(request)
-    body = await request.json()
-    code = (body.get("code") or "").strip()
-    if not re.match(r"^\d{6}$", code):
-        return JSONResponse({"error":"الرمز 6 أرقام"}, 400)
     c = db()
-    row = c.execute("SELECT * FROM tg_link_codes WHERE id=? AND site_username=?", (lid, u["username"])).fetchone()
-    if not row:
-        c.close(); return JSONResponse({"error":"طلب غير موجود"}, 404)
-    row = dict(row)
-    if row["status"] != "pending":
-        c.close(); return JSONResponse({"error":"انتهت صلاحية الطلب"}, 400)
-    if row["expires"] < now():
-        c.execute("UPDATE tg_link_codes SET status='expired' WHERE id=?", (lid,)); c.commit(); c.close()
-        return JSONResponse({"error":"انتهت المهلة"}, 400)
-    if row["code"] != code:
-        c.close(); return JSONResponse({"error":"الرمز غير صحيح"}, 400)
-    c.execute("UPDATE users SET linked_tg_id=?, linked_tg_username=?, linked_tg_name=?, member_checked=0 WHERE username=?",
-        (row["tg_user_id"], row["tg_username"], row["tg_first_name"], u["username"]))
-    c.execute("UPDATE tg_link_codes SET status='used' WHERE id=?", (lid,))
-    c.commit(); c.close()
-    req_ch = cfg("required_channel_id", "").strip()
-    is_mem = False
-    if req_ch:
-        is_mem = await tg_check_membership(row["tg_user_id"], req_ch)
-    c = db()
-    c.execute("UPDATE users SET is_member=?, member_checked=? WHERE username=?", (1 if is_mem else 0, now(), u["username"]))
-    c.commit(); c.close()
-    log_sec(u["username"], "link_tg_ok", row["tg_username"], "")
-    return {"ok":True, "is_member":is_mem,
-            "message": "✅ تم ربط الحساب بنجاح." + (" 🎁 حصلت على صلاحيات مضاعفة لأنك عضو في القناة!" if is_mem else " ⚠️ أنت لست عضواً في القناة المطلوبة — انضم عبر الرابط لتفعيل الصلاحيات المضاعفة.")}
-
-@app.get("/api/link-tg/status")
-async def api_link_tg_status(request: Request):
-    u = require_auth(request)
-    return {"linked_tg_id":u.get("linked_tg_id",""),
-            "linked_tg_username":u.get("linked_tg_username",""),
-            "linked_tg_name":u.get("linked_tg_name",""),
-            "is_member":bool(u.get("is_member",0)),
-            "required_channel_url":cfg("required_channel_url",""),
-            "required_channel_name":cfg("required_channel_name","")}
-
-@app.post("/api/link-tg/refresh-membership")
-async def api_link_tg_refresh(request: Request):
-    u = require_auth(request)
-    if not u.get("linked_tg_id"):
-        return JSONResponse({"error":"لم تربط حساب تيليجرام بعد"}, 400)
-    req_ch = cfg("required_channel_id", "").strip()
-    if not req_ch:
-        return JSONResponse({"error":"لم يتم ضبط القناة المطلوبة"}, 400)
-    is_mem = await tg_check_membership(u["linked_tg_id"], req_ch)
-    c = db(); c.execute("UPDATE users SET is_member=?, member_checked=? WHERE username=?", (1 if is_mem else 0, now(), u["username"])); c.commit(); c.close()
-    return {"ok":True, "is_member":is_mem}
+    row = c.execute("SELECT * FROM tg_link_codes WHERE token=? AND site_username=?", (token, u["username"])).fetchone()
+    c.close()
+    if not row: raise HTTPException(404, "Token not found")
+    if row["status"] == "used":
+        # Reload user to get latest membership status
+        c = db()
+        user = c.execute("SELECT linked_tg_username, is_member FROM users WHERE username=?", (u["username"],)).fetchone()
+        c.close()
+        return {"ok": True, "status": "used", "is_member": bool(user["is_member"]), "tg_username": user["linked_tg_username"]}
+    return {"ok": True, "status": row["status"]}
 
 @app.post("/api/link-tg/unlink")
 async def api_link_tg_unlink(request: Request):
@@ -1990,7 +1962,7 @@ async def api_dc_feeds(request: Request):
     return {"rows":out,"known_channels":_CH_CACHE,"guilds":_G_CACHE,
             "watching":list(_CH_CACHE.keys()) if not WATCH_CHANNELS else WATCH_CHANNELS,
             "auto_discovery":not bool(WATCH_CHANNELS),"bot_ready":bool(discord_client and discord_client.is_ready()),
-            "bot_info":_BOT_INFO if is_owner_user else {"name":"","avatar":""}, # Hide bot info from non-owners
+            "bot_info":_BOT_INFO if is_owner_user else {"name":"","avatar":""},
             "bot_name_custom":cfg("bot_name_custom","Respect Live"),
             "bot_invite_url":cfg("bot_invite_url","") if is_owner_user else "",
             "self_bot_mode":_SELF_BOT,

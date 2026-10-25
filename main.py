@@ -1,4 +1,4 @@
-"""Respect Live — v10 (App UX + Deep Link TG + Fixes)"""
+"""Respect Live — v11 (Stable + Full Page Account + Fixed Login)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -206,8 +206,8 @@ def init_db():
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
     
-    if cfg("v10_migration", "") != "done":
-        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('v10_migration', 'done')")
+    if cfg("v11_migration", "") != "done":
+        c.execute("INSERT OR REPLACE INTO settings(k,v) VALUES('v11_migration', 'done')")
         c.commit()
         
     c.close()
@@ -581,7 +581,6 @@ async def handle_tg_update(update):
         is_private = chat.get("type") == "private"
         if is_private:
             if text.startswith("/start link_"):
-                # Deep link for account linking
                 token = text.replace("/start link_", "").strip()
                 tg_user_id = str(msg["from"]["id"])
                 tg_username = "@" + msg["from"].get("username", "") if msg["from"].get("username") else ""
@@ -596,7 +595,6 @@ async def handle_tg_update(update):
                     c.commit()
                     c.close()
                     
-                    # Check membership immediately
                     req_ch = cfg("required_channel_id", "").strip()
                     is_mem = False
                     if req_ch:
@@ -1232,7 +1230,7 @@ async def api_register(request: Request, response: Response, username: str = For
         (un, (display or un)[:60].strip() or un, hash_pw(pw, salt), salt, dk, dy, dt, dw, now()))
     c.commit(); c.close()
     tok = new_session(un)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False)
+    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
     log_sec(un, "register_ok", "", ip)
     return {"ok":True, "username":un, "message":"تم إنشاء الحساب! صلاحياتك محدودة. اربط حسابك في تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة."}
 
@@ -1253,7 +1251,7 @@ async def api_login(request: Request, response: Response, u: str = Form(...), p:
     tok = new_session(row["username"])
     c = db(); c.execute("UPDATE users SET last_login=? WHERE id=?", (now(), row["id"])); c.commit(); c.close()
     log_sec(u, "login_ok", "", ip)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False)
+    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
     return {"ok":True,"user":{"username":row["username"],"role":row["role"]}}
 
 @app.post("/api/logout")
@@ -1261,7 +1259,7 @@ async def api_logout(request: Request, response: Response):
     tok = request.cookies.get("rl_sid")
     if tok:
         c = db(); c.execute("DELETE FROM sessions WHERE token=?", (tok,)); c.commit(); c.close()
-    response.delete_cookie("rl_sid")
+    response.delete_cookie("rl_sid", path="/")
     return {"ok":True}
 
 # ═══ ME ═══
@@ -1324,12 +1322,11 @@ async def api_link_tg_deeplink(request: Request):
     c = db()
     c.execute("DELETE FROM tg_link_codes WHERE site_username=? AND status='pending'", (u["username"],))
     c.execute("INSERT INTO tg_link_codes(site_username, token, status, created, expires) VALUES(?,?,'pending',?,?)",
-        (u["username"], token, now(), now() + 600)) # 10 minutes expiry
+        (u["username"], token, now(), now() + 600))
     c.commit()
     c.close()
     
-    bot_username = cfg("bot_name_custom", "Respect Live").replace(" ", "_") # Fallback if user didn't set actual bot username
-    # Try to get real bot username
+    bot_username = cfg("bot_name_custom", "Respect Live").replace(" ", "_")
     try:
         bot_info = await tg_api("getMe", {})
         if bot_info.get("ok"):
@@ -1347,7 +1344,6 @@ async def api_link_tg_check(token: str, request: Request):
     c.close()
     if not row: raise HTTPException(404, "Token not found")
     if row["status"] == "used":
-        # Reload user to get latest membership status
         c = db()
         user = c.execute("SELECT linked_tg_username, is_member FROM users WHERE username=?", (u["username"],)).fetchone()
         c.close()
@@ -1538,7 +1534,6 @@ async def api_add_channel(kind: str, request: Request):
         ident = (body.get("username") or "").strip().replace("@","")
         if not ident: c.close(); return JSONResponse({"error":"اسم المستخدم مطلوب"},400)
     
-    # Global Dup Check against defaults
     if c.execute("SELECT 1 FROM default_channels WHERE kind=? AND identifier=?", (kind, ident)).fetchone():
         c.close()
         return JSONResponse({"error":"هذه القناة موجودة في المقترحات، يرجى إضافتها من قسم المقترحات لتوفير المساحة."}, 400)
@@ -1744,7 +1739,6 @@ async def tg_verify_start(request: Request):
         return JSONResponse({"error":"تعذّر الوصول للقناة.\n\nتأكد من:\n• إضافة البوت كمشرف\n• كتابة المعرّف بشكل صحيح\n• انشر أي رسالة في القناة أولاً"}, 400)
     c = db()
     
-    # Global Dup Check
     if c.execute("SELECT 1 FROM default_channels WHERE kind='tg' AND identifier=?", (chat_info["chat_id"],)).fetchone():
         c.close()
         return JSONResponse({"error":"هذه القناة موجودة في المقترحات، يرجى إضافتها من قسم المقترحات لتوفير المساحة."}, 400)

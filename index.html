@@ -31,7 +31,8 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation;}
 html{scroll-behavior:smooth;background:var(--bg);-webkit-text-size-adjust:100%;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-ar);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:calc(112px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;position:relative;overscroll-behavior-y:none;}
+/* إصلاح: زيادة المساحة السفلية لمنع تغطية الشريط للمحتوى */
+body{background:var(--bg);color:var(--text);font-family:var(--font-ar);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:calc(140px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;position:relative;overscroll-behavior-y:none;}
 body::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background-image:linear-gradient(rgba(var(--blue-rgb),.035) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--blue-rgb),.035) 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 95% 85% at 50% 35%,#000 35%,transparent 92%);mask-image:radial-gradient(ellipse 95% 85% at 50% 35%,#000 35%,transparent 92%)}
 body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 10% 15%,rgba(var(--blue-rgb),.10),transparent 40%),radial-gradient(circle at 92% 68%,rgba(var(--blue-rgb),.08),transparent 42%),radial-gradient(circle at 50% 110%,rgba(var(--blue-rgb),.06),transparent 55%)}
 a{color:inherit;text-decoration:none}
@@ -80,14 +81,17 @@ svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:mid
 .avatar-btn .st{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
 .avatar-btn.guest{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);box-shadow:none}
 .avatar-btn.guest svg{width:19px;height:19px}
-.tabbar{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(94%,500px);height:66px;background:rgba(10,15,24,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:36px;display:flex;justify-content:space-around;align-items:center;z-index:100;padding:0 6px;box-shadow:0 20px 44px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05)}
+
+/* إصلاح: الشريط السفلي */
+.tabbar{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(94%,500px);height:68px;background:rgba(10,15,24,.98);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line-2);border-radius:36px;display:flex;justify-content:space-around;align-items:center;z-index:999;padding:0 8px;box-shadow:0 20px 44px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
 .tabbar button{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--muted);position:relative;transition:.28s var(--ease-soft)}
-.tabbar button svg{width:21px;height:21px;color:currentColor;transition:.28s var(--ease-soft)}
-.tabbar button:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.tabbar button svg{width:22px;height:22px;color:currentColor;transition:.28s var(--ease-soft)}
+.tabbar button:hover{color:var(--text);background:rgba(255,255,255,.06)}
 .tabbar button:active{transform:scale(.92)}
 .tabbar button.on{color:var(--blue2)}
 .tabbar button.on svg{transform:translateY(-2px) scale(1.15);filter:drop-shadow(0 0 8px var(--blue))}
-.tabbar button.on::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--blue);border-radius:3px;box-shadow:var(--glow-sm)}
+.tabbar button.on::after{content:"";position:absolute;bottom:0px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--blue);border-radius:3px;box-shadow:var(--glow-sm)}
+
 .mnt-banner{position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 16px;background:linear-gradient(90deg,rgba(239,68,68,.96),rgba(220,38,38,.96));color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(239,68,68,.4);animation:mntSlideDown .4s var(--ease)}
 @keyframes mntSlideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 .mnt-banner svg{width:18px;height:18px;flex-shrink:0}
@@ -196,6 +200,12 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .ch-live div{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ch-live span{color:#f87171;white-space:nowrap;font-family:var(--font-en);font-weight:900;font-size:11.5px}
 .ch-acts{display:flex;gap:7px;flex-wrap:wrap;padding:14px 18px 18px}
+
+/* إصلاح: شكل البطاقة للزوار (بدون بلور قبيح) */
+.lock-cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(3,5,8,0.6); backdrop-filter: blur(2px); z-index: 10; text-align: center; padding: 20px; }
+.lock-cover .lc-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(var(--blue-rgb),0.15); border: 1px solid var(--blue-line); display: grid; place-items: center; color: var(--blue); margin-bottom: 12px; }
+.lock-cover h3 { font-size: 15px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+
 .empty{text-align:center;padding:60px 24px;animation:pageIn .55s var(--ease) both}
 .empty .em-icon{width:100px;height:100px;margin:0 auto 20px;color:var(--blue);opacity:.32;animation:emptyFloat 4s ease-in-out infinite}
 .empty .em-icon svg{width:100%;height:100%}
@@ -418,11 +428,7 @@ async function api(path, opts={}) {
 
 function toast(msg, kind) {
   const t = el('div', 'toast ' + (kind || ''));
-  const icon = kind === 'ok'
-    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
-    : kind === 'bad'
-    ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
-    : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+  const icon = kind === 'ok' ? IC.check : kind === 'bad' ? IC.x : IC.info;
   t.innerHTML = icon + '<span>' + esc(msg) + '</span>';
   $('#toasts').appendChild(t);
   requestAnimationFrame(() => t.classList.add('on'));
@@ -480,64 +486,17 @@ const isLogged = () => !!(S.me && S.me.user);
 const canDiscord = () => isLogged() && (isOwner() || !!S.me.user.can_discord);
 const canWrite = () => isOwner() || !S.maintenance;
 
+// إصلاح: إجبار الموقع على استخدام اللون الأزرق الافتراضي وتجاهل أي ثيم قديم محفوظ
 function applyTheme(theme) {
-  if (!theme) return;
   const root = document.documentElement.style;
-  if (theme.c1) root.setProperty('--bg', theme.c1);
-  if (theme.c2) root.setProperty('--panel', theme.c2);
-  if (theme.ac) {
-    root.setProperty('--blue', theme.ac);
-    root.setProperty('--blue2', theme.ac);
-    const hex = theme.ac.replace('#','');
-    const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-    root.setProperty('--blue-rgb', r + ',' + g + ',' + b);
-  }
+  // الألوان الافتراضية الصحيحة
+  root.setProperty('--bg', '#030508');
+  root.setProperty('--panel', '#0a0f18');
+  root.setProperty('--blue', '#0b55ea');
+  root.setProperty('--blue2', '#1b67ff');
+  root.setProperty('--blue-rgb', '11,85,234');
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta && theme.c1) meta.setAttribute('content', theme.c1);
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data && e.data.t === 'push') { loadNotifs().then(() => { if (S.view === 'notifs') renderView(); updateBadge(); }); }
-  });
-}
-async function checkPushStatus() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) { S.pushEnabled = false; return; }
-  try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); S.pushEnabled = !!sub; }
-  catch (e) { S.pushEnabled = false; }
-}
-function urlB64ToU8(s) {
-  s = s.replace(/-/g, '+').replace(/_/g, '/');
-  s += '='.repeat((4 - s.length % 4) % 4);
-  const raw = atob(s); const out = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
-}
-async function enablePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return toast('المتصفح لا يدعم الإشعارات', 'bad');
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return toast('تم رفض الإذن', 'bad');
-    const reg = await navigator.serviceWorker.ready;
-    const keyRes = await api('/api/push/key');
-    if (!keyRes.key) return toast('Push غير مفعّل من السيرفر', 'bad');
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(keyRes.key) });
-    await api('/api/push/subscribe', { method:'POST', body: sub.toJSON() });
-    S.pushEnabled = true; toast('تم تفعيل الإشعارات', 'ok'); renderApp();
-  } catch (e) { toast(e.message || 'فشل تفعيل الإشعارات', 'bad'); }
-}
-async function disablePush() {
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    if (sub) { await api('/api/push/unsubscribe', { method:'POST', body: { endpoint: sub.endpoint } }); await sub.unsubscribe(); }
-    S.pushEnabled = false; toast('تم إيقاف الإشعارات', 'ok'); renderApp();
-  } catch (e) { toast(e.message || 'فشل الإيقاف', 'bad'); }
-}
-async function testPush() {
-  try { const r = await api('/api/push/test', { method:'POST' }); toast('أُرسل ' + (r.sent || 0) + ' إشعار', 'ok'); }
-  catch (e) { toast(e.message, 'bad'); }
+  if (meta) meta.setAttribute('content', '#030508');
 }
 
 async function boot() {
@@ -549,7 +508,7 @@ async function boot() {
     const sf = $('#spFoot'); if (sf) sf.textContent = (b.site_sub || 'STREAM MONITOR').toUpperCase();
     const sp = $('#spLogo');
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
-    if (b.theme) applyTheme(b.theme);
+    applyTheme(); // فرض الثيم الافتراضي
   } catch (e) {
     S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false, has_twitter:false };
   }
@@ -713,7 +672,7 @@ function renderApp() {
         ${avatarHTML}
       </div>
     </div>
-    ${S.guest ? `<div class="guest-banner"><div class="gb-ico">${IC.eye}</div><div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل</small></div><button class="btn pri sm" id="loginNow">دخول</button></div>` : ''}
+    ${S.guest ? `<div class="guest-banner" style="background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px"><div class="gb-ico" style="color:var(--blue)">${IC.eye}</div><div class="gb-txt" style="flex:1;font-size:13px;font-weight:700">أنت تتصفح كزائر — المحتوى مغبّش<small style="display:block;color:var(--muted);font-size:11px;font-weight:500">سجّل دخولك لعرض كل التفاصيل</small></div><button class="btn pri sm" id="loginNow">دخول</button></div>` : ''}
     ${isLogged() && !S.guest && S.me.user.is_member && S.limits.kick.limit > 10 ? `<div class="member-banner ok"><div class="mb-ico">${IC.shieldCheck}</div><div class="mb-txt">${IC.check} أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!<small>كيك: ${S.limits.kick.limit} · يوتيوب: ${S.limits.yt.limit} · تيليجرام: ${S.limits.tg.limit} · تويتر: ${S.limits.twitter.limit}</small></div></div>` : ''}
     ${isLogged() && !S.guest && S.boot.required_channel_url && !S.me.user.is_member ? `<div class="member-banner warn"><div class="mb-ico">${IC.mega || IC.mega}</div><div class="mb-txt">${esc(S.boot.required_channel_msg || 'انضم إلى قناتنا الرسمية للحصول على صلاحيات مضاعفة.')}<small>اضغط الزر للانضمام ثم أعد التحقق من قائمة الحساب</small></div><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم</a></div>` : ''}
     <div id="view"></div>
@@ -1641,7 +1600,8 @@ function chCard(kind, r) {
   if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
 
   if (!isLogged()) {
-    card.innerHTML = `<div style="padding:14px;filter:blur(14px) saturate(.7);pointer-events:none"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
+    // إصلاح: شكل البطاقة للزوار بدون بلور قبيح
+    card.innerHTML = `<div style="padding:14px;position:relative"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div><div class="lock-cover"><div class="lc-icon">${IC.lock}</div><h3>سجّل دخولك</h3></div></div>`;
     return card;
   }
   let slug = '', title = '';

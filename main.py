@@ -1,4 +1,4 @@
-"""Respect Live — v11 (Stable + Full Page Account + Fixed Login)"""
+"""Respect Live — v12 (Stable + Fixed Login + Modern UI Support)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 from contextlib import asynccontextmanager
 import httpx
@@ -1204,7 +1204,7 @@ async def api_register_status():
             "welcome_text": cfg("signup_welcome_text", "")}
 
 @app.post("/api/register")
-async def api_register(request: Request, response: Response, username: str = Form(...), password: str = Form(...), display: str = Form("")):
+async def api_register(request: Request, username: str = Form(...), password: str = Form(...), display: str = Form("")):
     if cfg("registration_enabled", "1") != "1":
         return JSONResponse({"error":"التسجيل مغلق حالياً"}, 403)
     un = (username or "").strip()
@@ -1230,13 +1230,16 @@ async def api_register(request: Request, response: Response, username: str = For
         (un, (display or un)[:60].strip() or un, hash_pw(pw, salt), salt, dk, dy, dt, dw, now()))
     c.commit(); c.close()
     tok = new_session(un)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
     log_sec(un, "register_ok", "", ip)
-    return {"ok":True, "username":un, "message":"تم إنشاء الحساب! صلاحياتك محدودة. اربط حسابك في تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة."}
+    
+    # FIX: Return JSONResponse to set cookies correctly
+    res = JSONResponse({"ok":True, "username":un, "message":"تم إنشاء الحساب! صلاحياتك محدودة. اربط حسابك في تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة."})
+    res.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
+    return res
 
 # ═══ LOGIN / LOGOUT ═══
 @app.post("/api/login")
-async def api_login(request: Request, response: Response, u: str = Form(...), p: str = Form(...)):
+async def api_login(request: Request, u: str = Form(...), p: str = Form(...)):
     u = u.strip()[:60]
     ip = request.client.host if request.client else ""
     c = db()
@@ -1251,8 +1254,11 @@ async def api_login(request: Request, response: Response, u: str = Form(...), p:
     tok = new_session(row["username"])
     c = db(); c.execute("UPDATE users SET last_login=? WHERE id=?", (now(), row["id"])); c.commit(); c.close()
     log_sec(u, "login_ok", "", ip)
-    response.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
-    return {"ok":True,"user":{"username":row["username"],"role":row["role"]}}
+    
+    # FIX: Return JSONResponse to set cookies correctly
+    res = JSONResponse({"ok":True,"user":{"username":row["username"],"role":row["role"]}})
+    res.set_cookie("rl_sid", tok, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=False, path="/")
+    return res
 
 @app.post("/api/logout")
 async def api_logout(request: Request, response: Response):

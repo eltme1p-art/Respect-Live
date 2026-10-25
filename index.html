@@ -146,13 +146,13 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .feat-ico svg{width:26px;height:26px}
 .feat b{display:block;font-size:15px;font-weight:900;margin-bottom:6px}
 .feat p{color:var(--muted);font-size:12.5px;line-height:1.7}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:24px var(--pad);animation:pageIn .6s var(--ease) .15s both}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:24px var(--pad);animation:pageIn .6s var(--ease) .15s both}
 .stats .s{background:var(--panel);padding:18px 8px;text-align:center;transition:.24s var(--ease-soft)}
 .stats .s:hover{background:rgba(var(--blue-rgb),.06)}
 .stats .s b{display:block;font-family:var(--font-en);font-size:26px;font-weight:900;line-height:1;color:var(--text)}
 .stats .s b.blue{color:var(--blue);text-shadow:var(--glow-sm)}
 .stats .s small{display:block;font-family:var(--font-en);font-size:10px;font-weight:800;color:var(--muted);margin-top:6px;letter-spacing:1.5px}
-@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.stats{grid-template-columns:repeat(3,1fr)}.stats .s:nth-child(4),.stats .s:nth-child(5){display:none}}
 .live-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 calc(-1 * var(--pad));padding:4px var(--pad) 10px}
 .live-strip::-webkit-scrollbar{display:none}
 .live-card{flex:0 0 260px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:.28s var(--ease-soft);position:relative}
@@ -202,19 +202,6 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 @keyframes emptyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .empty h3{font-size:17px;font-weight:900;color:var(--text);margin-bottom:8px}
 .empty p{font-size:13px;color:var(--muted);margin-bottom:20px;max-width:320px;margin-left:auto;margin-right:auto}
-.guest-banner{margin:18px var(--pad);padding:16px 20px;border-radius:18px;background:linear-gradient(135deg,rgba(var(--blue-rgb),.12),rgba(var(--blue-rgb),.02));border:1px solid var(--blue-line);display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:pageIn .5s var(--ease) both}
-.guest-banner .gb-ico{width:46px;height:46px;border-radius:14px;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line-2);display:grid;place-items:center;color:var(--blue);flex-shrink:0}
-.guest-banner .gb-ico svg{width:22px;height:22px}
-.guest-banner .gb-txt{flex:1;min-width:160px;font-size:13.5px;font-weight:700;color:var(--text);line-height:1.6}
-.guest-banner .gb-txt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:3px}
-.member-banner{margin:18px var(--pad) 0;padding:16px 20px;border-radius:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:pageIn .5s var(--ease) both}
-.member-banner.ok{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.02));border:1px solid rgba(16,185,129,.4)}
-.member-banner.warn{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.02));border:1px solid rgba(245,158,11,.4)}
-.member-banner .mb-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
-.member-banner.ok .mb-ico{background:rgba(16,185,129,.15);color:var(--green)}
-.member-banner.warn .mb-ico{background:rgba(245,158,11,.15);color:var(--orange)}
-.member-banner .mb-txt{flex:1;min-width:200px;font-size:13.5px;font-weight:700;line-height:1.65}
-.member-banner .mb-txt small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:4px}
 .modal{position:fixed;inset:0;z-index:1200;background:rgba(3,5,8,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:flex-end;justify-content:center;padding-top:46px;opacity:0;pointer-events:none;transition:opacity .30s ease}
 .modal.on{opacity:1;pointer-events:auto}
 .sheet{width:min(680px,100%);max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:28px 28px 0 0;padding:18px 24px calc(28px + env(safe-area-inset-bottom));transform:translateY(70px);transition:transform .40s var(--ease-soft);position:relative;box-shadow:0 -20px 60px rgba(0,0,0,.55),0 0 60px rgba(var(--blue-rgb),.12)}
@@ -225,10 +212,8 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .sheet.xwide{width:min(980px,100%)}
 .grab{width:44px;height:4px;border-radius:9px;background:rgba(255,255,255,.22);margin:0 auto 20px}
 @media(min-width:701px){.modal{align-items:center}.sheet{border-radius:24px;border-bottom:1px solid var(--line)}}
-.sh-title{font-family:var(--font-en);font-size:16px;font-weight:900;letter-spacing:1px;margin-bottom:8px}
+.sh-title{font-family:var(--font-en);font-size:16px;font-weight:900;letter-spacing:1px}
 .sh-sub{color:var(--muted);font-size:12.5px;margin-bottom:18px;line-height:1.75}
-.row{display:flex;gap:10px;margin-top:20px}
-.row>.btn{flex:1}
 .toasts{position:fixed;top:calc(14px + env(safe-area-inset-top));left:0;right:0;z-index:9000;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:100%;padding:0 16px}
 .toast{max-width:min(440px,100%);padding:14px 20px;border-radius:16px;font-size:13px;font-weight:800;background:var(--card);border:1px solid var(--line-2);backdrop-filter:blur(16px);box-shadow:0 16px 44px rgba(0,0,0,.5),0 0 30px rgba(var(--blue-rgb),.15);opacity:0;transform:translateY(-18px);transition:.32s var(--ease-soft);position:relative;overflow:hidden;text-align:center;color:var(--text);display:flex;align-items:center;gap:10px;justify-content:center}
 .toast::before{content:"";position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--blue)}
@@ -266,10 +251,9 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .acc-item .badge-mini.off{background:rgba(124,135,153,.15);color:var(--muted)}
 .acc-item .badge-mini.warn{background:rgba(245,158,11,.15);color:var(--orange)}
 .acc-sep{height:1px;background:var(--line);margin:6px 6px}
-.admin-h{display:flex;gap:8px;padding:10px var(--pad) 0;overflow-x:auto;scrollbar-width:none}
-.admin-h::-webkit-scrollbar{display:none}
-.ad-tab{flex-shrink:0;padding:9px 16px;border-radius:22px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:800;transition:.22s var(--ease-soft);display:inline-flex;align-items:center;gap:6px}
-.ad-tab svg{width:16px;height:16px}
+.admin-h{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:16px var(--pad)}
+.ad-tab{padding:14px 10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:800;transition:.22s var(--ease-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:80px}
+.ad-tab svg{width:24px;height:24px}
 .ad-tab.on{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 6px 18px rgba(var(--blue-rgb),.35)}
 .ad-user-card{padding:16px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px;display:flex;flex-direction:column;gap:12px;transition:.22s var(--ease-soft)}
 .ad-user-card:hover{border-color:var(--blue-line)}
@@ -294,22 +278,6 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .limit-bar b{display:block;height:100%;border-radius:inherit;background:linear-gradient(270deg,var(--blue),var(--blue2));transition:width .5s var(--ease-soft)}
 .limit-bar.warn b{background:linear-gradient(270deg,var(--orange),var(--gold))}
 .limit-bar.full b{background:linear-gradient(270deg,var(--red),#dc2626)}
-.img-preview-box{border:1.5px dashed var(--line-2);border-radius:12px;padding:14px;text-align:center;margin-top:8px;transition:.22s var(--ease-soft)}
-.img-preview-box img{max-height:160px;margin:0 auto 10px;border-radius:10px;border:1px solid var(--line);object-fit:contain}
-.img-preview-box.empty{padding:26px 14px;color:var(--muted-2);font-size:12.5px}
-.tpl-preview{margin-top:10px;padding:14px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text-2);min-height:60px;max-height:280px;overflow-y:auto}
-.tpl-preview b,.tpl-preview strong{color:var(--text);font-weight:900}
-.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px}
-.theme-item{border:2px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:.22s var(--ease-soft);font-weight:900;font-size:12px;color:#fff;min-height:80px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
-.theme-item:hover{transform:translateY(-2px)}
-.theme-item.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(var(--blue-rgb),.25),0 8px 22px rgba(var(--blue-rgb),.30)}
-.theme-item i{display:block;width:26px;height:6px;border-radius:9px;margin:0 auto}
-.discord-ch-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);margin-bottom:6px}
-.discord-ch-item .ic{width:34px;height:34px;border-radius:10px;background:rgba(var(--blue-rgb),.12);border:1px solid var(--blue-line);display:grid;place-items:center;color:var(--blue);flex-shrink:0}
-.discord-ch-item .ic svg{width:18px;height:18px}
-.discord-ch-item .if{flex:1;min-width:0}
-.discord-ch-item b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.discord-ch-item small{display:block;font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--font-en)}
 .tg-pick-grid{max-height:240px;overflow-y:auto;display:grid;gap:6px;margin-top:8px;padding:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px}
 .tg-pick-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.03);cursor:pointer;transition:.15s}
 .tg-pick-item:hover{background:rgba(var(--blue-rgb),.06)}
@@ -332,54 +300,6 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .sw i::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.28s cubic-bezier(.3,1.4,.5,1);box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .sw input:checked+i{background:var(--blue)}
 .sw input:checked+i::after{transform:translateX(-20px)}
-.kw-rule{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);margin-bottom:10px}
-.kw-rule-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.kw-rule-head b{font-size:13px;font-weight:900}
-.kw-rule-body{display:grid;gap:10px}
-.kw-tags{display:flex;gap:6px;flex-wrap:wrap;padding:10px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;min-height:44px;align-items:center}
-.kw-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);color:var(--blue);font-size:11.5px;font-weight:800}
-.kw-tag button{background:transparent;border:none;color:var(--blue);cursor:pointer;padding:0 2px;font-weight:900;line-height:1}
-.kw-tag-input{display:flex;gap:6px;margin-top:6px}
-.kw-tag-input input{flex:1;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--text);font-size:12.5px}
-.kw-img-row{display:flex;gap:8px;align-items:center}
-.kw-img-prev{width:60px;height:60px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.3);overflow:hidden;flex-shrink:0;display:grid;place-items:center;color:var(--muted-2);font-size:10px}
-.kw-img-prev img{width:100%;height:100%;object-fit:cover}
-.kw-img-row input[type=text]{flex:1}
-.bot-list{max-height:240px;overflow-y:auto;display:grid;gap:6px;padding:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;margin-top:8px}
-.bot-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.03);cursor:pointer;transition:.15s}
-.bot-item:hover{background:rgba(var(--blue-rgb),.06)}
-.bot-item.on{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.3)}
-.bot-item .av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#5865f2,#4752c4);display:grid;place-items:center;color:#fff;flex-shrink:0;overflow:hidden;font-size:13px;font-weight:900}
-.bot-item .av img{width:100%;height:100%;object-fit:cover}
-.bot-item .if{flex:1;min-width:0}
-.bot-item b{display:block;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bot-item small{display:block;font-size:10.5px;color:var(--muted);font-family:var(--font-en);margin-top:1px}
-.bot-item .st{font-size:10.5px;padding:3px 9px;border-radius:10px;font-weight:900;flex-shrink:0}
-.bot-item.on .st{background:rgba(239,68,68,.2);color:var(--red)}
-.bot-item:not(.on) .st{background:rgba(255,255,255,.05);color:var(--muted)}
-.ai-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;font-size:12.5px;font-weight:800;margin-bottom:12px}
-.ai-status svg{width:18px;height:18px;flex-shrink:0}
-.ai-status.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.28);color:var(--green)}
-.ai-status.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28);color:var(--red)}
-.ai-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);color:var(--orange)}
-.tgv-box{padding:18px;border:1.5px dashed var(--blue-line);border-radius:16px;background:rgba(var(--blue-rgb),.04);margin:14px 0}
-.tgv-step{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:13px;color:var(--text-2)}
-.tgv-step b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;border-radius:50%;background:rgba(var(--blue-rgb),.15);border:1px solid var(--blue-line);color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:12px;flex-shrink:0}
-.tgv-step b svg{width:14px;height:14px;max-width:14px;max-height:14px}
-.tgv-step.done b{background:var(--green);border-color:var(--green);color:#fff}
-.tgv-step.active b{background:var(--blue);border-color:var(--blue);color:#fff;animation:chPulse 1.9s infinite}
-.tgv-chat{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);margin:14px 0}
-.tgv-chat .av{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;flex-shrink:0;overflow:hidden;font-family:var(--font-en);font-weight:900;font-size:18px}
-.tgv-chat .av img{width:100%;height:100%;object-fit:cover}
-.tgv-chat .if{flex:1;min-width:0}
-.tgv-chat b{display:block;font-size:15px;font-weight:900}
-.tgv-chat small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;font-family:var(--font-en)}
-.tgv-code{display:flex;gap:8px;margin:14px 0;direction:ltr}
-.tgv-code input{font-family:var(--font-en);font-size:24px;font-weight:900;letter-spacing:8px;text-align:center;padding:16px;background:rgba(5,8,16,.85);border:2px solid var(--blue-line);border-radius:14px;color:var(--text)}
-.tgv-code input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(var(--blue-rgb),.15)}
-.tgv-timer{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-en);font-weight:900;color:var(--blue);font-size:13px;margin:10px 0}
-.tgv-spinner{width:20px;height:20px;border:2.5px solid rgba(var(--blue-rgb),.2);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
 .news-card{padding:18px;border-radius:18px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px;position:relative;transition:.22s var(--ease-soft)}
 .news-card:hover{border-color:var(--blue-line)}
 .news-card.unread{border-color:var(--blue-line);background:linear-gradient(155deg,rgba(var(--blue-rgb),.08),var(--panel))}
@@ -396,21 +316,9 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .kind-maintenance .nc-kind{background:rgba(245,158,11,.15);color:var(--orange)}
 .kind-warning .nc-kind{background:rgba(239,68,68,.15);color:var(--red)}
 .kind-news .nc-kind{background:rgba(16,185,129,.15);color:var(--green)}
-.user-detail-grid{display:grid;gap:10px;margin-top:12px}
-.user-detail-item{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.user-detail-item .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
-.user-detail-item .ic svg{width:18px;height:18px}
-.user-detail-item .ic.kick{background:rgba(83,252,24,.12);color:#53fc18}
-.user-detail-item .ic.yt{background:rgba(255,0,0,.12);color:#ff0000}
-.user-detail-item .ic.tg{background:rgba(0,136,204,.12);color:#0088cc}
-.user-detail-item .ic.dc{background:rgba(88,101,242,.12);color:#5865f2}
-.user-detail-item .if{flex:1;min-width:120px}
-.user-detail-item b{display:block;font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-detail-item small{display:block;font-size:11px;color:var(--muted);font-family:var(--font-en);margin-top:2px}
-.user-detail-item .st{font-size:10.5px;padding:3px 9px;border-radius:10px;font-weight:900;font-family:var(--font-en)}
-.user-detail-item .st.on{background:rgba(16,185,129,.15);color:var(--green)}
-.user-detail-item .st.off{background:rgba(124,135,153,.15);color:var(--muted)}
-.user-detail-item .st.live{background:rgba(239,68,68,.15);color:var(--red)}
+.msg-log-item{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);margin-bottom:8px}
+.msg-log-item .ml-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--muted)}
+.msg-log-item .ml-body{font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--text-2)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--bg-2)}
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
@@ -443,6 +351,7 @@ const IC = {
   home:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
   kick:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
   yt:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6c.3 1 1.1 1.8 2 2 1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4c1-.3 1.8-1 2-2 .5-1.8.5-5.6.5-5.6zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>',
+  tw:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>',
   tg:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M22.05 3.1 2.44 10.66c-1.03.4-1.02 1.83.01 2.21l4.76 1.76 1.83 5.85c.28.9 1.42 1.13 2.02.4l2.4-2.94 5.06 3.72c.66.48 1.6.1 1.76-.7l3.02-15.6c.18-.94-.75-1.7-1.25-1.06z"/></svg>',
   dc:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.3 4.4A19.7 19.7 0 0 0 15.4 3l-.2.4a18 18 0 0 1 4.3 2.2 17 17 0 0 0-15-.1A18 18 0 0 1 8.8 3.4L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.6 9-.2 13.6.2 18a19.8 19.8 0 0 0 6 3l1.3-1.7a13 13 0 0 1-2-1l.5-.4a14 14 0 0 0 12 0l.5.4a13 13 0 0 1-2 1l1.3 1.7a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.7-3.5-13.6zM8.5 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>',
   bell:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
@@ -522,14 +431,22 @@ function modal(opts) {
   return new Promise(resolve => {
     const m = $('#modal'), sh = $('#sheet');
     sh.className = 'sheet' + (opts.small ? ' sm' : '') + (opts.wide ? ' wide' : '') + (opts.xwide ? ' xwide' : '');
+    
+    // Top Header with Cancel Button
     let html = '<div class="grab"></div>';
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px">`;
+    html += `<div>`;
     if (opts.title) html += '<div class="sh-title">' + esc(opts.title) + '</div>';
-    if (opts.sub) html += '<div class="sh-sub">' + esc(opts.sub) + '</div>';
+    if (opts.sub) html += '<div class="sh-sub" style="margin-bottom:0">' + esc(opts.sub) + '</div>';
+    html += `</div>`;
+    if (opts.cancel !== false) html += `<button class="btn sm ghost" id="__mc" type="button" style="flex-shrink:0">${esc(opts.cancelText || 'إلغاء')}</button>`;
+    html += `</div>`;
+
     if (opts.html) html += opts.html;
     if (opts.input) html += '<label class="fld"><span>' + esc(opts.inputLabel||'') + '</span><input type="text" id="__mi" value="' + esc(opts.inputValue||'') + '" placeholder="' + esc(opts.placeholder||'') + '"></label>';
-    html += '<div class="row">';
-    if (opts.cancel !== false) html += '<button class="btn ghost" id="__mc" type="button">' + esc(opts.cancelText || 'إلغاء') + '</button>';
-    html += '<button class="btn ' + (opts.danger ? 'danger' : opts.ai ? 'ai' : 'pri') + '" id="__mo" type="button">' + esc(opts.okText || 'تأكيد') + '</button></div>';
+    html += '<div class="row" style="justify-content:flex-end;margin-top:20px">';
+    html += '<button class="btn ' + (opts.danger ? 'danger' : opts.ai ? 'ai' : 'pri') + '" id="__mo" type="button" style="min-width:120px">' + esc(opts.okText || 'تأكيد') + '</button></div>';
+    
     sh.innerHTML = html;
     m.classList.add('on');
     const close = v => { m.classList.remove('on'); setTimeout(() => resolve(v), 320); };
@@ -546,8 +463,8 @@ const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد',
 /* ═══ STATE ═══ */
 const S = {
   boot: {}, me: null, guest: false, view: 'home',
-  channels: { kick: [], yt: [], tg: [] },
-  limits: { kick: {used:0,limit:10,remaining:10}, yt: {used:0,limit:5,remaining:5}, tg: {used:0,limit:1,remaining:1} },
+  channels: { kick: [], yt: [], tg: [], twitter: [] },
+  limits: { kick: {used:0,limit:10,remaining:10}, yt: {used:0,limit:5,remaining:5}, tg: {used:0,limit:1,remaining:1}, twitter: {used:0,limit:1,remaining:1} },
   feeds: [], knownChannels: {}, knownGuilds: {}, watching: [], autoDiscovery: false,
   botReady: false, botInfo: {}, myTgs: [], knownBots: [], isOwnerView: false,
   notifs: [], unread: 0, settings: {},
@@ -641,7 +558,7 @@ async function boot() {
     console.log('[RL] boot loaded, maintenance=', S.maintenance);
   } catch (e) {
     console.log('[RL] boot failed:', e.message);
-    S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false };
+    S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false, has_twitter:false };
   }
   try {
     const me = await api('/api/me');
@@ -666,13 +583,13 @@ async function boot() {
 }
 
 async function loadAll() {
-  await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadNotifs(), loadSettings(), loadHomeStats(), loadNews()]);
+  await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadChannels('twitter'), loadNotifs(), loadSettings(), loadHomeStats(), loadNews()]);
   if (canDiscord()) await loadFeeds();
   try { S.aiStatus = await api('/api/ai/status'); } catch (e) {}
 }
 async function loadPreview() {
   try { S.preview = await api('/api/guest-preview'); }
-  catch (e) { S.preview = { counts:{ kick:0, yt:0, tg:0 }, live:[] }; }
+  catch (e) { S.preview = { counts:{ kick:0, yt:0, tg:0, tw:0 }, live:[] }; }
 }
 async function loadChannels(kind) {
   try {
@@ -745,7 +662,7 @@ function renderAuth(mode) {
           <button class="btn pri wide" type="submit" id="authBtn" style="margin-top:8px">${isReg ? 'إنشاء الحساب' : 'دخول'}</button>
           <div class="err" id="authErr"></div>
         </form>
-        ${isReg ? `<div style="margin-top:16px;padding:14px;border-radius:12px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);font-size:12px;line-height:1.75"><b style="color:var(--blue)">ملاحظة الصلاحيات:</b><br><span class="mu">الحساب الجديد يمنحك: كيك 10، يوتيوب 5، تليجرام 1، وبدون ديسكورد. اربط تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.</span></div>` : ''}
+        ${isReg ? `<div style="margin-top:16px;padding:14px;border-radius:12px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);font-size:12px;line-height:1.75"><b style="color:var(--blue)">ملاحظة الصلاحيات:</b><br><span class="mu">الحساب الجديد يمنحك: كيك 10، يوتيوب 5، تليجرام 1، تويتر 1، وبدون ديسكورد. اربط تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.</span></div>` : ''}
         ${S.boot.guest_mode ? `<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);text-align:center"><button type="button" id="skipBtn" class="btn ghost wide">${IC.eye} تصفح كزائر</button></div>` : ''}
       </div>
     </div>`;
@@ -809,13 +726,14 @@ function renderApp() {
       </div>
     </div>
     ${S.guest ? `<div class="guest-banner"><div class="gb-ico">${IC.eye}</div><div class="gb-txt">أنت تتصفح كزائر — المحتوى مغبّش<small>سجّل دخولك لعرض كل التفاصيل</small></div><button class="btn pri sm" id="loginNow">دخول</button></div>` : ''}
-    ${isLogged() && !S.guest && S.me.user.is_member && S.limits.kick.limit > 10 ? `<div class="member-banner ok"><div class="mb-ico">${IC.shieldCheck}</div><div class="mb-txt">${IC.check} أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!<small>كيك: ${S.limits.kick.limit} · يوتيوب: ${S.limits.yt.limit} · تيليجرام: ${S.limits.tg.limit}</small></div></div>` : ''}
+    ${isLogged() && !S.guest && S.me.user.is_member && S.limits.kick.limit > 10 ? `<div class="member-banner ok"><div class="mb-ico">${IC.shieldCheck}</div><div class="mb-txt">${IC.check} أنت عضو في القناة الرسمية — صلاحياتك مضاعفة!<small>كيك: ${S.limits.kick.limit} · يوتيوب: ${S.limits.yt.limit} · تيليجرام: ${S.limits.tg.limit} · تويتر: ${S.limits.twitter.limit}</small></div></div>` : ''}
     ${isLogged() && !S.guest && S.boot.required_channel_url && !S.me.user.is_member ? `<div class="member-banner warn"><div class="mb-ico">${IC.mega || IC.mega}</div><div class="mb-txt">${esc(S.boot.required_channel_msg || 'انضم إلى قناتنا الرسمية للحصول على صلاحيات مضاعفة.')}<small>اضغط الزر للانضمام ثم أعد التحقق من قائمة الحساب</small></div><a class="btn pri sm" href="${esc(S.boot.required_channel_url)}" target="_blank">${IC.link} انضم</a></div>` : ''}
     <div id="view"></div>
     <div class="tabbar">
       <button data-v="home" class="${S.view==='home'?'on':''}">${IC.home}</button>
       <button data-v="kick" class="${S.view==='kick'?'on':''}">${IC.kick}</button>
       <button data-v="yt" class="${S.view==='yt'?'on':''}">${IC.yt}</button>
+      <button data-v="twitter" class="${S.view==='twitter'?'on':''}">${IC.tw}</button>
       <button data-v="tg" class="${S.view==='tg'?'on':''}">${IC.tg}</button>
       ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}">${IC.dc}</button>` : ''}
       <button data-v="acc">${IC.user}</button>
@@ -885,7 +803,6 @@ async function showNewsPopup() {
     sub: `لديك ${unread.length} إعلان غير مقروء`,
     html: itemsHTML,
     okText: 'قرأت الكل',
-    cancelText: 'لاحقاً',
     wide: true
   });
   if (r) {
@@ -900,10 +817,10 @@ async function showNewsPopup() {
 /* ═══ HOME ═══ */
 function viewHome(v) {
   const counts = isLogged()
-    ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, dc:S.feeds.length }
-    : { kick:S.preview?.counts.kick||0, yt:S.preview?.counts.yt||0, tg:S.preview?.counts.tg||0, dc:0 };
+    ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, tw:S.channels.twitter.length, dc:S.feeds.length }
+    : { kick:S.preview?.counts.kick||0, yt:S.preview?.counts.yt||0, tg:S.preview?.counts.tg||0, tw:S.preview?.counts.tw||0, dc:0 };
   const hs = S.homeStats;
-  const my = hs?.my || { kick:0, yt:0, tg:0, feeds:0, live:0, videos:0 };
+  const my = hs?.my || { kick:0, yt:0, tg:0, tw:0, feeds:0, live:0, videos:0 };
   const g = hs?.global || { users:0, total_live:0, discord_channels:0, bot_ready:false };
   const live = hs?.live_now || [];
   const videos = hs?.videos || [];
@@ -917,6 +834,7 @@ function viewHome(v) {
     <div class="stats">
       <div class="s"><b class="blue">${counts.kick}</b><small>KICK</small></div>
       <div class="s"><b>${counts.yt}</b><small>YOUTUBE</small></div>
+      <div class="s"><b>${counts.tw}</b><small>TWITTER</small></div>
       <div class="s"><b>${counts.tg}</b><small>TELEGRAM</small></div>
       <div class="s"><b>${isLogged()?counts.dc:(S.boot.discord_watching||0)}</b><small>DISCORD</small></div>
     </div>
@@ -978,7 +896,7 @@ function limitBarHTML(kind) {
 
 function viewChannels(v, kind) {
   const rows = isLogged() ? (S.channels[kind] || []) : (S.preview?.live || []);
-  const titleMap = { kick:'قنوات كيك', yt:'قنوات يوتيوب', tg:'قنوات تيليجرام' };
+  const titleMap = { kick:'قنوات كيك', yt:'قنوات يوتيوب', tg:'قنوات تيليجرام', twitter:'حسابات تويتر' };
   const lim = isLogged() ? limitBarHTML(kind) : null;
   const isTg = kind === 'tg';
   const memberBonus = S.limits[kind]?.is_member;
@@ -1019,6 +937,7 @@ function chCard(kind, r) {
   let slug = '', title = '';
   if (kind === 'kick') { slug = '@' + (r.slug||''); title = r.name || r.slug || ''; }
   else if (kind === 'yt') { slug = r.channel_id||''; title = r.name || r.channel_id || ''; }
+  else if (kind === 'twitter') { slug = '@' + (r.username||''); title = r.name || r.username || ''; }
   else { slug = r.username || r.chat_id || ''; title = r.name || r.chat_id || ''; }
   const liveBadge = kind === 'kick' && r.live && r.enabled ? '<span class="ch-badge live">مباشر</span>' : '';
   const offBadge = !r.enabled ? '<span class="ch-badge off">موقوف</span>' : '';
@@ -1034,9 +953,11 @@ function chCard(kind, r) {
     <div class="ch-acts">
       ${kind === 'kick' ? `<a class="btn sm" href="https://kick.com/${esc(r.slug)}" target="_blank">${IC.play} مشاهدة</a>` : ''}
       ${kind === 'yt' ? `<a class="btn sm" href="https://youtube.com/channel/${esc(r.channel_id)}" target="_blank">${IC.play} زيارة</a>` : ''}
+      ${kind === 'twitter' ? `<a class="btn sm" href="https://twitter.com/${esc(r.username)}" target="_blank">${IC.tw} زيارة</a>` : ''}
       ${kind === 'tg' && r.username ? `<a class="btn sm" href="https://t.me/${esc(r.username.replace('@',''))}" target="_blank">${IC.tg} زيارة</a>` : ''}
+      ${kind === 'tg' ? `<button class="btn sm" data-act="info" style="color:var(--orange)">${IC.info} معلومات</button>` : ''}
       ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="edit">${IC.edit} تخصيص</button>` : ''}
-      ${kind === 'tg' || kind === 'yt' ? `<button class="btn sm ghost" data-act="refresh">${IC.refresh}</button>` : ''}
+      ${kind === 'tg' || kind === 'yt' || kind === 'twitter' ? `<button class="btn sm ghost" data-act="refresh">${IC.refresh}</button>` : ''}
       ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="autosend">${r.auto_send===0?'🔕':'🔔'}</button>` : ''}
       <button class="btn sm ghost" data-act="toggle">${r.enabled?'إيقاف':'تفعيل'}</button>
       <button class="btn sm danger" data-act="del">${IC.trash}</button>
@@ -1057,6 +978,7 @@ function chCard(kind, r) {
         try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { auto_send: nv } }); toast(nv ? 'الإرسال مفعّل' : 'الإرسال موقوف', 'ok'); await loadChannels(kind); renderApp(); }
         catch (e2) { toast(e2.message, 'bad'); }
       } else if (act === 'edit') { await editChannelMsg(kind, r); }
+      else if (act === 'info') { await showTgInfo(r.id, title); }
       else if (act === 'refresh') {
         try {
           await api('/api/channels/' + kind + '/' + r.id + '/refresh', { method:'POST' });
@@ -1069,22 +991,61 @@ function chCard(kind, r) {
   return card;
 }
 
+async function showTgInfo(cid, title) {
+  let msgs = [];
+  try {
+    const r = await api('/api/tg/' + cid + '/messages');
+    msgs = r.rows || [];
+  } catch (e) { return toast(e.message, 'bad'); }
+
+  const html = `
+    <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:14px;font-size:13px;line-height:1.8">
+      <b style="color:var(--blue)">${IC.info} سجل الرسائل</b><br>
+      <span class="mu">آخر 30 رسالة أُرسلت إلى قناة <b>${esc(title)}</b>.</span>
+    </div>
+    <div style="max-height:400px;overflow-y:auto">
+      ${msgs.length ? msgs.map(m => `
+        <div class="msg-log-item">
+          <div class="ml-h">
+            <span class="pill" style="padding:2px 8px;font-size:10px">${esc(m.source.toUpperCase())}</span>
+            <span>${fmtTime(m.ts)}</span>
+          </div>
+          <div class="ml-body">${esc(m.body || m.title || '...')}</div>
+        </div>
+      `).join('') : '<div class="mu center" style="padding:20px">لا توجد رسائل سابقة</div>'}
+    </div>
+  `;
+
+  await modal({
+    title: 'معلومات القناة',
+    sub: 'آخر الرسائل الواردة',
+    html: html,
+    okText: 'إغلاق',
+    wide: true
+  });
+}
+
 async function editChannelMsg(kind, r) {
   const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
   const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
   let uploadedImage = curImg ? curImg[1] : '';
-  const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (S.me.tpl_yt || '');
-  const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (S.me.btn_yt || 'شاهد الفيديو');
+  const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (kind === 'yt' ? (S.me.tpl_yt || '') : (S.me.tpl_twitter || ''));
+  const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (kind === 'yt' ? (S.me.btn_yt || 'شاهد الفيديو') : (S.me.btn_tw || 'عرض التغريدة'));
 
   const html = `
     <label class="fld"><span>نص الرسالة</span>
       <textarea id="__msg" rows="6" placeholder="اتركه فارغاً للقالب العام">${esc(curMsg)}</textarea></label>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:12px">
       <span class="mu" style="font-size:11.5px">المتغيرات:</span>
-      <span class="pill">{name}</span><span class="pill">{title}</span><span class="pill">{url}</span>
+      <span class="pill">{name}</span><span class="pill">{title}</span><span class="pill">{content}</span><span class="pill">{url}</span>
     </div>
     <label class="fld"><span>نص زر المشاهدة</span>
       <input type="text" id="__btn" value="${esc(r.btn_text || '')}" placeholder="${esc(defaultBtn)}"></label>
+    ${kind === 'twitter' ? `
+      <label class="fld"><span>فلترة الكلمات (تجاهل التغريدة إذا احتوت)</span>
+        <input type="text" id="__filter" value="${esc(r.filter_kw || '')}" placeholder="مثال: youtube.com, يوتيوب"></label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px">افصل بين الكلمات بفاصلة ( , ).</div>
+    ` : ''}
     <label class="fld" style="margin-top:6px"><span>صورة مرفقة (اختياري)</span></label>
     <div class="img-preview-box ${uploadedImage ? '' : 'empty'}" id="__imgBox">
       ${uploadedImage ? `<img src="${esc(uploadedImage)}" alt="">` : '<div>لا توجد صورة</div>'}
@@ -1107,7 +1068,8 @@ async function editChannelMsg(kind, r) {
         const sample = tpl
           .replace(/\{name\}/g, r.name || 'اسم القناة')
           .replace(/\{title\}/g, kind === 'kick' ? 'عنوان البث' : 'عنوان الفيديو')
-          .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : 'https://youtube.com/watch?v=...');
+          .replace(/\{content\}/g, 'نص التغريدة هنا...')
+          .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : (kind === 'twitter' ? 'https://twitter.com/...' : 'https://youtube.com/watch?v=...'));
         prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en)">PREVIEW</div>' + sample.replace(/\n/g, '<br>');
       };
       ta.oninput = update; update();
@@ -1137,8 +1099,12 @@ async function editChannelMsg(kind, r) {
   let finalMsg = ($('#__msg')?.value || '').trim();
   if (uploadedImage) finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
   const btnText = ($('#__btn')?.value || '').trim();
+  const filterKw = kind === 'twitter' ? ($('#__filter')?.value || '').trim() : undefined;
+  
   try {
-    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { msg: finalMsg, btn_text: btnText } });
+    const body = { msg: finalMsg, btn_text: btnText };
+    if (filterKw !== undefined) body.filter_kw = filterKw;
+    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body });
     toast('تم الحفظ', 'ok');
     await loadChannels(kind); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
@@ -1154,6 +1120,7 @@ async function openAddChannel(kind) {
   const labels = {
     kick: { title:'إضافة قناة كيك', label:'slug', ph:'xqc' },
     yt:   { title:'إضافة قناة يوتيوب', label:'@handle أو UC...', ph:'@MrBeast' },
+    twitter: { title:'إضافة حساب تويتر', label:'@username', ph:'@elonmusk' },
   }[kind];
   const noTg = !S.boot.has_telegram;
   const botWarn = noTg
@@ -1178,7 +1145,7 @@ async function openAddChannel(kind) {
     ${botWarn}
     <label class="fld"><span>${esc(labels.label)}</span><input type="text" id="__ci" placeholder="${esc(labels.ph)}"></label>
     <label class="fld"><span>الاسم (اختياري)</span><input type="text" id="__cn"></label>
-    <label class="fld"><span>نص الزر (اختياري)</span><input type="text" id="__bt" placeholder="${kind==='kick'?'شاهد البث':'شاهد الفيديو'}"></label>
+    <label class="fld"><span>نص الزر (اختياري)</span><input type="text" id="__bt" placeholder="${kind==='kick'?'شاهد البث':(kind==='twitter'?'عرض التغريدة':'شاهد الفيديو')}"></label>
     ${sugHTML}`;
   const result = await modal({ title: labels.title, html, okText: 'إضافة', wide: suggestions.length > 0 });
   if (result === false || result === null) return;
@@ -1198,7 +1165,9 @@ async function openAddChannel(kind) {
   }
   if (!val) return toast('اكتب القيمة', 'bad');
   try {
-    const body = kind === 'kick' ? { slug: val, msg: '', btn_text: btnText } : { channel_id: val, name: customName, msg: '', btn_text: btnText };
+    const body = kind === 'kick' ? { slug: val, msg: '', btn_text: btnText } : 
+                 kind === 'twitter' ? { username: val, msg: '', btn_text: btnText } :
+                 { channel_id: val, name: customName, msg: '', btn_text: btnText };
     const res = await api('/api/channels/' + kind, { method:'POST', body });
     toast('تمت الإضافة', 'ok');
     if (res.warn) setTimeout(() => toast(res.warn, ''), 600);
@@ -1506,7 +1475,7 @@ async function loadMe() {
     const me = await api('/api/me');
     S.me = me;
     S.maintenance = !!me.maintenance;
-    await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg')]);
+    await Promise.all([loadChannels('kick'), loadChannels('yt'), loadChannels('tg'), loadChannels('twitter')]);
   } catch (e) {}
 }
 
@@ -1603,6 +1572,17 @@ function viewDiscord(v) {
   const autoBadge = S.autoDiscovery ? '<span class="pill ok">اكتشاف تلقائي</span>' : '<span class="pill warn">يدوي</span>';
   const ownerBadge = S.isOwnerView ? '<span class="pill purple">'+IC.shield+' أنت المالك</span>' : '<span class="pill">مستخدم</span>';
   const botName = S.botInfo.name || S.boot.bot_name_custom || 'Respect Live';
+  
+  const botInfoHTML = S.isOwnerView ? `
+    <div class="ad-user-card" style="margin-bottom:14px">
+      <div class="ad-user-head">
+        <div class="av" style="background:linear-gradient(135deg,#5865f2,#4752c4)">${S.botInfo.avatar ? `<img src="${esc(S.botInfo.avatar)}" onerror="this.remove()">` : IC.dc}</div>
+        <div class="if"><b>${esc(botName)}</b><small>${S.botReady ? 'متصل · '+chsCount+' روم · '+guildsCount+' سيرفر' : 'غير متصل'}</small></div>
+        ${S.boot.bot_invite_url ? `<a class="btn sm pri" href="${esc(S.boot.bot_invite_url)}" target="_blank">${IC.link} إضافة</a>` : ''}
+      </div>
+    </div>
+  ` : '';
+
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
       <div class="sec-h">
@@ -1612,13 +1592,7 @@ function viewDiscord(v) {
           ${S.isOwnerView ? `<button class="btn pri sm" id="addFeedBtn">${IC.plus} ربط روم</button>` : ''}
         </div>
       </div>
-      <div class="ad-user-card" style="margin-bottom:14px">
-        <div class="ad-user-head">
-          <div class="av" style="background:linear-gradient(135deg,#5865f2,#4752c4)">${S.botInfo.avatar ? `<img src="${esc(S.botInfo.avatar)}" onerror="this.remove()">` : IC.dc}</div>
-          <div class="if"><b>${esc(botName)}</b><small>${S.botReady ? 'متصل · '+chsCount+' روم · '+guildsCount+' سيرفر' : 'غير متصل'}</small></div>
-          ${S.boot.bot_invite_url ? `<a class="btn sm pri" href="${esc(S.boot.bot_invite_url)}" target="_blank">${IC.link} إضافة</a>` : ''}
-        </div>
-      </div>
+      ${botInfoHTML}
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
         ${botBadge} ${autoBadge} ${ownerBadge}
         <span class="pill">${IC.dc} ${chsCount} روم</span>
@@ -2014,7 +1988,7 @@ function openAccountMenu() {
   const old = $('#accMenu'); if (old) old.remove();
   const m = el('div', 'acc-menu'); m.id = 'accMenu';
   const u = S.me.user;
-  const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg;
+  const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg, ltw = S.limits.twitter;
   const pushBadge = S.pushEnabled ? '<span class="badge-mini ok">مفعّل</span>' : '<span class="badge-mini off">معطل</span>';
   const tgBadge = u.linked_tg_id ? (u.is_member ? '<span class="badge-mini ok">عضو ✓</span>' : '<span class="badge-mini warn">غير عضو</span>') : '<span class="badge-mini off">غير مربوط</span>';
   const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc(u.username.charAt(0).toUpperCase());
@@ -2028,6 +2002,7 @@ function openAccountMenu() {
         <div class="stats-mini">
           <span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span>
           <span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span>
+          <span>${IC.tw} <b>${ltw.used}/${ltw.limit}</b></span>
           <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
           ${memberBonus ? '<span class="pill ok" style="padding:2px 8px;font-size:10px">🎁 مضاعف</span>' : ''}
         </div>
@@ -2175,10 +2150,11 @@ function renderAdminStats(c) {
   const s = S.admin.stats;
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الإحصائيات <span>.</span></div></div>
-    <div class="stats" style="margin:0 0 20px">
+    <div class="stats" style="margin:0 0 20px;grid-template-columns:repeat(5,1fr)">
       <div class="s"><b class="blue">${s.users_total||0}</b><small>مستخدم</small></div>
       <div class="s"><b>${s.kick_total||0}</b><small>كيك</small></div>
       <div class="s"><b>${s.yt_total||0}</b><small>يوتيوب</small></div>
+      <div class="s"><b>${s.tw_total||0}</b><small>تويتر</small></div>
       <div class="s"><b>${s.tg_total||0}</b><small>تيليجرام</small></div>
     </div>
     <div class="ad-user-card">
@@ -2186,6 +2162,7 @@ function renderAdminStats(c) {
       <div style="display:flex;flex-wrap:wrap;gap:8px">
         <span class="pill ${s.has_discord?'ok':'bad'}">Discord: ${s.discord_ready?'متصل':'✗'}</span>
         <span class="pill ${s.has_telegram?'ok':'warn'}">Telegram: ${s.has_telegram?'جاهز':'✗'}</span>
+        <span class="pill ${s.has_twitter?'ok':'warn'}">Twitter: ${s.has_twitter?'جاهز':'✗'}</span>
         <span class="pill ${s.has_push?'ok':'warn'}">Push: ${s.has_push?'✓':'✗'}</span>
         <span class="pill ${s.has_groq?'purple':'warn'}">Groq AI: ${s.has_groq?'جاهز':'✗'}</span>
         <span class="pill ${s.auto_discovery?'ok':'warn'}">${s.auto_discovery?'اكتشاف تلقائي':'يدوي'}</span>
@@ -2217,6 +2194,7 @@ function renderAdminUsers(c) {
     const card = el('div', 'ad-user-card');
     const lk = u.lim_kick != null ? u.lim_kick : '—';
     const ly = u.lim_yt != null ? u.lim_yt : '—';
+    const ltw = u.lim_tw != null ? u.lim_tw : '—';
     const lt = u.lim_tg != null ? u.lim_tg : '—';
     const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc((u.display||u.username||'?').charAt(0).toUpperCase());
     const tgBadge = u.linked_tg_id ? (u.is_member ? ' <span class="pill ok">عضو ✓</span>' : ' <span class="pill warn">TG مربوط</span>') : '';
@@ -2225,7 +2203,7 @@ function renderAdminUsers(c) {
         <div class="av">${avHTML}</div>
         <div class="if">
           <b data-uid="${u.id}">${esc(u.display||u.username)} <span style="color:var(--muted);font-size:11px">${IC.eye} عرض</span>${u.banned ? ' <span class="pill bad">محظور</span>' : ''}${u.role==='owner' ? ' <span class="pill">إدارة</span>' : ''}${u.can_discord ? ' <span class="pill ok">DC</span>' : ''}${tgBadge}</b>
-          <small>@${esc(u.username)} · K:${lk} Y:${ly} T:${lt}</small>
+          <small>@${esc(u.username)} · K:${lk} Y:${ly} TW:${ltw} T:${lt}</small>
         </div>
       </div>
       <div class="ad-user-acts">
@@ -2259,6 +2237,12 @@ async function showUserDetails(uid) {
       <div class="if"><b>${esc(y.name || y.channel_id)}</b><small>${esc(y.channel_id)}</small></div>
       <span class="st ${y.enabled ? 'on' : 'off'}">${y.enabled ? 'نشط' : 'موقوف'}</span>
     </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا قنوات يوتيوب</div>';
+  const twHTML = d.tw && d.tw.length ? d.tw.map(t => `
+    <div class="user-detail-item">
+      <div class="ic" style="background:rgba(29,161,242,.15);color:#1DA1F2">${IC.tw}</div>
+      <div class="if"><b>${esc(t.name || t.username)}</b><small>@${esc(t.username)}</small></div>
+      <span class="st ${t.enabled ? 'on' : 'off'}">${t.enabled ? 'نشط' : 'موقوف'}</span>
+    </div>`).join('') : '<div class="mu center" style="padding:10px;font-size:12px">لا حسابات تويتر</div>';
   const tgHTML = d.tg.length ? d.tg.map(t => `
     <div class="user-detail-item">
       <div class="ic tg">${IC.tg}</div>
@@ -2293,7 +2277,7 @@ async function showUserDetails(uid) {
         ${u.is_member ? '<span class="pill ok">عضو القناة ✓</span>' : '<span class="pill warn">غير عضو</span>'}
       </div>
       <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8">
-        حد كيك: <b>${u.lim_kick ?? 'افتراضي'}</b> · حد يوتيوب: <b>${u.lim_yt ?? 'افتراضي'}</b> · حد تيليجرام: <b>${u.lim_tg ?? 'افتراضي'}</b><br>
+        حد كيك: <b>${u.lim_kick ?? 'افتراضي'}</b> · حد يوتيوب: <b>${u.lim_yt ?? 'افتراضي'}</b> · حد تويتر: <b>${u.lim_tw ?? 'افتراضي'}</b> · حد تيليجرام: <b>${u.lim_tg ?? 'افتراضي'}</b><br>
         أُنشئ: ${fmtTime(u.created)} · آخر دخول: ${u.last_login ? fmtTime(u.last_login) : 'لم يدخل'}<br>
         إشعارات: <b>${d.notifs_count}</b>
       </div>
@@ -2305,6 +2289,10 @@ async function showUserDetails(uid) {
     <div style="margin-bottom:20px">
       <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.yt} قنوات يوتيوب (${d.yt.length})</div>
       <div class="user-detail-grid">${ytHTML}</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.tw} حسابات تويتر (${d.tw ? d.tw.length : 0})</div>
+      <div class="user-detail-grid">${twHTML}</div>
     </div>
     <div style="margin-bottom:20px">
       <div style="font-weight:900;font-size:14px;margin-bottom:8px">${IC.tg} قنوات تيليجرام (${d.tg.length})</div>
@@ -2321,12 +2309,12 @@ async function showUserDetails(uid) {
 async function adminAddUser() {
   const ok = await modal({
     title:'إنشاء مستخدم',
-    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="1"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
+    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" placeholder="1"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="1"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
     okText:'إنشاء'
   });
   if (!ok) return;
   try {
-    await api('/api/admin/users', { method:'POST', body: { username: $('#__un').value.trim(), display: $('#__dn').value.trim(), password: $('#__pw').value, lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value, can_discord: $('#__cd').checked } });
+    await api('/api/admin/users', { method:'POST', body: { username: $('#__un').value.trim(), display: $('#__dn').value.trim(), password: $('#__pw').value, lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tw: $('#__ltw').value, lim_tg: $('#__lt').value, can_discord: $('#__cd').checked } });
     toast('تم', 'ok'); await loadAdminData(); renderAdminContent();
   } catch (e) { toast(e.message, 'bad'); }
 }
@@ -2336,12 +2324,12 @@ async function adminUserAction(u, act) {
   if (act === 'edit') {
     const ok = await modal({
       title:'تعديل ' + u.username,
-      html:`<label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label><label class="fld"><span>كلمة مرور جديدة</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> صلاحية Discord</label>`,
+      html:`<label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label><label class="fld"><span>كلمة مرور جديدة</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" value="${u.lim_tw ?? ''}"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> صلاحية Discord</label>`,
       okText:'حفظ'
     });
     if (!ok) return;
     try {
-      await api('/api/admin/users/' + u.id, { method:'PATCH', body: { display: $('#__dn').value, password: $('#__pw').value, lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value, can_discord: $('#__cd').checked } });
+      await api('/api/admin/users/' + u.id, { method:'PATCH', body: { display: $('#__dn').value, password: $('#__pw').value, lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tw: $('#__ltw').value, lim_tg: $('#__lt').value, can_discord: $('#__cd').checked } });
       toast('تم', 'ok'); await loadAdminData(); renderAdminContent();
     } catch (e) { toast(e.message, 'bad'); }
   } else if (act === 'ban') {
@@ -2445,13 +2433,13 @@ async function editNews(n) {
 }
 
 function renderAdminDefaults(c) {
-  const groups = { kick: [], yt: [], tg: [] };
+  const groups = { kick: [], yt: [], tg: [], twitter: [] };
   S.admin.defaults.forEach(d => { if (groups[d.kind]) groups[d.kind].push(d); });
-  const kindLabel = k => k === 'kick' ? 'كيك' : k === 'yt' ? 'يوتيوب' : 'تيليجرام';
+  const kindLabel = k => k === 'kick' ? 'كيك' : k === 'yt' ? 'يوتيوب' : k === 'twitter' ? 'تويتر' : 'تيليجرام';
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">القنوات الافتراضية <span>(${S.admin.defaults.length})</span></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn pri sm" id="adBulkAdd">${IC.plus} جماعية</button><button class="btn sm" id="adAddDef">${IC.plus} واحدة</button></div></div>
-    ${['kick','yt','tg'].map(kind => { const list = groups[kind]; return `<div class="ad-user-card"><div style="font-weight:900;font-size:14.5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span>${kindLabel(kind)}</span><span class="pill">${list.length}</span></div>${list.length ? `<div id="adDef_${kind}"></div>` : '<div class="mu center" style="padding:12px;font-size:12.5px">لا قنوات</div>'}</div>`; }).join('')}`;
-  ['kick','yt','tg'].forEach(kind => {
+    ${['kick','yt','twitter','tg'].map(kind => { const list = groups[kind]; return `<div class="ad-user-card"><div style="font-weight:900;font-size:14.5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span>${kindLabel(kind)}</span><span class="pill">${list.length}</span></div>${list.length ? `<div id="adDef_${kind}"></div>` : '<div class="mu center" style="padding:12px;font-size:12.5px">لا قنوات</div>'}</div>`; }).join('')}`;
+  ['kick','yt','twitter','tg'].forEach(kind => {
     const box = $('#adDef_' + kind); if (!box) return;
     groups[kind].forEach(d => {
       const row = el('div');
@@ -2480,7 +2468,7 @@ function renderAdminDefaults(c) {
     });
   });
   $('#adBulkAdd').onclick = async () => {
-    const html = `<label class="fld"><span>النوع</span><select id="__bkind"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="tg">تيليجرام</option></select></label><label class="fld"><span>القنوات (سطر لكل قناة)</span><textarea id="__btext" rows="10" class="mono" placeholder="xqc&#10;trainwreckstv | اسم مخصص"></textarea></label><div class="mu" style="font-size:11.5px;margin-top:-6px;line-height:1.8">• كيك: slug<br>• يوتيوب: @handle أو UC...<br>• تيليجرام: @username<br>• (اختياري): identifier | اسم مخصص</div>`;
+    const html = `<label class="fld"><span>النوع</span><select id="__bkind"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="twitter">تويتر</option><option value="tg">تيليجرام</option></select></label><label class="fld"><span>القنوات (سطر لكل قناة)</span><textarea id="__btext" rows="10" class="mono" placeholder="xqc&#10;trainwreckstv | اسم مخصص"></textarea></label><div class="mu" style="font-size:11.5px;margin-top:-6px;line-height:1.8">• كيك: slug<br>• يوتيوب: @handle أو UC...<br>• تويتر: @username<br>• تيليجرام: @username<br>• (اختياري): identifier | اسم مخصص</div>`;
     const r = await modal({ title:'إضافة جماعية', html, okText:'إضافة' });
     if (!r) return;
     const kind = $('#__bkind').value, text = $('#__btext').value;
@@ -2493,7 +2481,7 @@ function renderAdminDefaults(c) {
     } catch (e) { toast(e.message, 'bad'); }
   };
   $('#adAddDef').onclick = async () => {
-    const ok = await modal({ title:'إضافة قناة', html:`<label class="fld"><span>النوع</span><select id="__kd"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="tg">تيليجرام</option></select></label><label class="fld"><span>المعرّف</span><input type="text" id="__id"></label><label class="fld"><span>الاسم (اختياري)</span><input type="text" id="__nm"></label>`, okText:'إضافة' });
+    const ok = await modal({ title:'إضافة قناة', html:`<label class="fld"><span>النوع</span><select id="__kd"><option value="kick">كيك</option><option value="yt">يوتيوب</option><option value="twitter">تويتر</option><option value="tg">تيليجرام</option></select></label><label class="fld"><span>المعرّف</span><input type="text" id="__id"></label><label class="fld"><span>الاسم (اختياري)</span><input type="text" id="__nm"></label>`, okText:'إضافة' });
     if (!ok) return;
     try { await api('/api/admin/default-channels', { method:'POST', body: { kind: $('#__kd').value, identifier: $('#__id').value.trim(), name: $('#__nm').value.trim() } }); toast('تمت الإضافة', 'ok'); await loadAdminData(); renderAdminContent(); } catch (e) { toast(e.message, 'bad'); }
   };
@@ -2687,8 +2675,23 @@ async function renderAdminAI(c) {
 async function renderAdminSettings(c) {
   await loadSettings();
   const s = S.settings || {};
+  const twConfigured = s.twitter_configured;
   c.innerHTML = `
     <div class="sec-h"><div class="sec-title">الإعدادات <span>.</span></div></div>
+    
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🐦 إعدادات تويتر (X)</div>
+      <label class="fld"><span>Bearer Token ${s.twitter_source === 'env' ? '(محجوز - من متغيرات البيئة)' : ''}</span>
+        <input type="password" id="__twkey" placeholder="AAAAAAAA..." ${s.twitter_source === 'env' ? 'disabled' : ''}>
+      </label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px;line-height:1.7">
+        ⚠️ <b>ملاحظة:</b> تويتر يفرض قيوداً على الخطة المجانية (1500 تغريدة/شهر).<br>
+        للحصول على المفتاح: اذهب إلى <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color:var(--blue)">Twitter Developer Portal</a> > قم بإنشاء تطبيق > انسخ <b>Bearer Token</b>.
+      </div>
+      <button class="btn pri sm" id="__twsave">${IC.check} حفظ المفتاح</button>
+      <span class="pill ${twConfigured ? 'ok' : 'bad'}" style="margin-right:8px">${twConfigured ? 'مفعّل' : 'غير مفعّل'}</span>
+    </div>
+
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🔐 التسجيل والصلاحيات</div>
       <div class="switch-row">
@@ -2696,15 +2699,17 @@ async function renderAdminSettings(c) {
         <label class="sw"><input type="checkbox" id="__regen" ${s.registration_enabled==='1'?'checked':''}><i></i></label>
       </div>
       <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--muted)">الحدود الافتراضية (عند التسجيل)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__dlk" value="${esc(s.default_lim_kick||'10')}"></label>
         <label class="fld"><span>حد يوتيوب</span><input type="number" id="__dly" value="${esc(s.default_lim_yt||'5')}"></label>
+        <label class="fld"><span>حد تويتر</span><input type="number" id="__dltw" value="${esc(s.default_lim_tw||'1')}"></label>
         <label class="fld"><span>حد تيليجرام</span><input type="number" id="__dlt" value="${esc(s.default_lim_tg||'1')}"></label>
       </div>
       <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--green)">🎁 حدود الأعضاء المضاعفة (لمن انضم للقناة الرسمية)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__blk" value="${esc(s.bonus_lim_kick||'50')}"></label>
         <label class="fld"><span>حد يوتيوب</span><input type="number" id="__bly" value="${esc(s.bonus_lim_yt||'25')}"></label>
+        <label class="fld"><span>حد تويتر</span><input type="number" id="__bltw" value="${esc(s.bonus_lim_tw||'5')}"></label>
         <label class="fld"><span>حد تيليجرام</span><input type="number" id="__blt" value="${esc(s.bonus_lim_tg||'5')}"></label>
       </div>
     </div>
@@ -2742,14 +2747,15 @@ async function renderAdminSettings(c) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <label class="fld"><span>كيك</span><input type="text" id="__bk" value="${esc(s.btn_kick||'')}"></label>
         <label class="fld"><span>يوتيوب</span><input type="text" id="__by" value="${esc(s.btn_yt||'')}"></label>
+        <label class="fld"><span>تويتر</span><input type="text" id="__btw" value="${esc(s.btn_tw||'')}"></label>
         <label class="fld"><span>تيليجرام</span><input type="text" id="__btg" value="${esc(s.btn_tg||'')}"></label>
-        <label class="fld"><span>ديسكورد</span><input type="text" id="__bdc" value="${esc(s.btn_discord||'')}"></label>
       </div>
     </div>
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">قوالب الإشعارات</div>
       <label class="fld"><span>قالب كيك</span><textarea id="__tk" rows="3" class="mono">${esc(s.tpl_kick||'')}</textarea></label>
       <label class="fld"><span>قالب يوتيوب</span><textarea id="__ty" rows="3" class="mono">${esc(s.tpl_yt||'')}</textarea></label>
+      <label class="fld"><span>قالب تويتر</span><textarea id="__ttw" rows="3" class="mono">${esc(s.tpl_twitter||'')}</textarea></label>
       <label class="fld"><span>قالب ديسكورد</span><textarea id="__td" rows="3" class="mono">${esc(s.tpl_discord||'')}</textarea></label>
       <div class="mu" style="font-size:11.5px;margin-top:-4px">المتغيرات: {name} {title} {content} {author} {author_no_at} {url} {channel}</div>
     </div>
@@ -2772,32 +2778,32 @@ async function renderAdminSettings(c) {
       </label>
       <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغير: <code>{code}</code></div>
     </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الحدود العامة والزوار</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <label class="fld"><span>حد كيك (المالك)</span><input type="number" id="__lk" value="${esc(s.lim_kick||'10')}"></label>
-        <label class="fld"><span>حد يوتيوب (المالك)</span><input type="number" id="__ly" value="${esc(s.lim_yt||'5')}"></label>
-        <label class="fld"><span>حد تيليجرام (المالك)</span><input type="number" id="__lt" value="${esc(s.lim_tg||'3')}"></label>
-      </div>
-      <label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__gm" ${s.guest_mode==='1'?'checked':''}> السماح بالتصفح كزائر</label>
-    </div>
     <button class="btn pri wide" id="adSaveSettings" style="margin-bottom:20px">${IC.check} حفظ الإعدادات</button>`;
+    
+  $('#__twsave').onclick = async () => {
+    const token = $('#__twkey').value.trim();
+    try {
+      await api('/api/admin/twitter', { method:'POST', body: { bearer_token: token } });
+      toast('تم الحفظ', 'ok'); await loadSettings(); renderAdminSettings(c);
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+
   $('#adSaveSettings').onclick = async () => {
     try {
       await api('/api/settings', { method:'POST', body: {
         registration_enabled: $('#__regen').checked ? '1' : '0',
-        default_lim_kick: $('#__dlk').value, default_lim_yt: $('#__dly').value, default_lim_tg: $('#__dlt').value,
-        bonus_lim_kick: $('#__blk').value, bonus_lim_yt: $('#__bly').value, bonus_lim_tg: $('#__blt').value,
+        default_lim_kick: $('#__dlk').value, default_lim_yt: $('#__dly').value, default_lim_tw: $('#__dltw').value, default_lim_tg: $('#__dlt').value,
+        bonus_lim_kick: $('#__blk').value, bonus_lim_yt: $('#__bly').value, bonus_lim_tw: $('#__bltw').value, bonus_lim_tg: $('#__blt').value,
         required_channel_id: $('#__rchid').value.trim(), required_channel_name: $('#__rchnm').value.trim(),
         required_channel_url: $('#__rchurl').value.trim(), required_channel_msg: $('#__rchmsg').value.trim(),
         signup_welcome_title: $('#__swt').value.trim(), signup_welcome_text: $('#__swx').value.trim(),
         site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value, hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
-        btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc').value,
-        tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_discord: $('#__td').value,
+        btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tw: $('#__btw').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc')?.value || 'عرض الروم',
+        tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_twitter: $('#__ttw').value, tpl_discord: $('#__td').value,
         tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value, tpl_tg_link: $('#__ttl').value,
         bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
-        lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
-        guest_mode: $('#__gm').checked ? '1' : '0',
+        lim_kick: $('#__lk')?.value || '10', lim_yt: $('#__ly')?.value || '5', lim_tw: $('#__ltw')?.value || '3', lim_tg: $('#__lt')?.value || '3',
+        guest_mode: '1',
       }});
       toast('تم الحفظ', 'ok'); await loadSettings();
     } catch (e) { toast(e.message, 'bad'); }

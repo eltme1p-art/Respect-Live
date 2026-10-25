@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030508">
 <title>Respect Live</title>
 <link rel="manifest" href="/manifest.json">
@@ -29,14 +29,14 @@
   --r:20px;--r-sm:14px;--r-xs:10px;
   --pad:clamp(16px,5vw,28px);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none}
-html{scroll-behavior:smooth;background:var(--bg);-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:var(--font-ar);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:calc(112px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;position:relative}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation;}
+html{scroll-behavior:smooth;background:var(--bg);-webkit-text-size-adjust:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ar);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:calc(112px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;position:relative;overscroll-behavior-y:none;}
 body::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background-image:linear-gradient(rgba(var(--blue-rgb),.035) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--blue-rgb),.035) 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 95% 85% at 50% 35%,#000 35%,transparent 92%);mask-image:radial-gradient(ellipse 95% 85% at 50% 35%,#000 35%,transparent 92%)}
 body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 10% 15%,rgba(var(--blue-rgb),.10),transparent 40%),radial-gradient(circle at 92% 68%,rgba(var(--blue-rgb),.08),transparent 42%),radial-gradient(circle at 50% 110%,rgba(var(--blue-rgb),.06),transparent 55%)}
 a{color:inherit;text-decoration:none}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,textarea,select{font:inherit;color:inherit}
+input,textarea,select{font:inherit;color:inherit;font-size:16px!important;}
 img{display:block;max-width:100%}
 svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:middle}
 ::selection{background:rgba(var(--blue-rgb),.35);color:#fff}
@@ -108,12 +108,12 @@ svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:mid
 .auth-tabs button.on{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(var(--blue-rgb),.35)}
 .fld{display:block;margin:14px 0}
 .fld>span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:9px;font-weight:800;letter-spacing:.3px}
-input[type="text"],input[type="password"],input[type="number"],input[type="email"],input[type="search"],input[type="url"],textarea,select{-webkit-appearance:none;appearance:none;display:block;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--text);background:rgba(5,8,16,.85);border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;min-height:52px;line-height:1.4;transition:border-color .22s var(--ease-soft),box-shadow .22s var(--ease-soft),background .22s var(--ease-soft);outline:none}
+input[type="text"],input[type="password"],input[type="number"],input[type="email"],input[type="search"],input[type="url"],textarea,select{-webkit-appearance:none;appearance:none;display:block;width:100%;font-family:inherit;font-weight:600;color:var(--text);background:rgba(5,8,16,.85);border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;min-height:52px;line-height:1.4;transition:border-color .22s var(--ease-soft),box-shadow .22s var(--ease-soft),background .22s var(--ease-soft);outline:none}
 input::placeholder,textarea::placeholder{color:var(--muted-2);font-weight:500}
 input:hover,textarea:hover,select:hover{border-color:var(--line-2)}
 input:focus,textarea:focus,select:focus{border-color:var(--blue);background:rgba(8,12,22,.9);box-shadow:0 0 0 4px rgba(var(--blue-rgb),.14),0 0 20px rgba(var(--blue-rgb),.20)}
 textarea{resize:vertical;min-height:110px;line-height:1.7;font-family:inherit}
-textarea.mono{font-family:monospace;font-size:13px;direction:ltr;text-align:left}
+textarea.mono{font-family:monospace;direction:ltr;text-align:left}
 select{cursor:pointer;background-image:none}
 select option{background:var(--panel);color:var(--text)}
 input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20px;height:20px;min-height:auto;padding:0;accent-color:var(--blue);cursor:pointer;display:inline-block;vertical-align:middle}
@@ -251,9 +251,9 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .acc-item .badge-mini.off{background:rgba(124,135,153,.15);color:var(--muted)}
 .acc-item .badge-mini.warn{background:rgba(245,158,11,.15);color:var(--orange)}
 .acc-sep{height:1px;background:var(--line);margin:6px 6px}
-.admin-h{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:16px var(--pad)}
-.ad-tab{padding:14px 10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:800;transition:.22s var(--ease-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:80px}
-.ad-tab svg{width:24px;height:24px}
+.admin-h{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:16px var(--pad)}
+.ad-tab{padding:14px 8px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:800;transition:.22s var(--ease-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:80px}
+.ad-tab svg{width:22px;height:22px}
 .ad-tab.on{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 6px 18px rgba(var(--blue-rgb),.35)}
 .ad-user-card{padding:16px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px;display:flex;flex-direction:column;gap:12px;transition:.22s var(--ease-soft)}
 .ad-user-card:hover{border-color:var(--blue-line)}
@@ -1374,7 +1374,7 @@ async function tgVerifyCode(verifyId, chatName, chatAvatar) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG ACCOUNT LINK ═══ */
+/* ═══ TG ACCOUNT LINK (Deep Link) ═══ */
 async function openLinkTgModal() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) return toast('تيليجرام غير مضبوط في السيرفر', 'bad');
@@ -1416,58 +1416,67 @@ async function openLinkTgModal() {
     });
     return;
   }
+  
+  // New Deep Link Flow
   const html = `
-    <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:16px;font-size:13px;line-height:1.8">
-      <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px">${IC.link} كيف يعمل؟</b><br>
-      <span class="mu">1. اكتب يوزر حسابك في تيليجرام<br>2. البوت يرسل لك رمز تحقق<br>3. أدخل الرمز هنا<br>4. البوت يفحص عضويتك في القناة الرسمية</span>
+    <div style="padding:16px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:20px;font-size:13px;line-height:1.8;text-align:center;">
+      <b style="color:var(--blue);display:block;margin-bottom:8px;font-size:15px">${IC.link} ربط سريع وآمن</b>
+      <span class="mu">سنقوم بتوجيهك إلى البوت في تيليجرام. بمجرد ضغط "Start"، سيتم ربط حسابك تلقائياً في الموقع!</span>
     </div>
-    <label class="fld"><span>يوزر تيليجرام</span>
-      <input type="text" id="__tgu" placeholder="username بدون @">
-      <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">⚠️ يجب أن تكون قد فتحت البوت @${esc(S.boot.bot_name_custom || 'Respect Live')} وضغطت /start أولاً</small>
-    </label>`;
-  const r = await modal({ title:'ربط حساب تيليجرام', sub:'للحصول على صلاحيات مضاعفة', html, okText:'إرسال الرمز', wide: true });
-  if (!r) return;
-  const tgUsername = ($('#__tgu')?.value || '').trim().replace(/^@/, '');
-  if (!/^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(tgUsername)) return toast('يوزر تيليجرام غير صالح', 'bad');
-  let res;
-  try {
-    res = await api('/api/link-tg/start', { method:'POST', body: { tg_username: tgUsername } });
-  } catch (e) { return toast(e.message, 'bad'); }
-  const linkId = res.link_id;
-  const tgName = res.tg_name || tgUsername;
-  const html2 = `
-    <div class="tgv-chat">
-      <div class="av">${IC.tg}</div>
-      <div class="if"><b>@${esc(tgUsername)}</b><small>${esc(tgName)}</small></div>
+    <button type="button" class="btn pri wide" id="__tgGo" style="padding:16px;font-size:15px">${IC.tg} فتح البوت وربط الحساب</button>
+    <div id="__tgStatus" style="text-align:center;margin-top:16px;font-size:13px;font-weight:800;color:var(--muted);display:none">
+      <div class="tgv-spinner" style="margin:0 auto 8px"></div>
+      بانتظار الربط...
     </div>
-    <div style="text-align:center;padding:12px 0;font-size:13px;line-height:1.8" class="mu">
-      أرسلنا رمز تحقق إلى حسابك في تيليجرام<br>
-      <b style="color:var(--blue)">افتح البوت وانسخ الرمز ثم الصقه هنا</b>
-    </div>
-    <div class="tgv-code">
-      <input type="text" id="__tlcode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
-    </div>`;
-  const r2 = await modal({ title:'أدخل رمز التحقق', sub:'صالح لمدة 10 دقائق', html: html2, okText:'تأكيد الربط', wide: true,
+  `;
+  
+  await modal({ 
+    title:'ربط حساب تيليجرام', 
+    sub:'للحصول على صلاحيات مضاعفة', 
+    html, 
+    okText:'إغلاق', 
+    cancelText:'إلغاء',
+    wide: true,
     onReady: () => {
-      setTimeout(() => {
-        const inp = $('#__tlcode');
-        if (inp) { inp.focus(); inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,6); }; }
-      }, 100);
+      let pollInterval = null;
+      $('#__tgGo').onclick = async () => {
+        try {
+          const res = await api('/api/link-tg/deeplink', { method:'POST' });
+          window.open(res.url, '_blank');
+          
+          $('#__tgGo').style.display = 'none';
+          $('#__tgStatus').style.display = 'block';
+          
+          pollInterval = setInterval(async () => {
+            try {
+              const check = await api('/api/link-tg/check/' + res.token);
+              if (check.status === 'used') {
+                clearInterval(pollInterval);
+                await loadMe();
+                renderApp();
+                const m = $('#modal'); if (m) m.classList.remove('on');
+                if (check.is_member) {
+                  toast('🎉 تم الربط والعضوية مؤكدة — صلاحياتك مضاعفة!', 'ok');
+                } else {
+                  toast('✅ تم الربط بنجاح. انضم للقناة الرسمية للحصول على المضاعفة.', 'ok');
+                }
+              }
+            } catch (err) {}
+          }, 3000);
+          
+        } catch (e) { toast(e.message, 'bad'); }
+      };
+      
+      // Cleanup interval if modal closes
+      const observer = new MutationObserver((mutations) => {
+        if (!$('#modal').classList.contains('on')) {
+          if (pollInterval) clearInterval(pollInterval);
+          observer.disconnect();
+        }
+      });
+      observer.observe($('#modal'), { attributes: true, attributeFilter: ['class'] });
     }
   });
-  if (!r2) return;
-  const code = ($('#__tlcode')?.value || '').trim();
-  if (!/^\d{6}$/.test(code)) return toast('الرمز 6 أرقام', 'bad');
-  try {
-    const verify = await api('/api/link-tg/' + linkId + '/verify', { method:'POST', body: { code } });
-    await loadMe();
-    renderApp();
-    if (verify.is_member) {
-      toast('🎉 تم الربط والعضوية مؤكدة — صلاحياتك مضاعفة!', 'ok');
-    } else {
-      toast('✅ تم الربط. ' + (verify.message || 'انضم للقناة الرسمية للحصول على مضاعفة'), 'ok');
-    }
-  } catch (e) { toast(e.message, 'bad'); }
 }
 
 async function loadMe() {
@@ -2309,7 +2318,7 @@ async function showUserDetails(uid) {
 async function adminAddUser() {
   const ok = await modal({
     title:'إنشاء مستخدم',
-    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" placeholder="1"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="1"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
+    html:`<label class="fld"><span>اسم المستخدم</span><input type="text" id="__un"></label><label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn"></label><label class="fld"><span>كلمة المرور</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" placeholder="10"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" placeholder="5"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" placeholder="1"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" placeholder="1"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd"> صلاحية Discord</label>`,
     okText:'إنشاء'
   });
   if (!ok) return;
@@ -2324,7 +2333,7 @@ async function adminUserAction(u, act) {
   if (act === 'edit') {
     const ok = await modal({
       title:'تعديل ' + u.username,
-      html:`<label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label><label class="fld"><span>كلمة مرور جديدة</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" value="${u.lim_tw ?? ''}"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> صلاحية Discord</label>`,
+      html:`<label class="fld"><span>الاسم المعروض</span><input type="text" id="__dn" value="${esc(u.display||'')}"></label><label class="fld"><span>كلمة مرور جديدة</span><input type="password" id="__pw"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="fld"><span>حد كيك</span><input type="number" id="__lk" value="${u.lim_kick ?? ''}"></label><label class="fld"><span>حد يوتيوب</span><input type="number" id="__ly" value="${u.lim_yt ?? ''}"></label><label class="fld"><span>حد تويتر</span><input type="number" id="__ltw" value="${u.lim_tw ?? ''}"></label><label class="fld"><span>حد تيليجرام</span><input type="number" id="__lt" value="${u.lim_tg ?? ''}"></label></div><label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;cursor:pointer"><input type="checkbox" id="__cd" ${u.can_discord?'checked':''}> صلاحية Discord</label>`,
       okText:'حفظ'
     });
     if (!ok) return;
@@ -2699,14 +2708,14 @@ async function renderAdminSettings(c) {
         <label class="sw"><input type="checkbox" id="__regen" ${s.registration_enabled==='1'?'checked':''}><i></i></label>
       </div>
       <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--muted)">الحدود الافتراضية (عند التسجيل)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__dlk" value="${esc(s.default_lim_kick||'10')}"></label>
         <label class="fld"><span>حد يوتيوب</span><input type="number" id="__dly" value="${esc(s.default_lim_yt||'5')}"></label>
         <label class="fld"><span>حد تويتر</span><input type="number" id="__dltw" value="${esc(s.default_lim_tw||'1')}"></label>
         <label class="fld"><span>حد تيليجرام</span><input type="number" id="__dlt" value="${esc(s.default_lim_tg||'1')}"></label>
       </div>
       <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--green)">🎁 حدود الأعضاء المضاعفة (لمن انضم للقناة الرسمية)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <label class="fld"><span>حد كيك</span><input type="number" id="__blk" value="${esc(s.bonus_lim_kick||'50')}"></label>
         <label class="fld"><span>حد يوتيوب</span><input type="number" id="__bly" value="${esc(s.bonus_lim_yt||'25')}"></label>
         <label class="fld"><span>حد تويتر</span><input type="number" id="__bltw" value="${esc(s.bonus_lim_tw||'5')}"></label>

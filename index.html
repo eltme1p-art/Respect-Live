@@ -228,29 +228,6 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 .notif b{display:block;font-size:14px;font-weight:900;margin-bottom:4px}
 .notif p{font-size:12.5px;color:var(--muted);white-space:pre-wrap;line-height:1.7;margin-top:3px}
 .notif .nt-t{font-size:11px;color:var(--muted-2);font-family:var(--font-en);letter-spacing:1px;margin-top:8px}
-.acc-menu{position:fixed;top:calc(72px + env(safe-area-inset-top));left:var(--pad);min-width:300px;max-width:calc(100vw - 2 * var(--pad));background:var(--card);border:1px solid var(--blue-line);border-radius:20px;box-shadow:0 32px 64px rgba(0,0,0,.6),0 0 60px rgba(var(--blue-rgb),.15);padding:8px;z-index:1500;opacity:0;transform:translateY(-12px) scale(.96);transition:.26s var(--ease-soft);pointer-events:none;max-height:calc(100vh - 100px);overflow-y:auto}
-.acc-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.acc-head{padding:16px 16px 14px;border-bottom:1px solid var(--line);margin-bottom:6px;display:flex;gap:12px;align-items:center}
-.acc-head .av-btn{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:18px;flex-shrink:0;overflow:hidden;cursor:pointer;position:relative}
-.acc-head .av-btn img{width:100%;height:100%;object-fit:cover}
-.acc-head .av-btn:hover::after{content:"تغيير";position:absolute;inset:0;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:900;display:grid;place-items:center;border-radius:50%}
-.acc-head .if{flex:1;min-width:0}
-.acc-head .nm{font-size:15px;font-weight:900;margin-bottom:3px;cursor:pointer;display:flex;align-items:center;gap:6px}
-.acc-head .nm:hover{color:var(--blue)}
-.acc-head .mt{font-size:11.5px;color:var(--muted);font-family:var(--font-en);letter-spacing:1px}
-.acc-head .stats-mini{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
-.acc-head .stats-mini span{font-size:11px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
-.acc-head .stats-mini b{color:var(--blue);font-family:var(--font-en);font-weight:900;font-size:13px}
-.acc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:800;color:var(--text);transition:.2s var(--ease-soft);cursor:pointer;width:100%;text-align:right;background:transparent;position:relative}
-.acc-item:hover{background:rgba(var(--blue-rgb),.08);color:var(--blue)}
-.acc-item.danger{color:var(--red)}
-.acc-item.danger:hover{background:rgba(239,68,68,.10)}
-.acc-item svg{width:18px;height:18px;flex-shrink:0}
-.acc-item .badge-mini{margin-right:auto;font-size:10.5px;padding:2px 8px;border-radius:10px;font-family:var(--font-en);font-weight:900}
-.acc-item .badge-mini.ok{background:rgba(16,185,129,.15);color:var(--green)}
-.acc-item .badge-mini.off{background:rgba(124,135,153,.15);color:var(--muted)}
-.acc-item .badge-mini.warn{background:rgba(245,158,11,.15);color:var(--orange)}
-.acc-sep{height:1px;background:var(--line);margin:6px 6px}
 .admin-h{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:16px var(--pad)}
 .ad-tab{padding:14px 8px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:800;transition:.22s var(--ease-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:80px}
 .ad-tab svg{width:22px;height:22px}
@@ -324,6 +301,34 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 ::-webkit-scrollbar-thumb{background:rgba(var(--blue-rgb),.28);border-radius:10px;border:2px solid var(--bg-2)}
 ::-webkit-scrollbar-thumb:hover{background:rgba(var(--blue-rgb),.48)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.acc-page{padding:22px var(--pad);animation:pageIn .45s var(--ease) both}
+.acc-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)}
+.acc-card .av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));display:grid;place-items:center;color:#fff;font-family:var(--font-en);font-weight:900;font-size:24px;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer}
+.acc-card .av img{width:100%;height:100%;object-fit:cover}
+.acc-card .av:hover::after{content:"تغيير";position:absolute;inset:0;background:rgba(0,0,0,.6);color:#fff;font-size:10px;display:grid;place-items:center}
+.acc-card .if{flex:1;min-width:0}
+.acc-card .if b{display:block;font-size:18px;font-weight:900}
+.acc-card .if small{display:block;font-size:13px;color:var(--muted);font-family:var(--font-en)}
+.acc-sec-title{font-size:16px;font-weight:900;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+.acc-list{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.acc-row{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);transition:.2s;cursor:pointer}
+.acc-row:last-child{border-bottom:none}
+.acc-row:hover{background:rgba(255,255,255,.02)}
+.acc-row .ic{width:38px;height:38px;border-radius:12px;background:rgba(var(--blue-rgb),.1);color:var(--blue);display:grid;place-items:center;flex-shrink:0}
+.acc-row .if{flex:1;min-width:0}
+.acc-row b{display:block;font-size:14px;font-weight:800}
+.acc-row small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.acc-row .st{font-size:11px;padding:4px 10px;border-radius:8px;font-weight:800}
+.acc-row .st.ok{background:rgba(16,185,129,.15);color:var(--green)}
+.acc-row .st.warn{background:rgba(245,158,11,.15);color:var(--orange)}
+.acc-row .st.off{background:rgba(124,135,153,.15);color:var(--muted)}
+.acc-row.danger{color:var(--red)}
+.acc-row.danger .ic{background:rgba(239,68,68,.1);color:var(--red)}
+.lim-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lim-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
+.lim-box b{display:block;font-family:var(--font-en);font-size:20px;font-weight:900;color:var(--blue)}
+.lim-box small{display:block;font-size:11px;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
@@ -344,9 +349,7 @@ input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20p
 
 <script>
 'use strict';
-console.log('[RL] script start');
 
-/* ═══ ICONS ═══ */
 const IC = {
   home:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
   kick:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 2h4.5v6.5L14 2h5.5L13 10.5l7 11.5h-5.6l-4.6-7.6-1.3 1.3V22H4z"/></svg>',
@@ -387,7 +390,6 @@ const IC = {
   info:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
 };
 
-/* ═══ UTILS ═══ */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
@@ -432,7 +434,6 @@ function modal(opts) {
     const m = $('#modal'), sh = $('#sheet');
     sh.className = 'sheet' + (opts.small ? ' sm' : '') + (opts.wide ? ' wide' : '') + (opts.xwide ? ' xwide' : '');
     
-    // Top Header with Cancel Button
     let html = '<div class="grab"></div>';
     html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px">`;
     html += `<div>`;
@@ -460,7 +461,6 @@ function modal(opts) {
 }
 const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد', sub: msg, danger, okText:'تأكيد' });
 
-/* ═══ STATE ═══ */
 const S = {
   boot: {}, me: null, guest: false, view: 'home',
   channels: { kick: [], yt: [], tg: [], twitter: [] },
@@ -496,7 +496,6 @@ function applyTheme(theme) {
   if (meta && theme.c1) meta.setAttribute('content', theme.c1);
 }
 
-/* ═══ PUSH ═══ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
   navigator.serviceWorker.addEventListener('message', e => {
@@ -525,8 +524,7 @@ async function enablePush() {
     if (!keyRes.key) return toast('Push غير مفعّل من السيرفر', 'bad');
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(keyRes.key) });
     await api('/api/push/subscribe', { method:'POST', body: sub.toJSON() });
-    S.pushEnabled = true; toast('تم تفعيل الإشعارات', 'ok');
-    const old = $('#accMenu'); if (old) old.remove(); renderApp();
+    S.pushEnabled = true; toast('تم تفعيل الإشعارات', 'ok'); renderApp();
   } catch (e) { toast(e.message || 'فشل تفعيل الإشعارات', 'bad'); }
 }
 async function disablePush() {
@@ -534,8 +532,7 @@ async function disablePush() {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
     if (sub) { await api('/api/push/unsubscribe', { method:'POST', body: { endpoint: sub.endpoint } }); await sub.unsubscribe(); }
-    S.pushEnabled = false; toast('تم إيقاف الإشعارات', 'ok');
-    const old = $('#accMenu'); if (old) old.remove(); renderApp();
+    S.pushEnabled = false; toast('تم إيقاف الإشعارات', 'ok'); renderApp();
   } catch (e) { toast(e.message || 'فشل الإيقاف', 'bad'); }
 }
 async function testPush() {
@@ -543,9 +540,7 @@ async function testPush() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ BOOT & DATA ═══ */
 async function boot() {
-  console.log('[RL] boot starting...');
   try {
     const b = await api('/api/boot');
     S.boot = b;
@@ -555,23 +550,18 @@ async function boot() {
     const sp = $('#spLogo');
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
     if (b.theme) applyTheme(b.theme);
-    console.log('[RL] boot loaded, maintenance=', S.maintenance);
   } catch (e) {
-    console.log('[RL] boot failed:', e.message);
     S.boot = { site_name:'Respect Live', site_sub:'STREAM MONITOR', guest_mode:true, guest_blur:14, has_telegram:false, has_push:false, has_groq:false, has_twitter:false };
   }
   try {
     const me = await api('/api/me');
     S.me = me;
     S.maintenance = !!me.maintenance;
-    console.log('[RL] logged in as', me.user.username, 'is_member=', me.user.is_member);
     await loadAll();
     await checkPushStatus();
     renderApp();
-    console.log('[RL] app rendered');
     setTimeout(() => { if (S.newsUnread > 0) showNewsPopup(); }, 800);
   } catch (e) {
-    console.log('[RL] not logged in:', e.message);
     S.guest = true;
     if (S.boot.guest_mode) { await loadPreview(); renderApp(); }
     else { renderAuth(); }
@@ -638,7 +628,6 @@ function updateBadge() {
   else b.style.display = 'none';
 }
 
-/* ═══ AUTH ═══ */
 function renderAuth(mode) {
   mode = mode || 'login';
   $('#app').style.display = '';
@@ -691,7 +680,6 @@ function renderAuth(mode) {
   if (skip) skip.onclick = async () => { S.guest = true; await loadPreview(); renderApp(); };
 }
 
-/* ═══ MAIN APP ═══ */
 function renderApp() {
   $('#app').style.display = '';
   const name = (S.boot.site_name || 'Respect Live').split(' ');
@@ -736,16 +724,14 @@ function renderApp() {
       <button data-v="twitter" class="${S.view==='twitter'?'on':''}">${IC.tw}</button>
       <button data-v="tg" class="${S.view==='tg'?'on':''}">${IC.tg}</button>
       ${showDcTab ? `<button data-v="dc" class="${S.view==='dc'?'on':''}">${IC.dc}</button>` : ''}
-      <button data-v="acc">${IC.user}</button>
+      <button data-v="account" class="${S.view==='account'?'on':''}">${IC.user}</button>
     </div>`;
   $$('[data-v]').forEach(b => {
     b.onclick = () => {
-      const v = b.dataset.v;
-      if (v === 'acc') { openAccountMenu(); return; }
-      S.view = v; renderApp();
+      S.view = b.dataset.v; renderApp();
     };
   });
-  const ab = $('#accBtn'); if (ab) ab.onclick = openAccountMenu;
+  const ab = $('#accBtn'); if (ab) ab.onclick = () => { S.view = 'account'; renderApp(); };
   const nb = $('#notifBtn'); if (nb) nb.onclick = () => { S.view = 'notifs'; renderApp(); };
   const sb = $('#sendBtn'); if (sb) sb.onclick = () => { if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال الآن', 'bad'); openSendModal(); };
   const nws = $('#newsBtn'); if (nws) nws.onclick = () => { S.view = 'news'; renderApp(); };
@@ -761,620 +747,125 @@ function renderView() {
   if (S.view === 'news') return viewNews(v);
   if (S.view === 'dc') { if (!canDiscord()) { S.view = 'home'; return renderView(); } return viewDiscord(v); }
   if (S.view === 'admin') return openAdmin();
+  if (S.view === 'account') return viewAccount(v);
   return viewChannels(v, S.view);
 }
 
-/* ═══ NEWS PAGE ═══ */
-function viewNews(v) {
-  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
-  v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الأخبار والإعلانات <span>.</span></div></div>${S.news.length ? '<div id="newsList"></div>' : `<div class="empty"><div class="em-icon">${IC.newsp}</div><h3>لا أخبار</h3></div>`}</div>`;
-  const list = $('#newsList'); if (!list) return;
-  S.news.forEach(n => {
-    const card = el('div', 'news-card kind-' + (n.kind || 'news') + (n.is_read ? '' : ' unread'));
-    card.innerHTML = `
-      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span>${!n.is_read ? '<span class="pill warn">جديد</span>' : ''}</h4>
-      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
-      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
-      <div class="nc-time">${fmtTime(n.created)}</div>`;
-    card.onclick = async () => {
-      if (!n.is_read) {
-        try { await api('/api/news/' + n.id + '/read', { method:'POST' }); } catch (e) {}
-        n.is_read = true; S.newsUnread = Math.max(0, S.newsUnread - 1);
-        card.classList.remove('unread');
-      }
-    };
-    list.appendChild(card);
-  });
-}
-
-async function showNewsPopup() {
-  const unread = S.news.filter(n => !n.is_read);
-  if (!unread.length) return;
-  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
-  const itemsHTML = unread.slice(0, 5).map(n => `
-    <div class="news-card kind-${n.kind || 'news'}" data-nid="${n.id}">
-      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span></h4>
-      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
-      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
-      <div class="nc-time">${fmtTime(n.created)}</div>
-    </div>`).join('');
-  const r = await modal({
-    title: '📢 إعلانات جديدة',
-    sub: `لديك ${unread.length} إعلان غير مقروء`,
-    html: itemsHTML,
-    okText: 'قرأت الكل',
-    wide: true
-  });
-  if (r) {
-    try {
-      for (const n of unread) { await api('/api/news/' + n.id + '/read', { method:'POST' }); n.is_read = true; }
-      S.newsUnread = 0;
-      if (S.view === 'news' || S.view === 'home') renderApp();
-    } catch (e) {}
-  }
-}
-
-/* ═══ HOME ═══ */
-function viewHome(v) {
-  const counts = isLogged()
-    ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, tw:S.channels.twitter.length, dc:S.feeds.length }
-    : { kick:S.preview?.counts.kick||0, yt:S.preview?.counts.yt||0, tg:S.preview?.counts.tg||0, tw:S.preview?.counts.tw||0, dc:0 };
-  const hs = S.homeStats;
-  const my = hs?.my || { kick:0, yt:0, tg:0, tw:0, feeds:0, live:0, videos:0 };
-  const g = hs?.global || { users:0, total_live:0, discord_channels:0, bot_ready:false };
-  const live = hs?.live_now || [];
-  const videos = hs?.videos || [];
-
-  v.innerHTML = `
-    <div class="hero">
-      <div class="hero-lbl"><span>◆</span> RESPECT LIVE</div>
-      <h1>${esc((S.boot.hero_title||'مراقبة').toUpperCase())} <span>${esc(S.boot.hero_accent||'القنوات.')}</span></h1>
-      <p>${esc(S.boot.hero_text||'تابع قنواتك على كيك ويوتيوب وتيليجرام.')}</p>
-    </div>
-    <div class="stats">
-      <div class="s"><b class="blue">${counts.kick}</b><small>KICK</small></div>
-      <div class="s"><b>${counts.yt}</b><small>YOUTUBE</small></div>
-      <div class="s"><b>${counts.tw}</b><small>TWITTER</small></div>
-      <div class="s"><b>${counts.tg}</b><small>TELEGRAM</small></div>
-      <div class="s"><b>${isLogged()?counts.dc:(S.boot.discord_watching||0)}</b><small>DISCORD</small></div>
-    </div>
-    ${isLogged() && hs ? `
-      <div class="sec" style="padding-top:0">
-        <div class="sec-h"><div class="sec-title">إحصائياتي <span>.</span></div></div>
-        <div class="stats" style="margin:0">
-          <div class="s"><b class="blue">${my.live}</b><small>بث مباشر</small></div>
-          <div class="s"><b>${my.videos}</b><small>فيديو</small></div>
-          <div class="s"><b>${my.feeds}</b><small>اشتراكات DC</small></div>
-          <div class="s"><b style="color:${g.bot_ready?'var(--green)':'var(--red)'}">${g.bot_ready?'✓':'✗'}</b><small>البوت</small></div>
-        </div>
-      </div>
-    ` : ''}
-    ${live.length ? `
-      <div class="sec" style="padding-top:0">
-        <div class="sec-h"><div class="sec-title">يبثون <span>الآن.</span></div></div>
-        <div class="live-strip">
-          ${live.map(r => `
-            <div class="live-card" onclick="window.open('https://kick.com/${esc(r.slug)}','_blank')">
-              <div class="live-card-cover"><img src="${esc(r.banner || r.thumb || r.avatar || '/favicon.ico')}" onerror="this.style.display='none'"></div>
-              <div class="live-card-body"><b>${esc(r.name)}</b><small>${esc((r.title||'').slice(0,40))}</small><div class="v">👁 ${r.viewers || 0}</div></div>
-            </div>`).join('')}
-        </div>
-      </div>
-    ` : ''}
-    ${videos.length ? `
-      <div class="sec" style="padding-top:0">
-        <div class="sec-h"><div class="sec-title">فيديوهات <span>جديدة.</span></div></div>
-        <div class="grid">
-          ${videos.map(x => `
-            <div class="ch" style="cursor:pointer" onclick="window.open('${esc(x.url)}','_blank')">
-              <div class="ch-cover"><img src="${esc(x.thumb)}" onerror="this.remove()"></div>
-              <div style="padding:14px 18px 18px"><b style="display:block;font-size:14px;font-weight:900;line-height:1.5;margin-bottom:6px">${esc(x.title)}</b><small style="color:var(--muted);font-size:11.5px">${esc(x.ch_name)}</small></div>
-            </div>`).join('')}
-        </div>
-      </div>
-    ` : ''}
-    <div class="features">
-      <div class="feat"><div class="feat-ico">${IC.kick}</div><b>مراقبة كيك</b><p>فحص تلقائي كل 90 ثانية</p></div>
-      <div class="feat"><div class="feat-ico">${IC.yt}</div><b>متابعة يوتيوب</b><p>اكتشاف الفيديوهات الجديدة خلال دقائق</p></div>
-      <div class="feat"><div class="feat-ico">${IC.dc}</div><b>جسر ديسكورد</b><p>رسائل ديسكورد → تيليجرام فورياً</p></div>
-    </div>
-    ${!isLogged() ? `<div class="sec"><div class="lock-cover" style="position:relative;background:var(--card);border:1px solid var(--line);padding:48px 24px;border-radius:var(--r);text-align:center"><div class="lc-icon" style="margin:0 auto 16px">${IC.lock}</div><h3 style="font-size:18px;font-weight:900;margin-bottom:8px">سجّل دخولك للبدء</h3><button class="btn pri" id="ctaLogin">تسجيل الدخول</button></div></div>` : ''}
-  `;
-  const btn = $('#ctaLogin');
-  if (btn) btn.onclick = () => { S.guest = false; renderAuth(); };
-}
-
-/* ═══ CHANNELS ═══ */
-function limitBarHTML(kind) {
-  const l = S.limits[kind] || { used:0, limit:10, remaining:10 };
-  const pct = l.limit > 0 ? Math.min(100, (l.used / l.limit) * 100) : 0;
-  let cls = 'limit-bar';
-  if (pct >= 100) cls += ' full';
-  else if (pct >= 80) cls += ' warn';
-  return { html: `<div class="${cls}"><b style="width:${pct}%"></b></div>`, text: `${l.used} / ${l.limit}`, isFull: l.remaining <= 0 };
-}
-
-function viewChannels(v, kind) {
-  const rows = isLogged() ? (S.channels[kind] || []) : (S.preview?.live || []);
-  const titleMap = { kick:'قنوات كيك', yt:'قنوات يوتيوب', tg:'قنوات تيليجرام', twitter:'حسابات تويتر' };
-  const lim = isLogged() ? limitBarHTML(kind) : null;
-  const isTg = kind === 'tg';
-  const memberBonus = S.limits[kind]?.is_member;
-  const canAdd = canWrite();
-
-  v.innerHTML = `
-    <div class="sec" style="padding-top:0">
-      <div class="sec-h">
-        <div class="sec-title">${titleMap[kind]} <span>.</span></div>
-        ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull || !canAdd ? 'disabled' : ''}>${IC.plus} ${isTg ? 'توثيق قناة' : 'إضافة'}</button>` : ''}
-      </div>
-      ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود ${memberBonus ? '<span class="pill ok" style="margin-right:6px;padding:2px 8px">+Bonus</span>' : ''}</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
-      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green);display:inline-flex;align-items:center;gap:6px">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل رمز لمشرف القناة على تيليجرام للتأكد من ملكيتها.</span></div>` : ''}
-      <div id="cList"></div>
-    </div>`;
-  const list = $('#cList');
-  if (!rows.length) {
-    list.innerHTML = `<div class="empty"><div class="em-icon">${IC[kind]||IC.home}</div><h3>لا توجد قنوات بعد</h3><p>${isLogged()?(isTg?'ابدأ بتوثيق أول قناة':'ابدأ بإضافة أول قناة'):'سجّل دخولك'}</p>${isLogged() && !lim.isFull && canAdd ? `<button class="btn pri" id="emptyAdd">${IC.plus} ${isTg?'توثيق قناة':'إضافة'}</button>` : ''}${!isLogged() ? `<button class="btn pri" id="emptyLogin">تسجيل الدخول</button>` : ''}</div>`;
-    const eb = $('#emptyAdd'); if (eb) eb.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
-    const elb = $('#emptyLogin'); if (elb) elb.onclick = () => { S.guest = false; renderAuth(); };
-  } else {
-    const grid = el('div', 'grid');
-    rows.forEach(r => grid.appendChild(chCard(kind, r)));
-    list.appendChild(grid);
-  }
-  const ab = $('#addBtn'); if (ab && !lim.isFull && canAdd) ab.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
-}
-
-function chCard(kind, r) {
-  const card = el('div', 'ch');
-  const brandImg = r.banner || r.avatar || '';
-  if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
-
+function viewAccount(v) {
   if (!isLogged()) {
-    card.innerHTML = `<div style="padding:14px;filter:blur(14px) saturate(.7);pointer-events:none"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
-    return card;
+    v.innerHTML = `<div class="empty"><div class="em-icon">${IC.user}</div><h3>غير مسجل</h3><p>سجل دخولك للوصول إلى حسابك</p><button class="btn pri" id="goLogin">تسجيل الدخول</button></div>`;
+    $('#goLogin').onclick = () => { S.guest = false; renderAuth(); };
+    return;
   }
-  let slug = '', title = '';
-  if (kind === 'kick') { slug = '@' + (r.slug||''); title = r.name || r.slug || ''; }
-  else if (kind === 'yt') { slug = r.channel_id||''; title = r.name || r.channel_id || ''; }
-  else if (kind === 'twitter') { slug = '@' + (r.username||''); title = r.name || r.username || ''; }
-  else { slug = r.username || r.chat_id || ''; title = r.name || r.chat_id || ''; }
-  const liveBadge = kind === 'kick' && r.live && r.enabled ? '<span class="ch-badge live">مباشر</span>' : '';
-  const offBadge = !r.enabled ? '<span class="ch-badge off">موقوف</span>' : '';
-  const noSend = (kind !== 'tg' && r.auto_send === 0) ? '<span class="ch-badge nosend">🔕</span>' : '';
-  const verifiedBadge = (kind === 'tg' && r.verified) ? '<span class="ch-badge verified">✓ موثقة</span>' : '';
-  const cover = r.banner || r.avatar || '';
-  const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
-
-  card.innerHTML = `
-    <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
-    <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
-    ${kind === 'kick' && r.live && r.title ? `<div class="ch-live"><div>${esc(r.title)}</div><span>${r.viewers||0} 👁</span></div>` : ''}
-    <div class="ch-acts">
-      ${kind === 'kick' ? `<a class="btn sm" href="https://kick.com/${esc(r.slug)}" target="_blank">${IC.play} مشاهدة</a>` : ''}
-      ${kind === 'yt' ? `<a class="btn sm" href="https://youtube.com/channel/${esc(r.channel_id)}" target="_blank">${IC.play} زيارة</a>` : ''}
-      ${kind === 'twitter' ? `<a class="btn sm" href="https://twitter.com/${esc(r.username)}" target="_blank">${IC.tw} زيارة</a>` : ''}
-      ${kind === 'tg' && r.username ? `<a class="btn sm" href="https://t.me/${esc(r.username.replace('@',''))}" target="_blank">${IC.tg} زيارة</a>` : ''}
-      ${kind === 'tg' ? `<button class="btn sm" data-act="info" style="color:var(--orange)">${IC.info} معلومات</button>` : ''}
-      ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="edit">${IC.edit} تخصيص</button>` : ''}
-      ${kind === 'tg' || kind === 'yt' || kind === 'twitter' ? `<button class="btn sm ghost" data-act="refresh">${IC.refresh}</button>` : ''}
-      ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="autosend">${r.auto_send===0?'🔕':'🔔'}</button>` : ''}
-      <button class="btn sm ghost" data-act="toggle">${r.enabled?'إيقاف':'تفعيل'}</button>
-      <button class="btn sm danger" data-act="del">${IC.trash}</button>
-    </div>`;
-  card.querySelectorAll('[data-act]').forEach(b => {
-    b.onclick = async (e) => {
-      e.stopPropagation();
-      const act = b.dataset.act;
-      if (act === 'del') {
-        const ok = await dlgConfirm('حذف القناة نهائياً؟', 'تأكيد', true); if (!ok) return;
-        try { await api('/api/channels/' + kind + '/' + r.id, { method:'DELETE' }); toast('تم الحذف', 'ok'); await loadChannels(kind); renderApp(); }
-        catch (e2) { toast(e2.message, 'bad'); }
-      } else if (act === 'toggle') {
-        try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { enabled: !r.enabled } }); toast(r.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok'); await loadChannels(kind); renderApp(); }
-        catch (e2) { toast(e2.message, 'bad'); }
-      } else if (act === 'autosend') {
-        const nv = r.auto_send === 0 ? 1 : 0;
-        try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { auto_send: nv } }); toast(nv ? 'الإرسال مفعّل' : 'الإرسال موقوف', 'ok'); await loadChannels(kind); renderApp(); }
-        catch (e2) { toast(e2.message, 'bad'); }
-      } else if (act === 'edit') { await editChannelMsg(kind, r); }
-      else if (act === 'info') { await showTgInfo(r.id, title); }
-      else if (act === 'refresh') {
-        try {
-          await api('/api/channels/' + kind + '/' + r.id + '/refresh', { method:'POST' });
-          toast('تم التحديث', 'ok');
-          await loadChannels(kind); renderApp();
-        } catch (e2) { toast(e2.message, 'bad'); }
-      }
-    };
-  });
-  return card;
-}
-
-async function showTgInfo(cid, title) {
-  let msgs = [];
-  try {
-    const r = await api('/api/tg/' + cid + '/messages');
-    msgs = r.rows || [];
-  } catch (e) { return toast(e.message, 'bad'); }
-
-  const html = `
-    <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:14px;font-size:13px;line-height:1.8">
-      <b style="color:var(--blue)">${IC.info} سجل الرسائل</b><br>
-      <span class="mu">آخر 30 رسالة أُرسلت إلى قناة <b>${esc(title)}</b>.</span>
-    </div>
-    <div style="max-height:400px;overflow-y:auto">
-      ${msgs.length ? msgs.map(m => `
-        <div class="msg-log-item">
-          <div class="ml-h">
-            <span class="pill" style="padding:2px 8px;font-size:10px">${esc(m.source.toUpperCase())}</span>
-            <span>${fmtTime(m.ts)}</span>
-          </div>
-          <div class="ml-body">${esc(m.body || m.title || '...')}</div>
+  const u = S.me.user;
+  const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg, ltw = S.limits.twitter;
+  const tgBadge = u.linked_tg_id ? (u.is_member ? '<span class="st ok">عضو ✓</span>' : '<span class="st warn">غير عضو</span>') : '<span class="st off">غير مربوط</span>';
+  const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc(u.username.charAt(0).toUpperCase());
+  
+  v.innerHTML = `
+    <div class="acc-page">
+      <div class="acc-card">
+        <div class="av" id="btnAvatar">${avHTML}</div>
+        <div class="if">
+          <b id="btnEditName" style="cursor:pointer;display:flex;align-items:center;gap:6px">${esc(u.display || u.username)} <span style="color:var(--muted);font-size:12px">${IC.edit}</span></b>
+          <small>@${esc(u.username)} · ${u.role==='owner'?'الإدارة':'مستخدم'}</small>
         </div>
-      `).join('') : '<div class="mu center" style="padding:20px">لا توجد رسائل سابقة</div>'}
+      </div>
+
+      <div class="acc-sec-title">${IC.bar} صلاحياتي</div>
+      <div class="lim-grid">
+        <div class="lim-box"><b>${lk.used}/${lk.limit}</b><small>كيك</small></div>
+        <div class="lim-box"><b>${ly.used}/${ly.limit}</b><small>يوتيوب</small></div>
+        <div class="lim-box"><b>${ltw.used}/${ltw.limit}</b><small>تويتر</small></div>
+        <div class="lim-box"><b>${lt.used}/${lt.limit}</b><small>تيليجرام</small></div>
+      </div>
+      ${u.is_member ? `<div style="text-align:center;margin-top:10px;color:var(--green);font-weight:900;font-size:13px">${IC.shieldCheck} حسابك عضو في القناة الرسمية — الصلاحيات مضاعفة</div>` : ''}
+
+      <div class="acc-sec-title">${IC.link} الإعدادات والربط</div>
+      <div class="acc-list">
+        <div class="acc-row" id="btnLinkTg">
+          <div class="ic">${IC.tg}</div>
+          <div class="if"><b>حساب تيليجرام</b><small>${u.linked_tg_username || 'اربط حسابك للحصول على صلاحيات'}</small></div>
+          ${tgBadge}
+        </div>
+        <div class="acc-row" id="btnPush">
+          <div class="ic">${IC.bell}</div>
+          <div class="if"><b>إشعارات المتصفح</b><small>استلم التنبيهات فوراً</small></div>
+          <span class="st ${S.pushEnabled?'ok':'off'}">${S.pushEnabled?'مفعّل':'معطل'}</span>
+        </div>
+        ${isOwner() ? `
+        <div class="acc-row" id="btnAdmin">
+          <div class="ic" style="background:rgba(139,92,246,.1);color:var(--purple)">${IC.shield}</div>
+          <div class="if"><b>لوحة الإدارة</b><small>التحكم الكامل في الموقع</small></div>
+        </div>` : ''}
+      </div>
+
+      <div class="acc-sec-title">${IC.msg} المساعدة</div>
+      <div class="acc-list">
+        <div class="acc-row" id="btnSuggest">
+          <div class="ic">${IC.send}</div>
+          <div class="if"><b>إرسال اقتراح للإدارة</b><small>رأيك يهمنا للتطوير</small></div>
+        </div>
+        <div class="acc-row danger" id="btnLogout">
+          <div class="ic">${IC.logout}</div>
+          <div class="if"><b>تسجيل الخروج</b></div>
+        </div>
+      </div>
     </div>
   `;
 
-  await modal({
-    title: 'معلومات القناة',
-    sub: 'آخر الرسائل الواردة',
-    html: html,
-    okText: 'إغلاق',
-    wide: true
-  });
+  $('#btnAvatar').onclick = changeProfileAvatar;
+  $('#btnEditName').onclick = changeProfileDisplay;
+  $('#btnLinkTg').onclick = openLinkTgModal;
+  $('#btnPush').onclick = () => { S.pushEnabled ? disablePush() : enablePush(); };
+  const ad = $('#btnAdmin'); if (ad) ad.onclick = () => { S.view = 'admin'; renderApp(); };
+  $('#btnSuggest').onclick = openSuggestion;
+  $('#btnLogout').onclick = doLogout;
 }
 
-async function editChannelMsg(kind, r) {
-  const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
-  const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
-  let uploadedImage = curImg ? curImg[1] : '';
-  const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (kind === 'yt' ? (S.me.tpl_yt || '') : (S.me.tpl_twitter || ''));
-  const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (kind === 'yt' ? (S.me.btn_yt || 'شاهد الفيديو') : (S.me.btn_tw || 'عرض التغريدة'));
-
-  const html = `
-    <label class="fld"><span>نص الرسالة</span>
-      <textarea id="__msg" rows="6" placeholder="اتركه فارغاً للقالب العام">${esc(curMsg)}</textarea></label>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:12px">
-      <span class="mu" style="font-size:11.5px">المتغيرات:</span>
-      <span class="pill">{name}</span><span class="pill">{title}</span><span class="pill">{content}</span><span class="pill">{url}</span>
-    </div>
-    <label class="fld"><span>نص زر المشاهدة</span>
-      <input type="text" id="__btn" value="${esc(r.btn_text || '')}" placeholder="${esc(defaultBtn)}"></label>
-    ${kind === 'twitter' ? `
-      <label class="fld"><span>فلترة الكلمات (تجاهل التغريدة إذا احتوت)</span>
-        <input type="text" id="__filter" value="${esc(r.filter_kw || '')}" placeholder="مثال: youtube.com, يوتيوب"></label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px">افصل بين الكلمات بفاصلة ( , ).</div>
-    ` : ''}
-    <label class="fld" style="margin-top:6px"><span>صورة مرفقة (اختياري)</span></label>
-    <div class="img-preview-box ${uploadedImage ? '' : 'empty'}" id="__imgBox">
-      ${uploadedImage ? `<img src="${esc(uploadedImage)}" alt="">` : '<div>لا توجد صورة</div>'}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-      <button type="button" class="btn sm" id="__upBtn">${IC.camera} رفع</button>
-      <button type="button" class="btn sm ghost" id="__clrBtn">${IC.x} مسح</button>
-      <input type="file" id="__upFile" accept="image/*" style="display:none">
-    </div>
-    <div class="tpl-preview" id="__tplPrev"></div>`;
-
-  const r2 = await modal({
-    title:'تخصيص رسالة الإشعار',
-    sub:'اتركه فارغاً للقالب العام',
-    html, okText:'حفظ', wide: true,
-    onReady: () => {
-      const ta = $('#__msg'), prev = $('#__tplPrev');
-      const update = () => {
-        const tpl = ta.value.trim() || defaultTpl;
-        const sample = tpl
-          .replace(/\{name\}/g, r.name || 'اسم القناة')
-          .replace(/\{title\}/g, kind === 'kick' ? 'عنوان البث' : 'عنوان الفيديو')
-          .replace(/\{content\}/g, 'نص التغريدة هنا...')
-          .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : (kind === 'twitter' ? 'https://twitter.com/...' : 'https://youtube.com/watch?v=...'));
-        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en)">PREVIEW</div>' + sample.replace(/\n/g, '<br>');
-      };
-      ta.oninput = update; update();
-      $('#__upBtn').onclick = () => $('#__upFile').click();
-      $('#__upFile').onchange = async (e) => {
-        const f = e.target.files[0]; if (!f) return;
-        if (f.size > 2 * 1024 * 1024) return toast('أكبر من 2MB', 'bad');
-        const fd = new FormData(); fd.append('file', f);
-        try {
-          const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
-          const j = await res.json();
-          if (!res.ok) throw new Error(j.error || 'فشل');
-          uploadedImage = j.url;
-          const box = $('#__imgBox'); box.classList.remove('empty');
-          box.innerHTML = `<img src="${esc(uploadedImage)}" alt="">`;
-          toast('تم الرفع', 'ok');
-        } catch (err) { toast(err.message, 'bad'); }
-      };
-      $('#__clrBtn').onclick = () => {
-        uploadedImage = '';
-        const box = $('#__imgBox'); box.classList.add('empty');
-        box.innerHTML = '<div>لا توجد صورة</div>';
-      };
-    }
-  });
-  if (r2 === null || r2 === false) return;
-  let finalMsg = ($('#__msg')?.value || '').trim();
-  if (uploadedImage) finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
-  const btnText = ($('#__btn')?.value || '').trim();
-  const filterKw = kind === 'twitter' ? ($('#__filter')?.value || '').trim() : undefined;
-  
-  try {
-    const body = { msg: finalMsg, btn_text: btnText };
-    if (filterKw !== undefined) body.filter_kw = filterKw;
-    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body });
-    toast('تم الحفظ', 'ok');
-    await loadChannels(kind); renderApp();
-  } catch (e) { toast(e.message, 'bad'); }
-}
-
-async function openAddChannel(kind) {
-  if (!isLogged()) return;
-  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإضافة', 'bad');
-  if (kind === 'tg') return openTgVerify();
-  let suggestions = [];
-  try { const r = await api('/api/channels/' + kind + '/suggestions'); suggestions = r.rows || []; } catch (e) {}
-  const lim = S.limits[kind] || { used:0, limit:10, remaining:10 };
-  const labels = {
-    kick: { title:'إضافة قناة كيك', label:'slug', ph:'xqc' },
-    yt:   { title:'إضافة قناة يوتيوب', label:'@handle أو UC...', ph:'@MrBeast' },
-    twitter: { title:'إضافة حساب تويتر', label:'@username', ph:'@elonmusk' },
-  }[kind];
-  const noTg = !S.boot.has_telegram;
-  const botWarn = noTg
-    ? `<div style="padding:12px 14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.3);border-radius:12px;margin-bottom:12px;font-size:12.5px;line-height:1.7">⚠️ <b>توكن تيليجرام غير مضبوط</b> — لن تُرسل أي إشعارات تلقائية.</div>`
-    : '';
-  const sugHTML = suggestions.length ? `
-    <div style="margin-top:22px;padding-top:20px;border-top:1px solid var(--line)">
-      <div class="sh-sub" style="margin-bottom:6px">${IC.plus} مُقترحات الإدارة</div>
-      <div class="sug-grid" id="sugGrid">${suggestions.map(s => `
-        <div class="sug-item" data-id="${s.id}">
-          <div class="av">${s.avatar ? `<img src="${esc(s.avatar)}" onerror="this.remove()">` : esc((s.name||'?').charAt(0).toUpperCase())}</div>
-          <div class="if"><b>${esc(s.name || s.identifier)}</b><small>${esc(s.identifier)}</small></div>
-          <div class="ck">${IC.check}</div>
-        </div>`).join('')}</div>
-      <div class="sug-toolbar"><span id="sugCount">0</span><button type="button" id="sugToggleAll">تحديد الكل</button></div>
-    </div>` : '';
-  const html = `
-    <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:12px;font-size:12.5px;font-weight:800">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>الحدود</span><span style="color:var(--blue);font-family:var(--font-en)">${lim.used} / ${lim.limit}</span></div>
-      <div class="limit-bar"><b style="width:${lim.limit > 0 ? Math.min(100, (lim.used/lim.limit)*100) : 0}%"></b></div>
-    </div>
-    ${botWarn}
-    <label class="fld"><span>${esc(labels.label)}</span><input type="text" id="__ci" placeholder="${esc(labels.ph)}"></label>
-    <label class="fld"><span>الاسم (اختياري)</span><input type="text" id="__cn"></label>
-    <label class="fld"><span>نص الزر (اختياري)</span><input type="text" id="__bt" placeholder="${kind==='kick'?'شاهد البث':(kind==='twitter'?'عرض التغريدة':'شاهد الفيديو')}"></label>
-    ${sugHTML}`;
-  const result = await modal({ title: labels.title, html, okText: 'إضافة', wide: suggestions.length > 0 });
-  if (result === false || result === null) return;
-  const val = ($('#__ci')?.value || '').trim();
-  const customName = ($('#__cn')?.value || '').trim();
-  const btnText = ($('#__bt')?.value || '').trim();
-  if (suggestions.length) {
-    const ids = $$('#sugGrid .sug-item.on').map(x => +x.dataset.id);
-    if (ids.length > 0) {
-      try {
-        const r = await api('/api/channels/' + kind + '/bulk-add', { method:'POST', body: { ids } });
-        toast('تمت إضافة ' + (r.added || 0) + (r.failed ? ' — فشل ' + r.failed : ''), 'ok');
-        if (r.errors?.length) setTimeout(() => toast(r.errors[0], ''), 500);
-        await loadChannels(kind); renderApp(); return;
-      } catch (e) { toast(e.message, 'bad'); return; }
-    }
-  }
-  if (!val) return toast('اكتب القيمة', 'bad');
-  try {
-    const body = kind === 'kick' ? { slug: val, msg: '', btn_text: btnText } : 
-                 kind === 'twitter' ? { username: val, msg: '', btn_text: btnText } :
-                 { channel_id: val, name: customName, msg: '', btn_text: btnText };
-    const res = await api('/api/channels/' + kind, { method:'POST', body });
-    toast('تمت الإضافة', 'ok');
-    if (res.warn) setTimeout(() => toast(res.warn, ''), 600);
-    await loadChannels(kind); renderApp();
-  } catch (e) { toast(e.message, 'bad'); }
-}
-
-/* ═══ TG VERIFY ═══ */
-async function openTgVerify() {
-  if (!isLogged()) return;
-  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن التوثيق', 'bad');
-  if (!S.boot.has_telegram) {
-    return modal({ title:'تيليجرام غير مضبوط', sub:'توكن تيليجرام غير موجود في السيرفر — تواصل مع الإدارة', okText:'حسناً', cancel:false });
-  }
-  const lim = S.limits.tg || { used:0, limit:1, remaining:1 };
-  if (lim.remaining <= 0) {
-    return modal({ title:'وصلت الحد', sub:`الحد الأقصى ${lim.limit} قناة تيليجرام.${S.me.user.is_member ? '' : ' اربط حسابك وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.'}`, okText:'حسناً', cancel:false });
-  }
-  const html = `
-    <div class="tgv-box">
-      <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">${IC.shieldCheck} خطوات التوثيق</b>
-      <div class="tgv-step active" data-step="1"><b>1</b> أدخل يوزر القناة</div>
-      <div class="tgv-step" data-step="2"><b>2</b> البوت يكتشف المالك/المشرف الأقوى</div>
-      <div class="tgv-step" data-step="3"><b>3</b> المشرف يؤكد ويحصل على رمز 6 أرقام</div>
-    </div>
-    <div style="padding:12px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:12px;margin-bottom:14px;font-size:12px;line-height:1.7">
-      ⚠️ <b>قبل البدء:</b><br>
-      • البوت يجب أن يكون مشرفاً في القناة<br>
-      • المشرف المستلم يجب أن يفتح البوت ويضغط <code>/start</code> أول مرة
-    </div>
-    <label class="fld"><span>قناة تيليجرام</span>
-      <input type="text" id="__tgc" placeholder="@mychannel أو رابط t.me">
-      <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">أدخل يوزر القناة أو رابطها</small>
-    </label>
-    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:12.5px;color:var(--muted)">
-      <span>الحدود</span><span style="font-family:var(--font-en);color:var(--blue);font-weight:900">${lim.used} / ${lim.limit}</span>
-    </div>`;
-  const r = await modal({ title:'توثيق قناة تيليجرام', sub:'البوت سيتحقق من مالك القناة تلقائياً', html, okText:'متابعة', wide: true });
-  if (!r) return;
-  const chatInput = ($('#__tgc')?.value || '').trim();
-  if (!chatInput) return toast('أدخل قناة تيليجرام', 'bad');
-
-  let result;
-  try {
-    result = await api('/api/tg/verify/start', { method:'POST', body: { chat_id: chatInput } });
-  } catch (e) {
-    return toast(e.message, 'bad');
-  }
-
-  const verifyId = result.verify_id;
-  const chatName = result.chat_name;
-  const chatAvatar = result.chat_avatar;
-  const admins = result.admins || [];
-  const autoId = result.auto_admin_id;
-
-  if (admins.length === 1) {
-    await tgVerifySendAndWait(verifyId, autoId, chatName, chatAvatar, admins[0].name);
-  } else {
-    await tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar);
-  }
-}
-
-async function tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar) {
-  const adminHTML = admins.map(a => `
-    <label class="tg-pick-item" data-admin-id="${esc(a.id)}">
-      <div class="av">${esc((a.name||'?').charAt(0).toUpperCase())}</div>
-      <div class="if">
-        <b>${esc(a.name)}${a.is_owner ? ' 👑' : ''}</b>
-        <small>${esc(a.username || '')} ${a.is_owner ? '· المالك' : '· مشرف كامل'}</small>
-      </div>
-      <div class="ck">${IC.check}</div>
-    </label>`).join('');
-  const html = `
-    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
-    <div class="tgv-chat">
-      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
-      <div class="if"><b>${esc(chatName)}</b><small>${admins.length} مشرف بصلاحيات كاملة</small></div>
-    </div>
-    <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:14px;font-size:12.5px;line-height:1.7">
-      اختر المشرف الذي تريد أن يستلم رمز التوثيق<br>
-      <span class="mu" style="font-size:11.5px">يجب أن يكون قد فتح البوت وضغط /start</span>
-    </div>
-    <label class="fld"><span>المشرفون</span></label>
-    <div class="tg-pick-grid" id="__adminList">${adminHTML}</div>`;
-  const r = await modal({ title:'اختر المشرف', sub:'سيستلم رسالة التأكيد', html, okText:'إرسال الرمز', wide: true,
-    onReady: () => {
-      $$('#__adminList .tg-pick-item').forEach(item => {
-        item.onclick = () => {
-          $$('#__adminList .tg-pick-item').forEach(x => x.classList.remove('on'));
-          item.classList.add('on');
-        };
-      });
-      const ownerItem = admins.find(a => a.is_owner);
-      const targetId = ownerItem ? ownerItem.id : admins[0].id;
-      const targetEl = document.querySelector('[data-admin-id="' + targetId + '"]');
-      if (targetEl) targetEl.classList.add('on');
-    }
-  });
-  if (!r) return;
-  const selected = document.querySelector('#__adminList .tg-pick-item.on');
-  if (!selected) return toast('اختر مشرفاً', 'bad');
-  const adminId = selected.dataset.adminId;
-  const adminName = (admins.find(a => a.id === adminId) || {}).name || '';
-  await tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName);
-}
-
-async function tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName) {
-  try {
-    await api('/api/tg/verify/' + verifyId + '/send', { method:'POST', body: { admin_id: adminId } });
-    toast('تم إرسال الرسالة — بانتظار تأكيد المشرف', 'ok');
-  } catch (e) {
-    return toast(e.message, 'bad');
-  }
-  await tgVerifyWait(verifyId, chatName, chatAvatar, adminName);
-}
-
-async function tgVerifyWait(verifyId, chatName, chatAvatar, adminName) {
-  const html = `
-    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
-    <div class="tgv-chat">
-      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
-      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>بانتظار تأكيد ${esc(adminName || 'المشرف')}...</small></div>
-    </div>
-    <div style="text-align:center;padding:16px 0">
-      <div class="tgv-spinner"></div>
-      <div class="mu" style="margin-top:12px;font-size:13px;line-height:1.8">
-        أرسلنا رسالة إلى <b style="color:var(--text)">${esc(adminName || 'المشرف')}</b> في تيليجرام<br>
-        عندما يضغط <b style="color:var(--green)">✅ نعم</b> سيحصل على رمز 6 أرقام<br>
-        <span style="font-size:12px;color:var(--muted-2)">اطلب منه الرمز والصقه في الخطوة التالية</span>
-      </div>
-    </div>
-    <div class="tgv-timer" id="__vtimer">⏱ <span id="__vtsec">600</span> ثانية متبقية</div>
-    <div style="text-align:center;margin-top:14px">
-      <button class="btn sm ghost" id="__vcancel">إلغاء الطلب</button>
-    </div>`;
-  modal({ title:'بانتظار التأكيد', sub:'تحقق من تيليجرام', html, okText:'لدي الرمز بالفعل', cancel:false, wide: true });
-  let left = 600;
-  const timer = setInterval(() => {
-    left--;
-    const s = document.getElementById('__vtsec'); if (s) s.textContent = left;
-    if (left <= 0) { clearInterval(timer); toast('انتهت مدة التوثيق', 'bad'); }
-  }, 1000);
-  setTimeout(() => {
-    const c = document.getElementById('__vcancel');
-    if (c) c.onclick = async () => {
-      clearInterval(timer);
-      try { await api('/api/tg/verify/' + verifyId + '/cancel', { method:'POST' }); } catch (e) {}
-      const m = $('#modal'); if (m) m.classList.remove('on');
-      toast('تم إلغاء الطلب', 'ok');
-    };
-  }, 100);
-  let polls = 0;
-  const pollInterval = setInterval(async () => {
-    polls++;
-    if (polls > 200) { clearInterval(pollInterval); clearInterval(timer); return; }
+async function changeProfileAvatar() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return;
+    if (f.size > 2 * 1024 * 1024) return toast('أكبر من 2MB', 'bad');
+    const fd = new FormData(); fd.append('file', f);
     try {
-      const r = await api('/api/tg/verify/' + verifyId);
-      if (r.status === 'confirmed') {
-        clearInterval(pollInterval); clearInterval(timer);
-        await tgVerifyCode(verifyId, chatName, chatAvatar);
-      } else if (r.status === 'cancelled' || r.status === 'expired' || r.status === 'failed') {
-        clearInterval(pollInterval); clearInterval(timer);
-        toast(r.status === 'cancelled' ? 'تم إلغاء التوثيق من المشرف' : 'انتهت مدة التوثيق', 'bad');
-      }
-    } catch (e) {}
-  }, 3000);
+      const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'فشل');
+      await api('/api/me/profile', { method:'PATCH', body: { avatar: j.url } });
+      S.me.user.avatar = j.url; toast('تم تحديث الصورة', 'ok'); renderApp();
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+  inp.click();
 }
 
-async function tgVerifyCode(verifyId, chatName, chatAvatar) {
-  const html = `
-    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
-    <div class="tgv-step done"><b>${IC.check}</b> تم التأكيد من تيليجرام</div>
-    <div class="tgv-chat">
-      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
-      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>أدخل الرمز لإكمال التوثيق</small></div>
-    </div>
-    <div style="text-align:center;padding:12px 0;font-size:13px;line-height:1.8" class="mu">
-      افتح رسالة البوت في تيليجرام<br>
-      انسخ الرمز المكوّن من <b style="color:var(--blue)">6 أرقام</b>
-    </div>
-    <div class="tgv-code">
-      <input type="text" id="__vcode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
-    </div>`;
-  const r = await modal({ title:'إدخال الرمز', sub:'الرمز صالح لمدة 5 دقائق', html, okText:'تأكيد وإضافة', wide: true,
-    onReady: () => {
-      setTimeout(() => {
-        const inp = document.getElementById('__vcode');
-        if (inp) {
-          inp.focus();
-          inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,6); };
-        }
-      }, 100);
-    }
-  });
-  if (!r) return;
-  const code = ($('#__vcode')?.value || '').trim();
-  if (!/^\d{6}$/.test(code)) return toast('الرمز يجب أن يكون 6 أرقام', 'bad');
+async function changeProfileDisplay() {
+  const cur = S.me.user.display || S.me.user.username;
+  const nv = await modal({ title: 'تعديل الاسم', input: true, inputLabel: 'الاسم', inputValue: cur, okText: 'حفظ' });
+  if (nv === null || !nv.trim()) return;
   try {
-    await api('/api/tg/verify/' + verifyId + '/code', { method:'POST', body: { code } });
-    toast('✅ تم توثيق القناة بنجاح', 'ok');
-    await loadChannels('tg');
-    S.view = 'tg';
-    renderApp();
+    await api('/api/me/profile', { method:'PATCH', body: { display: nv.trim() } });
+    S.me.user.display = nv.trim(); toast('تم', 'ok'); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG ACCOUNT LINK (Deep Link) ═══ */
+async function doLogout() {
+  const ok = await dlgConfirm('تسجيل الخروج؟', 'تأكيد', true); if (!ok) return;
+  try { await api('/api/logout', { method:'POST' }); } catch (e) {}
+  location.reload();
+}
+
+async function openSuggestion() {
+  const r = await modal({ title:'إرسال اقتراح', html:'<label class="fld"><span>نص الاقتراح</span><textarea id="__sg" rows="6" maxlength="1000"></textarea></label>', okText:'إرسال' });
+  if (!r) return;
+  const text = ($('#__sg')?.value || '').trim();
+  if (!text) return toast('اكتب نص', 'bad');
+  try { await api('/api/suggestions', { method:'POST', body: { text } }); toast('تم الإرسال', 'ok'); }
+  catch (e) { toast(e.message, 'bad'); }
+}
+
 async function openLinkTgModal() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) return toast('تيليجرام غير مضبوط في السيرفر', 'bad');
@@ -1417,7 +908,6 @@ async function openLinkTgModal() {
     return;
   }
   
-  // New Deep Link Flow
   const html = `
     <div style="padding:16px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:20px;font-size:13px;line-height:1.8;text-align:center;">
       <b style="color:var(--blue);display:block;margin-bottom:8px;font-size:15px">${IC.link} ربط سريع وآمن</b>
@@ -1467,7 +957,6 @@ async function openLinkTgModal() {
         } catch (e) { toast(e.message, 'bad'); }
       };
       
-      // Cleanup interval if modal closes
       const observer = new MutationObserver((mutations) => {
         if (!$('#modal').classList.contains('on')) {
           if (pollInterval) clearInterval(pollInterval);
@@ -1488,7 +977,6 @@ async function loadMe() {
   } catch (e) {}
 }
 
-/* ═══ SEND MODAL ═══ */
 async function openSendModal() {
   if (!isLogged()) return;
   if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال', 'bad');
@@ -1573,7 +1061,6 @@ async function openSendModal() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ DISCORD ═══ */
 function viewDiscord(v) {
   const chsCount = Object.keys(S.knownChannels).length;
   const guildsCount = Object.keys(S.knownGuilds).length;
@@ -1976,7 +1463,6 @@ async function openAddFeed() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ NOTIFICATIONS ═══ */
 function viewNotifs(v) {
   v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الإشعارات <span>.</span></div>${S.notifs.length ? `<div style="display:flex;gap:7px"><button class="btn sm ghost" id="readAll">قرأت الكل</button><button class="btn sm danger" id="clearAll">مسح</button></div>` : ''}</div><div id="ntList"></div></div>`;
   const l = $('#ntList');
@@ -1991,111 +1477,612 @@ function viewNotifs(v) {
   const ca = $('#clearAll'); if (ca) ca.onclick = async () => { const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true); if (!ok) return; try { await api('/api/notifs/clear', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
 }
 
-/* ═══ ACCOUNT MENU ═══ */
-function openAccountMenu() {
-  if (!isLogged()) { if (S.guest) { S.guest = false; renderAuth(); } return; }
-  const old = $('#accMenu'); if (old) old.remove();
-  const m = el('div', 'acc-menu'); m.id = 'accMenu';
-  const u = S.me.user;
-  const lk = S.limits.kick, ly = S.limits.yt, lt = S.limits.tg, ltw = S.limits.twitter;
-  const pushBadge = S.pushEnabled ? '<span class="badge-mini ok">مفعّل</span>' : '<span class="badge-mini off">معطل</span>';
-  const tgBadge = u.linked_tg_id ? (u.is_member ? '<span class="badge-mini ok">عضو ✓</span>' : '<span class="badge-mini warn">غير عضو</span>') : '<span class="badge-mini off">غير مربوط</span>';
-  const avHTML = u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : esc(u.username.charAt(0).toUpperCase());
-  const memberBonus = u.is_member && u.linked_tg_id;
-  m.innerHTML = `
-    <div class="acc-head">
-      <div class="av-btn" id="accAvatar" title="تغيير الصورة">${avHTML}</div>
-      <div class="if">
-        <div class="nm" id="accDisplay" title="تعديل الاسم">${esc(u.display || u.username)} <span style="color:var(--muted);font-size:11px">${IC.edit}</span></div>
-        <div class="mt">@${esc(u.username)} · ${u.role==='owner'?'الإدارة':'مستخدم'}</div>
-        <div class="stats-mini">
-          <span>${IC.kick} <b>${lk.used}/${lk.limit}</b></span>
-          <span>${IC.yt} <b>${ly.used}/${ly.limit}</b></span>
-          <span>${IC.tw} <b>${ltw.used}/${ltw.limit}</b></span>
-          <span>${IC.tg} <b>${lt.used}/${lt.limit}</b></span>
-          ${memberBonus ? '<span class="pill ok" style="padding:2px 8px;font-size:10px">🎁 مضاعف</span>' : ''}
+function viewNews(v) {
+  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
+  v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الأخبار والإعلانات <span>.</span></div></div>${S.news.length ? '<div id="newsList"></div>' : `<div class="empty"><div class="em-icon">${IC.newsp}</div><h3>لا أخبار</h3></div>`}</div>`;
+  const list = $('#newsList'); if (!list) return;
+  S.news.forEach(n => {
+    const card = el('div', 'news-card kind-' + (n.kind || 'news') + (n.is_read ? '' : ' unread'));
+    card.innerHTML = `
+      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span>${!n.is_read ? '<span class="pill warn">جديد</span>' : ''}</h4>
+      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
+      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+      <div class="nc-time">${fmtTime(n.created)}</div>`;
+    card.onclick = async () => {
+      if (!n.is_read) {
+        try { await api('/api/news/' + n.id + '/read', { method:'POST' }); } catch (e) {}
+        n.is_read = true; S.newsUnread = Math.max(0, S.newsUnread - 1);
+        card.classList.remove('unread');
+      }
+    };
+    list.appendChild(card);
+  });
+}
+
+async function showNewsPopup() {
+  const unread = S.news.filter(n => !n.is_read);
+  if (!unread.length) return;
+  const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
+  const itemsHTML = unread.slice(0, 5).map(n => `
+    <div class="news-card kind-${n.kind || 'news'}" data-nid="${n.id}">
+      <h4>${esc(n.title)} <span class="nc-kind">${kindLabel(n.kind)}</span></h4>
+      ${n.image ? `<img class="nc-img" src="${esc(n.image)}" onerror="this.remove()">` : ''}
+      ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+      <div class="nc-time">${fmtTime(n.created)}</div>
+    </div>`).join('');
+  const r = await modal({
+    title: '📢 إعلانات جديدة',
+    sub: `لديك ${unread.length} إعلان غير مقروء`,
+    html: itemsHTML,
+    okText: 'قرأت الكل',
+    wide: true
+  });
+  if (r) {
+    try {
+      for (const n of unread) { await api('/api/news/' + n.id + '/read', { method:'POST' }); n.is_read = true; }
+      S.newsUnread = 0;
+      if (S.view === 'news' || S.view === 'home') renderApp();
+    } catch (e) {}
+  }
+}
+
+function viewHome(v) {
+  const counts = isLogged()
+    ? { kick:S.channels.kick.length, yt:S.channels.yt.length, tg:S.channels.tg.length, tw:S.channels.twitter.length, dc:S.feeds.length }
+    : { kick:S.preview?.counts.kick||0, yt:S.preview?.counts.yt||0, tg:S.preview?.counts.tg||0, tw:S.preview?.counts.tw||0, dc:0 };
+  const hs = S.homeStats;
+  const my = hs?.my || { kick:0, yt:0, tg:0, tw:0, feeds:0, live:0, videos:0 };
+  const g = hs?.global || { users:0, total_live:0, discord_channels:0, bot_ready:false };
+  const live = hs?.live_now || [];
+  const videos = hs?.videos || [];
+
+  v.innerHTML = `
+    <div class="hero">
+      <div class="hero-lbl"><span>◆</span> RESPECT LIVE</div>
+      <h1>${esc((S.boot.hero_title||'مراقبة').toUpperCase())} <span>${esc(S.boot.hero_accent||'القنوات.')}</span></h1>
+      <p>${esc(S.boot.hero_text||'تابع قنواتك على كيك ويوتيوب وتيليجرام.')}</p>
+    </div>
+    <div class="stats">
+      <div class="s"><b class="blue">${counts.kick}</b><small>KICK</small></div>
+      <div class="s"><b>${counts.yt}</b><small>YOUTUBE</small></div>
+      <div class="s"><b>${counts.tw}</b><small>TWITTER</small></div>
+      <div class="s"><b>${counts.tg}</b><small>TELEGRAM</small></div>
+      <div class="s"><b>${isLogged()?counts.dc:(S.boot.discord_watching||0)}</b><small>DISCORD</small></div>
+    </div>
+    ${isLogged() && hs ? `
+      <div class="sec" style="padding-top:0">
+        <div class="sec-h"><div class="sec-title">إحصائياتي <span>.</span></div></div>
+        <div class="stats" style="margin:0">
+          <div class="s"><b class="blue">${my.live}</b><small>بث مباشر</small></div>
+          <div class="s"><b>${my.videos}</b><small>فيديو</small></div>
+          <div class="s"><b>${my.feeds}</b><small>اشتراكات DC</small></div>
+          <div class="s"><b style="color:${g.bot_ready?'var(--green)':'var(--red)'}">${g.bot_ready?'✓':'✗'}</b><small>البوت</small></div>
         </div>
       </div>
+    ` : ''}
+    ${live.length ? `
+      <div class="sec" style="padding-top:0">
+        <div class="sec-h"><div class="sec-title">يبثون <span>الآن.</span></div></div>
+        <div class="live-strip">
+          ${live.map(r => `
+            <div class="live-card" onclick="window.open('https://kick.com/${esc(r.slug)}','_blank')">
+              <div class="live-card-cover"><img src="${esc(r.banner || r.thumb || r.avatar || '/favicon.ico')}" onerror="this.style.display='none'"></div>
+              <div class="live-card-body"><b>${esc(r.name)}</b><small>${esc((r.title||'').slice(0,40))}</small><div class="v">👁 ${r.viewers || 0}</div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+    ${videos.length ? `
+      <div class="sec" style="padding-top:0">
+        <div class="sec-h"><div class="sec-title">فيديوهات <span>جديدة.</span></div></div>
+        <div class="grid">
+          ${videos.map(x => `
+            <div class="ch" style="cursor:pointer" onclick="window.open('${esc(x.url)}','_blank')">
+              <div class="ch-cover"><img src="${esc(x.thumb)}" onerror="this.remove()"></div>
+              <div style="padding:14px 18px 18px"><b style="display:block;font-size:14px;font-weight:900;line-height:1.5;margin-bottom:6px">${esc(x.title)}</b><small style="color:var(--muted);font-size:11.5px">${esc(x.ch_name)}</small></div>
+            </div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+    <div class="features">
+      <div class="feat"><div class="feat-ico">${IC.kick}</div><b>مراقبة كيك</b><p>فحص تلقائي كل 90 ثانية</p></div>
+      <div class="feat"><div class="feat-ico">${IC.yt}</div><b>متابعة يوتيوب</b><p>اكتشاف الفيديوهات الجديدة خلال دقائق</p></div>
+      <div class="feat"><div class="feat-ico">${IC.dc}</div><b>جسر ديسكورد</b><p>رسائل ديسكورد → تيليجرام فورياً</p></div>
     </div>
-    <button class="acc-item" data-a="linktg">${IC.link} ربط حساب تيليجرام ${tgBadge}</button>
-    ${u.linked_tg_id && !u.is_member && S.boot.required_channel_url ? `<button class="acc-item" data-a="joinch" style="color:var(--orange)">${IC.mega} انضم للقناة الرسمية</button>` : ''}
-    <button class="acc-item" data-a="push">${IC.bell} إشعارات المتصفح ${pushBadge}</button>
-    ${S.pushEnabled ? `<button class="acc-item" data-a="pushtest">${IC.send} اختبار الإشعارات</button>` : ''}
-    <button class="acc-item" data-a="send">${IC.send} إرسال رسالة</button>
-    <button class="acc-item" data-a="suggest">${IC.msg} إرسال اقتراح</button>
-    ${isOwner() ? `<button class="acc-item" data-a="admin" style="color:var(--blue)">${IC.shield} <b>لوحة الإدارة</b></button>` : ''}
-    <div class="acc-sep"></div>
-    <button class="acc-item danger" data-a="logout">${IC.logout} تسجيل الخروج</button>`;
-  document.body.appendChild(m);
-  requestAnimationFrame(() => m.classList.add('on'));
-  $('#accAvatar').onclick = () => changeProfileAvatar();
-  $('#accDisplay').onclick = () => changeProfileDisplay();
-  m.querySelectorAll('[data-a]').forEach(b => {
-    b.onclick = async () => {
-      const a = b.dataset.a;
-      const closeM = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 260); };
-      if (a === 'logout') { closeM(); doLogout(); }
-      else if (a === 'suggest') { closeM(); openSuggestion(); }
-      else if (a === 'send') { closeM(); if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال', 'bad'); openSendModal(); }
-      else if (a === 'admin') { closeM(); S.view = 'admin'; renderApp(); }
-      else if (a === 'push') { closeM(); S.pushEnabled ? disablePush() : enablePush(); }
-      else if (a === 'pushtest') { closeM(); testPush(); }
-      else if (a === 'linktg') { closeM(); openLinkTgModal(); }
-      else if (a === 'joinch') { closeM(); window.open(S.boot.required_channel_url, '_blank'); }
+    ${!isLogged() ? `<div class="sec"><div class="lock-cover" style="position:relative;background:var(--card);border:1px solid var(--line);padding:48px 24px;border-radius:var(--r);text-align:center"><div class="lc-icon" style="margin:0 auto 16px">${IC.lock}</div><h3 style="font-size:18px;font-weight:900;margin-bottom:8px">سجّل دخولك للبدء</h3><button class="btn pri" id="ctaLogin">تسجيل الدخول</button></div></div>` : ''}
+  `;
+  const btn = $('#ctaLogin');
+  if (btn) btn.onclick = () => { S.guest = false; renderAuth(); };
+}
+
+function limitBarHTML(kind) {
+  const l = S.limits[kind] || { used:0, limit:10, remaining:10 };
+  const pct = l.limit > 0 ? Math.min(100, (l.used / l.limit) * 100) : 0;
+  let cls = 'limit-bar';
+  if (pct >= 100) cls += ' full';
+  else if (pct >= 80) cls += ' warn';
+  return { html: `<div class="${cls}"><b style="width:${pct}%"></b></div>`, text: `${l.used} / ${l.limit}`, isFull: l.remaining <= 0 };
+}
+
+function viewChannels(v, kind) {
+  const rows = isLogged() ? (S.channels[kind] || []) : (S.preview?.live || []);
+  const titleMap = { kick:'قنوات كيك', yt:'قنوات يوتيوب', tg:'قنوات تيليجرام', twitter:'حسابات تويتر' };
+  const lim = isLogged() ? limitBarHTML(kind) : null;
+  const isTg = kind === 'tg';
+  const memberBonus = S.limits[kind]?.is_member;
+  const canAdd = canWrite();
+
+  v.innerHTML = `
+    <div class="sec" style="padding-top:0">
+      <div class="sec-h">
+        <div class="sec-title">${titleMap[kind]} <span>.</span></div>
+        ${isLogged() ? `<button class="btn pri sm" id="addBtn" ${lim.isFull || !canAdd ? 'disabled' : ''}>${IC.plus} ${isTg ? 'توثيق قناة' : 'إضافة'}</button>` : ''}
+      </div>
+      ${isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(var(--blue-rgb),.04);border:1px solid var(--blue-line);border-radius:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:800"><span>الحدود ${memberBonus ? '<span class="pill ok" style="margin-right:6px;padding:2px 8px">+Bonus</span>' : ''}</span><span style="color:${lim.isFull?'var(--red)':'var(--blue)'};font-family:var(--font-en)">${lim.text}</span></div>${lim.html}</div>` : ''}
+      ${isTg && isLogged() ? `<div style="margin-bottom:18px;padding:14px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.28);border-radius:14px;font-size:12.5px;line-height:1.7"><b style="color:var(--green);display:inline-flex;align-items:center;gap:6px">${IC.shieldCheck} توثيق القناة إجباري</b><br><span class="mu">عند إضافة قناة تيليجرام، سيُرسل رمز لمشرف القناة على تيليجرام للتأكد من ملكيتها.</span></div>` : ''}
+      <div id="cList"></div>
+    </div>`;
+  const list = $('#cList');
+  if (!rows.length) {
+    list.innerHTML = `<div class="empty"><div class="em-icon">${IC[kind]||IC.home}</div><h3>لا توجد قنوات بعد</h3><p>${isLogged()?(isTg?'ابدأ بتوثيق أول قناة':'ابدأ بإضافة أول قناة'):'سجّل دخولك'}</p>${isLogged() && !lim.isFull && canAdd ? `<button class="btn pri" id="emptyAdd">${IC.plus} ${isTg?'توثيق قناة':'إضافة'}</button>` : ''}${!isLogged() ? `<button class="btn pri" id="emptyLogin">تسجيل الدخول</button>` : ''}</div>`;
+    const eb = $('#emptyAdd'); if (eb) eb.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
+    const elb = $('#emptyLogin'); if (elb) elb.onclick = () => { S.guest = false; renderAuth(); };
+  } else {
+    const grid = el('div', 'grid');
+    rows.forEach(r => grid.appendChild(chCard(kind, r)));
+    list.appendChild(grid);
+  }
+  const ab = $('#addBtn'); if (ab && !lim.isFull && canAdd) ab.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
+}
+
+function chCard(kind, r) {
+  const card = el('div', 'ch');
+  const brandImg = r.banner || r.avatar || '';
+  if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
+
+  if (!isLogged()) {
+    card.innerHTML = `<div style="padding:14px;filter:blur(14px) saturate(.7);pointer-events:none"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
+    return card;
+  }
+  let slug = '', title = '';
+  if (kind === 'kick') { slug = '@' + (r.slug||''); title = r.name || r.slug || ''; }
+  else if (kind === 'yt') { slug = r.channel_id||''; title = r.name || r.channel_id || ''; }
+  else if (kind === 'twitter') { slug = '@' + (r.username||''); title = r.name || r.username || ''; }
+  else { slug = r.username || r.chat_id || ''; title = r.name || r.chat_id || ''; }
+  const liveBadge = kind === 'kick' && r.live && r.enabled ? '<span class="ch-badge live">مباشر</span>' : '';
+  const offBadge = !r.enabled ? '<span class="ch-badge off">موقوف</span>' : '';
+  const noSend = (kind !== 'tg' && r.auto_send === 0) ? '<span class="ch-badge nosend">🔕</span>' : '';
+  const verifiedBadge = (kind === 'tg' && r.verified) ? '<span class="ch-badge verified">✓ موثقة</span>' : '';
+  const cover = r.banner || r.avatar || '';
+  const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
+
+  card.innerHTML = `
+    <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
+    <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
+    ${kind === 'kick' && r.live && r.title ? `<div class="ch-live"><div>${esc(r.title)}</div><span>${r.viewers||0} 👁</span></div>` : ''}
+    <div class="ch-acts">
+      ${kind === 'kick' ? `<a class="btn sm" href="https://kick.com/${esc(r.slug)}" target="_blank">${IC.play} مشاهدة</a>` : ''}
+      ${kind === 'yt' ? `<a class="btn sm" href="https://youtube.com/channel/${esc(r.channel_id)}" target="_blank">${IC.play} زيارة</a>` : ''}
+      ${kind === 'twitter' ? `<a class="btn sm" href="https://twitter.com/${esc(r.username)}" target="_blank">${IC.tw} زيارة</a>` : ''}
+      ${kind === 'tg' && r.username ? `<a class="btn sm" href="https://t.me/${esc(r.username.replace('@',''))}" target="_blank">${IC.tg} زيارة</a>` : ''}
+      ${kind === 'tg' ? `<button class="btn sm" data-act="info" style="color:var(--orange)">${IC.info} معلومات</button>` : ''}
+      ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="edit">${IC.edit} تخصيص</button>` : ''}
+      ${kind === 'tg' || kind === 'yt' || kind === 'twitter' ? `<button class="btn sm ghost" data-act="refresh">${IC.refresh}</button>` : ''}
+      ${kind !== 'tg' ? `<button class="btn sm ghost" data-act="autosend">${r.auto_send===0?'🔕':'🔔'}</button>` : ''}
+      <button class="btn sm ghost" data-act="toggle">${r.enabled?'إيقاف':'تفعيل'}</button>
+      <button class="btn sm danger" data-act="del">${IC.trash}</button>
+    </div>`;
+  card.querySelectorAll('[data-act]').forEach(b => {
+    b.onclick = async (e) => {
+      e.stopPropagation();
+      const act = b.dataset.act;
+      if (act === 'del') {
+        const ok = await dlgConfirm('حذف القناة نهائياً؟', 'تأكيد', true); if (!ok) return;
+        try { await api('/api/channels/' + kind + '/' + r.id, { method:'DELETE' }); toast('تم الحذف', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
+      } else if (act === 'toggle') {
+        try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { enabled: !r.enabled } }); toast(r.enabled ? 'تم الإيقاف' : 'تم التفعيل', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
+      } else if (act === 'autosend') {
+        const nv = r.auto_send === 0 ? 1 : 0;
+        try { await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body: { auto_send: nv } }); toast(nv ? 'الإرسال مفعّل' : 'الإرسال موقوف', 'ok'); await loadChannels(kind); renderApp(); }
+        catch (e2) { toast(e2.message, 'bad'); }
+      } else if (act === 'edit') { await editChannelMsg(kind, r); }
+      else if (act === 'info') { await showTgInfo(r.id, title); }
+      else if (act === 'refresh') {
+        try {
+          await api('/api/channels/' + kind + '/' + r.id + '/refresh', { method:'POST' });
+          toast('تم التحديث', 'ok');
+          await loadChannels(kind); renderApp();
+        } catch (e2) { toast(e2.message, 'bad'); }
+      }
     };
   });
-  setTimeout(() => {
-    const close = e => { if (!m.contains(e.target) && !e.target.closest('#accBtn')) { m.classList.remove('on'); setTimeout(() => m.remove(), 260); document.removeEventListener('click', close); } };
-    document.addEventListener('click', close);
-  }, 60);
+  return card;
 }
 
-async function changeProfileAvatar() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = 'image/*';
-  inp.onchange = async () => {
-    const f = inp.files[0]; if (!f) return;
-    if (f.size > 2 * 1024 * 1024) return toast('أكبر من 2MB', 'bad');
-    const fd = new FormData(); fd.append('file', f);
-    try {
-      const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || 'فشل');
-      await api('/api/me/profile', { method:'PATCH', body: { avatar: j.url } });
-      S.me.user.avatar = j.url; toast('تم تحديث الصورة', 'ok');
-      const old = $('#accMenu'); if (old) old.remove(); renderApp();
-    } catch (e) { toast(e.message, 'bad'); }
-  };
-  inp.click();
-}
-
-async function changeProfileDisplay() {
-  const cur = S.me.user.display || S.me.user.username;
-  const nv = await modal({ title: 'تعديل الاسم', input: true, inputLabel: 'الاسم', inputValue: cur, okText: 'حفظ' });
-  if (nv === null || !nv.trim()) return;
+async function showTgInfo(cid, title) {
+  let msgs = [];
   try {
-    await api('/api/me/profile', { method:'PATCH', body: { display: nv.trim() } });
-    S.me.user.display = nv.trim(); toast('تم', 'ok');
-    const old = $('#accMenu'); if (old) old.remove(); renderApp();
+    const r = await api('/api/tg/' + cid + '/messages');
+    msgs = r.rows || [];
+  } catch (e) { return toast(e.message, 'bad'); }
+
+  const html = `
+    <div style="padding:14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:14px;margin-bottom:14px;font-size:13px;line-height:1.8">
+      <b style="color:var(--blue)">${IC.info} سجل الرسائل</b><br>
+      <span class="mu">آخر 30 رسالة أُرسلت إلى قناة <b>${esc(title)}</b>.</span>
+    </div>
+    <div style="max-height:400px;overflow-y:auto">
+      ${msgs.length ? msgs.map(m => `
+        <div class="msg-log-item">
+          <div class="ml-h">
+            <span class="pill" style="padding:2px 8px;font-size:10px">${esc(m.source.toUpperCase())}</span>
+            <span>${fmtTime(m.ts)}</span>
+          </div>
+          <div class="ml-body">${esc(m.body || m.title || '...')}</div>
+        </div>
+      `).join('') : '<div class="mu center" style="padding:20px">لا توجد رسائل سابقة</div>'}
+    </div>
+  `;
+
+  await modal({
+    title: 'معلومات القناة',
+    sub: 'آخر الرسائل الواردة',
+    html: html,
+    okText: 'إغلاق',
+    wide: true
+  });
+}
+
+async function editChannelMsg(kind, r) {
+  const curImg = r.msg && r.msg.match(/\{img:([^}]+)\}/);
+  const curMsg = r.msg ? r.msg.replace(/\{img:[^}]+\}/g, '').trim() : '';
+  let uploadedImage = curImg ? curImg[1] : '';
+  const defaultTpl = kind === 'kick' ? (S.me.tpl_kick || '') : (kind === 'yt' ? (S.me.tpl_yt || '') : (S.me.tpl_twitter || ''));
+  const defaultBtn = kind === 'kick' ? (S.me.btn_kick || 'شاهد البث') : (kind === 'yt' ? (S.me.btn_yt || 'شاهد الفيديو') : (S.me.btn_tw || 'عرض التغريدة'));
+
+  const html = `
+    <label class="fld"><span>نص الرسالة</span>
+      <textarea id="__msg" rows="6" placeholder="اتركه فارغاً للقالب العام">${esc(curMsg)}</textarea></label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:12px">
+      <span class="mu" style="font-size:11.5px">المتغيرات:</span>
+      <span class="pill">{name}</span><span class="pill">{title}</span><span class="pill">{content}</span><span class="pill">{url}</span>
+    </div>
+    <label class="fld"><span>نص زر المشاهدة</span>
+      <input type="text" id="__btn" value="${esc(r.btn_text || '')}" placeholder="${esc(defaultBtn)}"></label>
+    ${kind === 'twitter' ? `
+      <label class="fld"><span>فلترة الكلمات (تجاهل التغريدة إذا احتوت)</span>
+        <input type="text" id="__filter" value="${esc(r.filter_kw || '')}" placeholder="مثال: youtube.com, يوتيوب"></label>
+      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px">افصل بين الكلمات بفاصلة ( , ).</div>
+    ` : ''}
+    <label class="fld" style="margin-top:6px"><span>صورة مرفقة (اختياري)</span></label>
+    <div class="img-preview-box ${uploadedImage ? '' : 'empty'}" id="__imgBox">
+      ${uploadedImage ? `<img src="${esc(uploadedImage)}" alt="">` : '<div>لا توجد صورة</div>'}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button type="button" class="btn sm" id="__upBtn">${IC.camera} رفع</button>
+      <button type="button" class="btn sm ghost" id="__clrBtn">${IC.x} مسح</button>
+      <input type="file" id="__upFile" accept="image/*" style="display:none">
+    </div>
+    <div class="tpl-preview" id="__tplPrev"></div>`;
+
+  const r2 = await modal({
+    title:'تخصيص رسالة الإشعار',
+    sub:'اتركه فارغاً للقالب العام',
+    html, okText:'حفظ', wide: true,
+    onReady: () => {
+      const ta = $('#__msg'), prev = $('#__tplPrev');
+      const update = () => {
+        const tpl = ta.value.trim() || defaultTpl;
+        const sample = tpl
+          .replace(/\{name\}/g, r.name || 'اسم القناة')
+          .replace(/\{title\}/g, kind === 'kick' ? 'عنوان البث' : 'عنوان الفيديو')
+          .replace(/\{content\}/g, 'نص التغريدة هنا...')
+          .replace(/\{url\}/g, kind === 'kick' ? 'https://kick.com/' + (r.slug||'') : (kind === 'twitter' ? 'https://twitter.com/...' : 'https://youtube.com/watch?v=...'));
+        prev.innerHTML = '<div style="font-size:10.5px;color:var(--muted);margin-bottom:6px;font-family:var(--font-en)">PREVIEW</div>' + sample.replace(/\n/g, '<br>');
+      };
+      ta.oninput = update; update();
+      $('#__upBtn').onclick = () => $('#__upFile').click();
+      $('#__upFile').onchange = async (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        if (f.size > 2 * 1024 * 1024) return toast('أكبر من 2MB', 'bad');
+        const fd = new FormData(); fd.append('file', f);
+        try {
+          const res = await fetch('/api/upload', { method:'POST', body: fd, credentials:'include' });
+          const j = await res.json();
+          if (!res.ok) throw new Error(j.error || 'فشل');
+          uploadedImage = j.url;
+          const box = $('#__imgBox'); box.classList.remove('empty');
+          box.innerHTML = `<img src="${esc(uploadedImage)}" alt="">`;
+          toast('تم الرفع', 'ok');
+        } catch (err) { toast(err.message, 'bad'); }
+      };
+      $('#__clrBtn').onclick = () => {
+        uploadedImage = '';
+        const box = $('#__imgBox'); box.classList.add('empty');
+        box.innerHTML = '<div>لا توجد صورة</div>';
+      };
+    }
+  });
+  if (r2 === null || r2 === false) return;
+  let finalMsg = ($('#__msg')?.value || '').trim();
+  if (uploadedImage) finalMsg = (finalMsg ? finalMsg + '\n' : '') + `{img:${uploadedImage}}`;
+  const btnText = ($('#__btn')?.value || '').trim();
+  const filterKw = kind === 'twitter' ? ($('#__filter')?.value || '').trim() : undefined;
+  
+  try {
+    const body = { msg: finalMsg, btn_text: btnText };
+    if (filterKw !== undefined) body.filter_kw = filterKw;
+    await api('/api/channels/' + kind + '/' + r.id, { method:'PATCH', body });
+    toast('تم الحفظ', 'ok');
+    await loadChannels(kind); renderApp();
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-async function doLogout() {
-  const ok = await dlgConfirm('تسجيل الخروج؟', 'تأكيد', true); if (!ok) return;
-  try { await api('/api/logout', { method:'POST' }); } catch (e) {}
-  location.reload();
+async function openAddChannel(kind) {
+  if (!isLogged()) return;
+  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإضافة', 'bad');
+  if (kind === 'tg') return openTgVerify();
+  let suggestions = [];
+  try { const r = await api('/api/channels/' + kind + '/suggestions'); suggestions = r.rows || []; } catch (e) {}
+  const lim = S.limits[kind] || { used:0, limit:10, remaining:10 };
+  const labels = {
+    kick: { title:'إضافة قناة كيك', label:'slug', ph:'xqc' },
+    yt:   { title:'إضافة قناة يوتيوب', label:'@handle أو UC...', ph:'@MrBeast' },
+    twitter: { title:'إضافة حساب تويتر', label:'@username', ph:'@elonmusk' },
+  }[kind];
+  const noTg = !S.boot.has_telegram;
+  const botWarn = noTg
+    ? `<div style="padding:12px 14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.3);border-radius:12px;margin-bottom:12px;font-size:12.5px;line-height:1.7">⚠️ <b>توكن تيليجرام غير مضبوط</b> — لن تُرسل أي إشعارات تلقائية.</div>`
+    : '';
+  const sugHTML = suggestions.length ? `
+    <div style="margin-top:22px;padding-top:20px;border-top:1px solid var(--line)">
+      <div class="sh-sub" style="margin-bottom:6px">${IC.plus} مُقترحات الإدارة</div>
+      <div class="sug-grid" id="sugGrid">${suggestions.map(s => `
+        <div class="sug-item" data-id="${s.id}">
+          <div class="av">${s.avatar ? `<img src="${esc(s.avatar)}" onerror="this.remove()">` : esc((s.name||'?').charAt(0).toUpperCase())}</div>
+          <div class="if"><b>${esc(s.name || s.identifier)}</b><small>${esc(s.identifier)}</small></div>
+          <div class="ck">${IC.check}</div>
+        </div>`).join('')}</div>
+      <div class="sug-toolbar"><span id="sugCount">0</span><button type="button" id="sugToggleAll">تحديد الكل</button></div>
+    </div>` : '';
+  const html = `
+    <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:12px;font-size:12.5px;font-weight:800">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>الحدود</span><span style="color:var(--blue);font-family:var(--font-en)">${lim.used} / ${lim.limit}</span></div>
+      <div class="limit-bar"><b style="width:${lim.limit > 0 ? Math.min(100, (lim.used/lim.limit)*100) : 0}%"></b></div>
+    </div>
+    ${botWarn}
+    <label class="fld"><span>${esc(labels.label)}</span><input type="text" id="__ci" placeholder="${esc(labels.ph)}"></label>
+    <label class="fld"><span>الاسم (اختياري)</span><input type="text" id="__cn"></label>
+    <label class="fld"><span>نص الزر (اختياري)</span><input type="text" id="__bt" placeholder="${kind==='kick'?'شاهد البث':(kind==='twitter'?'عرض التغريدة':'شاهد الفيديو')}"></label>
+    ${sugHTML}`;
+  const result = await modal({ title: labels.title, html, okText: 'إضافة', wide: suggestions.length > 0 });
+  if (result === false || result === null) return;
+  const val = ($('#__ci')?.value || '').trim();
+  const customName = ($('#__cn')?.value || '').trim();
+  const btnText = ($('#__bt')?.value || '').trim();
+  if (suggestions.length) {
+    const ids = $$('#sugGrid .sug-item.on').map(x => +x.dataset.id);
+    if (ids.length > 0) {
+      try {
+        const r = await api('/api/channels/' + kind + '/bulk-add', { method:'POST', body: { ids } });
+        toast('تمت إضافة ' + (r.added || 0) + (r.failed ? ' — فشل ' + r.failed : ''), 'ok');
+        if (r.errors?.length) setTimeout(() => toast(r.errors[0], ''), 500);
+        await loadChannels(kind); renderApp(); return;
+      } catch (e) { toast(e.message, 'bad'); return; }
+    }
+  }
+  if (!val) return toast('اكتب القيمة', 'bad');
+  try {
+    const body = kind === 'kick' ? { slug: val, msg: '', btn_text: btnText } : 
+                 kind === 'twitter' ? { username: val, msg: '', btn_text: btnText } :
+                 { channel_id: val, name: customName, msg: '', btn_text: btnText };
+    const res = await api('/api/channels/' + kind, { method:'POST', body });
+    toast('تمت الإضافة', 'ok');
+    if (res.warn) setTimeout(() => toast(res.warn, ''), 600);
+    await loadChannels(kind); renderApp();
+  } catch (e) { toast(e.message, 'bad'); }
 }
 
-async function openSuggestion() {
-  const r = await modal({ title:'إرسال اقتراح', html:'<label class="fld"><span>نص الاقتراح</span><textarea id="__sg" rows="6" maxlength="1000"></textarea></label>', okText:'إرسال' });
+async function openTgVerify() {
+  if (!isLogged()) return;
+  if (!canWrite()) return toast('الموقع في صيانة — لا يمكن التوثيق', 'bad');
+  if (!S.boot.has_telegram) {
+    return modal({ title:'تيليجرام غير مضبوط', sub:'توكن تيليجرام غير موجود في السيرفر — تواصل مع الإدارة', okText:'حسناً', cancel:false });
+  }
+  const lim = S.limits.tg || { used:0, limit:1, remaining:1 };
+  if (lim.remaining <= 0) {
+    return modal({ title:'وصلت الحد', sub:`الحد الأقصى ${lim.limit} قناة تيليجرام.${S.me.user.is_member ? '' : ' اربط حسابك وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة.'}`, okText:'حسناً', cancel:false });
+  }
+  const html = `
+    <div class="tgv-box">
+      <b style="color:var(--blue);display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">${IC.shieldCheck} خطوات التوثيق</b>
+      <div class="tgv-step active" data-step="1"><b>1</b> أدخل يوزر القناة</div>
+      <div class="tgv-step" data-step="2"><b>2</b> البوت يكتشف المالك/المشرف الأقوى</div>
+      <div class="tgv-step" data-step="3"><b>3</b> المشرف يؤكد ويحصل على رمز 6 أرقام</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:12px;margin-bottom:14px;font-size:12px;line-height:1.7">
+      ⚠️ <b>قبل البدء:</b><br>
+      • البوت يجب أن يكون مشرفاً في القناة<br>
+      • المشرف المستلم يجب أن يفتح البوت ويضغط <code>/start</code> أول مرة
+    </div>
+    <label class="fld"><span>قناة تيليجرام</span>
+      <input type="text" id="__tgc" placeholder="@mychannel أو رابط t.me">
+      <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">أدخل يوزر القناة أو رابطها</small>
+    </label>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:12.5px;color:var(--muted)">
+      <span>الحدود</span><span style="font-family:var(--font-en);color:var(--blue);font-weight:900">${lim.used} / ${lim.limit}</span>
+    </div>`;
+  const r = await modal({ title:'توثيق قناة تيليجرام', sub:'البوت سيتحقق من مالك القناة تلقائياً', html, okText:'متابعة', wide: true });
   if (!r) return;
-  const text = ($('#__sg')?.value || '').trim();
-  if (!text) return toast('اكتب نص', 'bad');
-  try { await api('/api/suggestions', { method:'POST', body: { text } }); toast('تم الإرسال', 'ok'); }
-  catch (e) { toast(e.message, 'bad'); }
+  const chatInput = ($('#__tgc')?.value || '').trim();
+  if (!chatInput) return toast('أدخل قناة تيليجرام', 'bad');
+
+  let result;
+  try {
+    result = await api('/api/tg/verify/start', { method:'POST', body: { chat_id: chatInput } });
+  } catch (e) {
+    return toast(e.message, 'bad');
+  }
+
+  const verifyId = result.verify_id;
+  const chatName = result.chat_name;
+  const chatAvatar = result.chat_avatar;
+  const admins = result.admins || [];
+  const autoId = result.auto_admin_id;
+
+  if (admins.length === 1) {
+    await tgVerifySendAndWait(verifyId, autoId, chatName, chatAvatar, admins[0].name);
+  } else {
+    await tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar);
+  }
 }
 
-/* ═══ ADMIN ═══ */
+async function tgVerifyPickAdmin(verifyId, admins, chatName, chatAvatar) {
+  const adminHTML = admins.map(a => `
+    <label class="tg-pick-item" data-admin-id="${esc(a.id)}">
+      <div class="av">${esc((a.name||'?').charAt(0).toUpperCase())}</div>
+      <div class="if">
+        <b>${esc(a.name)}${a.is_owner ? ' 👑' : ''}</b>
+        <small>${esc(a.username || '')} ${a.is_owner ? '· المالك' : '· مشرف كامل'}</small>
+      </div>
+      <div class="ck">${IC.check}</div>
+    </label>`).join('');
+  const html = `
+    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
+    <div class="tgv-chat">
+      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
+      <div class="if"><b>${esc(chatName)}</b><small>${admins.length} مشرف بصلاحيات كاملة</small></div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(var(--blue-rgb),.06);border:1px solid var(--blue-line);border-radius:12px;margin-bottom:14px;font-size:12.5px;line-height:1.7">
+      اختر المشرف الذي تريد أن يستلم رمز التوثيق<br>
+      <span class="mu" style="font-size:11.5px">يجب أن يكون قد فتح البوت وضغط /start</span>
+    </div>
+    <label class="fld"><span>المشرفون</span></label>
+    <div class="tg-pick-grid" id="__adminList">${adminHTML}</div>`;
+  const r = await modal({ title:'اختر المشرف', sub:'سيستلم رسالة التأكيد', html, okText:'إرسال الرمز', wide: true,
+    onReady: () => {
+      $$('#__adminList .tg-pick-item').forEach(item => {
+        item.onclick = () => {
+          $$('#__adminList .tg-pick-item').forEach(x => x.classList.remove('on'));
+          item.classList.add('on');
+        };
+      });
+      const ownerItem = admins.find(a => a.is_owner);
+      const targetId = ownerItem ? ownerItem.id : admins[0].id;
+      const targetEl = document.querySelector('[data-admin-id="' + targetId + '"]');
+      if (targetEl) targetEl.classList.add('on');
+    }
+  });
+  if (!r) return;
+  const selected = document.querySelector('#__adminList .tg-pick-item.on');
+  if (!selected) return toast('اختر مشرفاً', 'bad');
+  const adminId = selected.dataset.adminId;
+  const adminName = (admins.find(a => a.id === adminId) || {}).name || '';
+  await tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName);
+}
+
+async function tgVerifySendAndWait(verifyId, adminId, chatName, chatAvatar, adminName) {
+  try {
+    await api('/api/tg/verify/' + verifyId + '/send', { method:'POST', body: { admin_id: adminId } });
+    toast('تم إرسال الرسالة — بانتظار تأكيد المشرف', 'ok');
+  } catch (e) {
+    return toast(e.message, 'bad');
+  }
+  await tgVerifyWait(verifyId, chatName, chatAvatar, adminName);
+}
+
+async function tgVerifyWait(verifyId, chatName, chatAvatar, adminName) {
+  const html = `
+    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
+    <div class="tgv-chat">
+      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
+      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>بانتظار تأكيد ${esc(adminName || 'المشرف')}...</small></div>
+    </div>
+    <div style="text-align:center;padding:16px 0">
+      <div class="tgv-spinner"></div>
+      <div class="mu" style="margin-top:12px;font-size:13px;line-height:1.8">
+        أرسلنا رسالة إلى <b style="color:var(--text)">${esc(adminName || 'المشرف')}</b> في تيليجرام<br>
+        عندما يضغط <b style="color:var(--green)">✅ نعم</b> سيحصل على رمز 6 أرقام<br>
+        <span style="font-size:12px;color:var(--muted-2)">اطلب منه الرمز والصقه في الخطوة التالية</span>
+      </div>
+    </div>
+    <div class="tgv-timer" id="__vtimer">⏱ <span id="__vtsec">600</span> ثانية متبقية</div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="btn sm ghost" id="__vcancel">إلغاء الطلب</button>
+    </div>`;
+  modal({ title:'بانتظار التأكيد', sub:'تحقق من تيليجرام', html, okText:'لدي الرمز بالفعل', cancel:false, wide: true });
+  let left = 600;
+  const timer = setInterval(() => {
+    left--;
+    const s = document.getElementById('__vtsec'); if (s) s.textContent = left;
+    if (left <= 0) { clearInterval(timer); toast('انتهت مدة التوثيق', 'bad'); }
+  }, 1000);
+  setTimeout(() => {
+    const c = document.getElementById('__vcancel');
+    if (c) c.onclick = async () => {
+      clearInterval(timer);
+      try { await api('/api/tg/verify/' + verifyId + '/cancel', { method:'POST' }); } catch (e) {}
+      const m = $('#modal'); if (m) m.classList.remove('on');
+      toast('تم إلغاء الطلب', 'ok');
+    };
+  }, 100);
+  let polls = 0;
+  const pollInterval = setInterval(async () => {
+    polls++;
+    if (polls > 200) { clearInterval(pollInterval); clearInterval(timer); return; }
+    try {
+      const r = await api('/api/tg/verify/' + verifyId);
+      if (r.status === 'confirmed') {
+        clearInterval(pollInterval); clearInterval(timer);
+        await tgVerifyCode(verifyId, chatName, chatAvatar);
+      } else if (r.status === 'cancelled' || r.status === 'expired' || r.status === 'failed') {
+        clearInterval(pollInterval); clearInterval(timer);
+        toast(r.status === 'cancelled' ? 'تم إلغاء التوثيق من المشرف' : 'انتهت مدة التوثيق', 'bad');
+      }
+    } catch (e) {}
+  }, 3000);
+}
+
+async function tgVerifyCode(verifyId, chatName, chatAvatar) {
+  const html = `
+    <div class="tgv-step done"><b>${IC.check}</b> تم إرسال الطلب</div>
+    <div class="tgv-step done"><b>${IC.check}</b> تم التأكيد من تيليجرام</div>
+    <div class="tgv-chat">
+      <div class="av">${chatAvatar ? `<img src="${esc(chatAvatar)}" onerror="this.remove()">` : esc((chatName||'?').charAt(0).toUpperCase())}</div>
+      <div class="if"><b>${esc(chatName || 'قناة تيليجرام')}</b><small>أدخل الرمز لإكمال التوثيق</small></div>
+    </div>
+    <div style="text-align:center;padding:12px 0;font-size:13px;line-height:1.8" class="mu">
+      افتح رسالة البوت في تيليجرام<br>
+      انسخ الرمز المكوّن من <b style="color:var(--blue)">6 أرقام</b>
+    </div>
+    <div class="tgv-code">
+      <input type="text" id="__vcode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
+    </div>`;
+  const r = await modal({ title:'إدخال الرمز', sub:'الرمز صالح لمدة 5 دقائق', html, okText:'تأكيد وإضافة', wide: true,
+    onReady: () => {
+      setTimeout(() => {
+        const inp = document.getElementById('__vcode');
+        if (inp) {
+          inp.focus();
+          inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,6); };
+        }
+      }, 100);
+    }
+  });
+  if (!r) return;
+  const code = ($('#__vcode')?.value || '').trim();
+  if (!/^\d{6}$/.test(code)) return toast('الرمز يجب أن يكون 6 أرقام', 'bad');
+  try {
+    await api('/api/tg/verify/' + verifyId + '/code', { method:'POST', body: { code } });
+    toast('✅ تم توثيق القناة بنجاح', 'ok');
+    await loadChannels('tg');
+    S.view = 'tg';
+    renderApp();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
 async function openAdmin() {
   if (!isOwner()) { S.view = 'home'; return renderApp(); }
   await loadAdminData();
@@ -2349,7 +2336,6 @@ async function adminUserAction(u, act) {
   }
 }
 
-/* ═══ ADMIN NEWS ═══ */
 function renderAdminNews(c) {
   const rows = S.admin.news || [];
   c.innerHTML = `<div class="sec-h"><div class="sec-title">الأخبار <span>(${rows.length})</span></div><button class="btn pri sm" id="adAddNews">${IC.plus} خبر جديد</button></div><div id="adNewsList"></div>`;
@@ -2695,212 +2681,4 @@ async function renderAdminSettings(c) {
       </label>
       <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:12px;line-height:1.7">
         ⚠️ <b>ملاحظة:</b> تويتر يفرض قيوداً على الخطة المجانية (1500 تغريدة/شهر).<br>
-        للحصول على المفتاح: اذهب إلى <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color:var(--blue)">Twitter Developer Portal</a> > قم بإنشاء تطبيق > انسخ <b>Bearer Token</b>.
-      </div>
-      <button class="btn pri sm" id="__twsave">${IC.check} حفظ المفتاح</button>
-      <span class="pill ${twConfigured ? 'ok' : 'bad'}" style="margin-right:8px">${twConfigured ? 'مفعّل' : 'غير مفعّل'}</span>
-    </div>
-
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🔐 التسجيل والصلاحيات</div>
-      <div class="switch-row">
-        <div class="sw-txt"><b>تفعيل التسجيل</b><small>السماح للزوار بإنشاء حسابات</small></div>
-        <label class="sw"><input type="checkbox" id="__regen" ${s.registration_enabled==='1'?'checked':''}><i></i></label>
-      </div>
-      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--muted)">الحدود الافتراضية (عند التسجيل)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <label class="fld"><span>حد كيك</span><input type="number" id="__dlk" value="${esc(s.default_lim_kick||'10')}"></label>
-        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__dly" value="${esc(s.default_lim_yt||'5')}"></label>
-        <label class="fld"><span>حد تويتر</span><input type="number" id="__dltw" value="${esc(s.default_lim_tw||'1')}"></label>
-        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__dlt" value="${esc(s.default_lim_tg||'1')}"></label>
-      </div>
-      <div style="font-weight:900;font-size:13px;margin:14px 0 8px;color:var(--green)">🎁 حدود الأعضاء المضاعفة (لمن انضم للقناة الرسمية)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <label class="fld"><span>حد كيك</span><input type="number" id="__blk" value="${esc(s.bonus_lim_kick||'50')}"></label>
-        <label class="fld"><span>حد يوتيوب</span><input type="number" id="__bly" value="${esc(s.bonus_lim_yt||'25')}"></label>
-        <label class="fld"><span>حد تويتر</span><input type="number" id="__bltw" value="${esc(s.bonus_lim_tw||'5')}"></label>
-        <label class="fld"><span>حد تيليجرام</span><input type="number" id="__blt" value="${esc(s.bonus_lim_tg||'5')}"></label>
-      </div>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📢 القناة الرسمية (للعضوية)</div>
-      <label class="fld"><span>معرّف القناة (chat_id أو @username)</span>
-        <input type="text" id="__rchid" value="${esc(s.required_channel_id||'')}" placeholder="-1001234567890 أو @mychannel">
-      </label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px;margin-bottom:10px">البوت يجب أن يكون مشرفاً في القناة. بعد الحفظ، فعّل webhook أو انتظر polling.</div>
-      <label class="fld"><span>اسم القناة (يظهر للمستخدمين)</span>
-        <input type="text" id="__rchnm" value="${esc(s.required_channel_name||'')}" placeholder="قناتنا الرسمية">
-      </label>
-      <label class="fld"><span>رابط القناة (لزر الانضمام)</span>
-        <input type="text" id="__rchurl" value="${esc(s.required_channel_url||'')}" placeholder="https://t.me/mychannel">
-      </label>
-      <label class="fld"><span>رسالة تشجيعية للانضمام</span>
-        <textarea id="__rchmsg" rows="3">${esc(s.required_channel_msg||'')}</textarea>
-      </label>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">📄 نصوص الترحيب بعد التسجيل</div>
-      <label class="fld"><span>العنوان</span><input type="text" id="__swt" value="${esc(s.signup_welcome_title||'')}"></label>
-      <label class="fld"><span>النص</span><textarea id="__swx" rows="3">${esc(s.signup_welcome_text||'')}</textarea></label>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">معلومات الموقع</div>
-      <label class="fld"><span>اسم الموقع</span><input type="text" id="__sn" value="${esc(s.site_name||'')}"></label>
-      <label class="fld"><span>العنوان الفرعي</span><input type="text" id="__ss" value="${esc(s.site_sub||'')}"></label>
-      <label class="fld"><span>عنوان الهيرو</span><input type="text" id="__ht" value="${esc(s.hero_title||'')}"></label>
-      <label class="fld"><span>الجزء المميز</span><input type="text" id="__ha" value="${esc(s.hero_accent||'')}"></label>
-      <label class="fld"><span>نص الهيرو</span><textarea id="__hx" rows="2">${esc(s.hero_text||'')}</textarea></label>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">نصوص الأزرار</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <label class="fld"><span>كيك</span><input type="text" id="__bk" value="${esc(s.btn_kick||'')}"></label>
-        <label class="fld"><span>يوتيوب</span><input type="text" id="__by" value="${esc(s.btn_yt||'')}"></label>
-        <label class="fld"><span>تويتر</span><input type="text" id="__btw" value="${esc(s.btn_tw||'')}"></label>
-        <label class="fld"><span>تيليجرام</span><input type="text" id="__btg" value="${esc(s.btn_tg||'')}"></label>
-      </div>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">قوالب الإشعارات</div>
-      <label class="fld"><span>قالب كيك</span><textarea id="__tk" rows="3" class="mono">${esc(s.tpl_kick||'')}</textarea></label>
-      <label class="fld"><span>قالب يوتيوب</span><textarea id="__ty" rows="3" class="mono">${esc(s.tpl_yt||'')}</textarea></label>
-      <label class="fld"><span>قالب تويتر</span><textarea id="__ttw" rows="3" class="mono">${esc(s.tpl_twitter||'')}</textarea></label>
-      <label class="fld"><span>قالب ديسكورد</span><textarea id="__td" rows="3" class="mono">${esc(s.tpl_discord||'')}</textarea></label>
-      <div class="mu" style="font-size:11.5px;margin-top:-4px">المتغيرات: {name} {title} {content} {author} {author_no_at} {url} {channel}</div>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">البوت</div>
-      <label class="fld"><span>اسم البوت المخصص</span><input type="text" id="__bn" value="${esc(s.bot_name_custom||'')}"></label>
-      <label class="fld"><span>رابط دعوة البوت</span><input type="text" id="__bi" value="${esc(s.bot_invite_url||'')}"></label>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">✉️ رسائل تيليجرام</div>
-      <label class="fld"><span>رسالة التحقق (لتوثيق القناة)</span>
-        <textarea id="__ttv" rows="4" class="mono">${esc(s.tpl_tg_verify||'')}</textarea>
-      </label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغيرات: <code>{site_user}</code> <code>{chat_name}</code></div>
-      <label class="fld"><span>رسالة النجاح (بعد توثيق القناة)</span>
-        <textarea id="__tts" rows="4" class="mono">${esc(s.tpl_tg_success||'')}</textarea>
-      </label>
-      <label class="fld"><span>رسالة ربط الحساب (تحتوي رمز)</span>
-        <textarea id="__ttl" rows="4" class="mono">${esc(s.tpl_tg_link||'')}</textarea>
-      </label>
-      <div class="mu" style="font-size:11.5px;margin-top:-6px">المتغير: <code>{code}</code></div>
-    </div>
-    <button class="btn pri wide" id="adSaveSettings" style="margin-bottom:20px">${IC.check} حفظ الإعدادات</button>`;
-    
-  $('#__twsave').onclick = async () => {
-    const token = $('#__twkey').value.trim();
-    try {
-      await api('/api/admin/twitter', { method:'POST', body: { bearer_token: token } });
-      toast('تم الحفظ', 'ok'); await loadSettings(); renderAdminSettings(c);
-    } catch (e) { toast(e.message, 'bad'); }
-  };
-
-  $('#adSaveSettings').onclick = async () => {
-    try {
-      await api('/api/settings', { method:'POST', body: {
-        registration_enabled: $('#__regen').checked ? '1' : '0',
-        default_lim_kick: $('#__dlk').value, default_lim_yt: $('#__dly').value, default_lim_tw: $('#__dltw').value, default_lim_tg: $('#__dlt').value,
-        bonus_lim_kick: $('#__blk').value, bonus_lim_yt: $('#__bly').value, bonus_lim_tw: $('#__bltw').value, bonus_lim_tg: $('#__blt').value,
-        required_channel_id: $('#__rchid').value.trim(), required_channel_name: $('#__rchnm').value.trim(),
-        required_channel_url: $('#__rchurl').value.trim(), required_channel_msg: $('#__rchmsg').value.trim(),
-        signup_welcome_title: $('#__swt').value.trim(), signup_welcome_text: $('#__swx').value.trim(),
-        site_name: $('#__sn').value, site_sub: $('#__ss').value, hero_title: $('#__ht').value, hero_accent: $('#__ha').value, hero_text: $('#__hx').value,
-        btn_kick: $('#__bk').value, btn_yt: $('#__by').value, btn_tw: $('#__btw').value, btn_tg: $('#__btg').value, btn_discord: $('#__bdc')?.value || 'عرض الروم',
-        tpl_kick: $('#__tk').value, tpl_yt: $('#__ty').value, tpl_twitter: $('#__ttw').value, tpl_discord: $('#__td').value,
-        tpl_tg_verify: $('#__ttv').value, tpl_tg_success: $('#__tts').value, tpl_tg_link: $('#__ttl').value,
-        bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
-        lim_kick: $('#__lk')?.value || '10', lim_yt: $('#__ly')?.value || '5', lim_tw: $('#__ltw')?.value || '3', lim_tg: $('#__lt')?.value || '3',
-        guest_mode: '1',
-      }});
-      toast('تم الحفظ', 'ok'); await loadSettings();
-    } catch (e) { toast(e.message, 'bad'); }
-  };
-}
-
-async function renderAdminSystem(c) {
-  await loadSettings();
-  const s = S.settings || {};
-  const isMnt = s.maintenance === '1';
-  const stats = S.admin.stats || {};
-  c.innerHTML = `
-    <div class="sec-h"><div class="sec-title">النظام <span>.</span></div></div>
-    <div class="ad-user-card" style="${isMnt ? 'border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)' : ''}">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:8px;display:flex;align-items:center;gap:10px">${IC.wrench} وضع الصيانة ${isMnt ? '<span class="pill bad">مفعّل</span>' : '<span class="pill ok">معطّل</span>'}</div>
-      <div class="mu" style="font-size:12.5px;line-height:1.7;margin-bottom:12px">
-        ✅ <b>لم يعد يقفل الموقع</b> — يظهر شريط تنبيه أحمر أعلى الصفحة للمستخدمين، وتُقيَّد عمليات الإضافة/الإرسال. المالك يمكنه العمل بحرية.
-      </div>
-      <label class="fld"><span>عنوان النافذة</span><input type="text" id="__mttl" value="${esc(s.maintenance_title||'🔧 صيانة مؤقتة')}"></label>
-      <label class="fld"><span>نص الصيانة</span><textarea id="__mtxt" rows="3">${esc(s.maintenance_text||'الموقع في صيانة مؤقتة — نرجع قريباً')}</textarea></label>
-      <button class="btn ${isMnt?'ghost':'pri'} wide" id="__mtoggle" style="margin-bottom:8px">${isMnt ? IC.x + ' إيقاف' : IC.check + ' تفعيل'}</button>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:8px">${IC.refresh} أدوات</div>
-      <button class="btn ghost wide" id="__refreshDC" style="margin-bottom:8px">${IC.refresh} تحديث كاش ديسكورد</button>
-      <button class="btn ghost wide" id="__setupWH">${IC.link} إعادة ضبط Webhook تيليجرام</button>
-    </div>
-    <div class="ad-user-card">
-      <div style="font-weight:900;font-size:14.5px;margin-bottom:10px">معلومات تيليجرام</div>
-      <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
-        Public URL: <b style="font-family:var(--font-en);color:var(--text)">${esc(stats.public_url || 'غير مضبوط')}</b><br>
-        Webhook: <b style="color:${stats.webhook_set?'var(--green)':'var(--red)'}">${stats.webhook_set?'مفعّل':'غير مفعّل (يعمل polling)'}</b><br>
-        قنوات معروفة للبوت: <b style="color:var(--purple)">${stats.tg_known||0}</b><br>
-        <span class="mu" style="font-size:11.5px">لتفعيل Webhook أضف متغير <code>PUBLIC_URL</code> في Railway</span>
-      </div>
-    </div>`;
-  $('#__mtoggle').onclick = async () => {
-    try {
-      const nv = !isMnt;
-      await api('/api/admin/maintenance', { method:'POST', body: { enabled: nv, text: $('#__mtxt').value, title: $('#__mttl').value } });
-      toast(nv ? 'تم تفعيل الصيانة' : 'تم إيقاف', 'ok');
-      await loadSettings();
-      S.maintenance = nv;
-      renderAdminSystem(c);
-    } catch (e) { toast(e.message, 'bad'); }
-  };
-  $('#__refreshDC').onclick = async () => {
-    try { const r = await api('/api/discord/refresh', { method:'POST' }); toast('تم — ' + (r.channels||0) + ' روم', 'ok'); await loadFeeds(); } catch (e) { toast(e.message, 'bad'); }
-  };
-  $('#__setupWH').onclick = async () => {
-    try { const r = await api('/api/telegram/setup-webhook', { method:'POST' }); toast(r.ok ? 'تم ضبط Webhook ✅' : 'فشل: ' + (r.description || ''), r.ok ? 'ok' : 'bad'); } catch (e) { toast(e.message, 'bad'); }
-  };
-}
-
-/* ═══ EVENT DELEGATION ═══ */
-document.addEventListener('click', e => {
-  const item = e.target.closest('.sug-item');
-  if (item) {
-    item.classList.toggle('on');
-    const grid = item.closest('.sug-grid');
-    if (grid) {
-      const sel = grid.querySelectorAll('.sug-item.on').length;
-      const counter = document.getElementById('sugCount');
-      if (counter) counter.textContent = sel + ' محددة';
-    }
-    return;
-  }
-  const toggleAll = e.target.closest('#sugToggleAll');
-  if (toggleAll) {
-    const grid = document.getElementById('sugGrid');
-    if (grid) {
-      const items = grid.querySelectorAll('.sug-item');
-      const allOn = Array.from(items).every(x => x.classList.contains('on'));
-      items.forEach(x => x.classList.toggle('on', !allOn));
-      const counter = document.getElementById('sugCount');
-      if (counter) counter.textContent = (allOn ? 0 : items.length) + ' محددة';
-    }
-  }
-});
-
-window.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') { const m = $('#modal'); if (m && m.classList.contains('on')) m.classList.remove('on'); }
-});
-
-console.log('[RL] all functions loaded, calling boot()...');
-boot().catch(e => { console.error('[RL] boot error:', e); });
-console.log('[RL] script end');
-</script>
-</body>
-</html>
+        للحصول على المفتاح: اذهب إلى <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color:

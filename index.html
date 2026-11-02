@@ -167,6 +167,7 @@ textarea.mono{font-family:monospace;font-size:13px;direction:ltr;text-align:left
 select{cursor:pointer}
 select option{background:var(--panel);color:var(--text)}
 input[type="checkbox"]{-webkit-appearance:checkbox;appearance:checkbox;width:20px;height:20px;min-height:auto;padding:0;accent-color:var(--blue);cursor:pointer;display:inline-block;vertical-align:middle;box-shadow:none}
+input[type="range"]{width:100%;cursor:pointer;accent-color:var(--blue2);margin-top:8px}
 .err{color:#f87171;font-size:12.5px;text-align:center;min-height:20px;margin-top:12px;font-weight:700}
 
 /* ═══ الأزرار ═══ */
@@ -798,6 +799,25 @@ function applyTheme(theme) {
   if (meta && theme.c1) meta.setAttribute('content', theme.c1);
 }
 
+function applyGlass(g) {
+  if (!g) return;
+  const r = document.documentElement.style;
+  if (g.blur) r.setProperty('--g-blur', g.blur + 'px');
+  if (g.sat)  r.setProperty('--g-sat', g.sat + '%');
+  if (g.fill !== undefined) r.setProperty('--g-fill', 'rgba(255,255,255,' + g.fill + ')');
+
+  let st = document.getElementById('__glassOverride');
+  if (!st) {
+    st = document.createElement('style');
+    st.id = '__glassOverride';
+    document.head.appendChild(st);
+  }
+  st.textContent =
+    '.tabbar{background-color:rgba(12,18,32,' + (g.tabbar_alpha ?? 0.46) + ')!important;}' +
+    '.sheet{background-color:rgba(14,20,34,' + (g.sheet_alpha ?? 0.62) + ')!important;}' +
+    '.seg{background-color:rgba(12,18,32,' + (g.seg_alpha ?? 0.50) + ')!important;}';
+}
+
 /* ═══ PUSH ═══ */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -857,6 +877,7 @@ async function boot() {
     const sp = $('#spLogo');
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
     if (b.theme) applyTheme(b.theme);
+    if (b.glass) applyGlass(b.glass);
     console.log('[RL] boot loaded, maintenance=', S.maintenance);
   } catch (e) {
     console.log('[RL] boot failed:', e.message);
@@ -3103,7 +3124,33 @@ async function renderAdminAppearance(c) {
         <label class="fld"><span>المميز</span><input type="color" id="__ac" value="${esc(s.site_ac || '#0b55ea')}"></label>
       </div>
       <button class="btn pri wide" id="__saveCustom" style="margin-top:14px">${IC.check} حفظ</button>
+    </div>
+    
+    <!-- كارت شفافية الزجاج -->
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">🧊 شفافية Liquid Glass</div>
+      
+      <label class="fld"><span>قوة البلور — <b id="__gbv"></b>px</span>
+        <input type="range" id="__gblur" min="0" max="60" step="1"></label>
+        
+      <label class="fld"><span>التشبّع — <b id="__gsv"></b>%</span>
+        <input type="range" id="__gsat" min="100" max="300" step="5"></label>
+        
+      <label class="fld"><span>شفافية البطاقات — <b id="__gfv"></b></span>
+        <input type="range" id="__gfill" min="0" max="0.3" step="0.005"></label>
+        
+      <label class="fld"><span>شفافية الشريط السفلي — <b id="__gtv"></b></span>
+        <input type="range" id="__gtab" min="0" max="1" step="0.02"></label>
+        
+      <label class="fld"><span>شفافية النوافذ المنبثقة — <b id="__gshv"></b></span>
+        <input type="range" id="__gsheet" min="0" max="1" step="0.02"></label>
+        
+      <label class="fld"><span>شفافية سويتشر المنصات — <b id="__gsegv"></b></span>
+        <input type="range" id="__gseg" min="0" max="1" step="0.02"></label>
+        
+      <button class="btn pri wide" id="__gsave" style="margin-top:14px">${IC.check} حفظ الشفافية</button>
     </div>`;
+    
   $('#__logoUp').onclick = () => $('#__logoFile').click();
   $('#__logoFile').onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
@@ -3138,6 +3185,52 @@ async function renderAdminAppearance(c) {
       await api('/api/settings', { method:'POST', body: { site_c1: $('#__c1').value, site_c2: $('#__c2').value, site_ac: $('#__ac').value, site_theme: 'custom' } });
       applyTheme({ c1: $('#__c1').value, c2: $('#__c2').value, ac: $('#__ac').value });
       toast('تم', 'ok');
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+
+  // ── ربط سلايدرات الزجاج ──
+  const gv = {
+    blur:         +s.glass_blur          || 22,
+    sat:          +s.glass_sat           || 185,
+    fill:         +s.glass_fill          || 0.055,
+    tabbar_alpha: +s.glass_tabbar_alpha  || 0.46,
+    sheet_alpha:  +s.glass_sheet_alpha   || 0.62,
+    seg_alpha:    +s.glass_seg_alpha     || 0.50,
+  };
+  const bindGlass = (inpId, lblId, key) => {
+    const i = $('#' + inpId), l = $('#' + lblId);
+    if (!i) return;
+    i.value = gv[key];
+    l.textContent = gv[key];
+    i.oninput = () => { l.textContent = i.value; };
+  };
+  bindGlass('__gblur', '__gbv',  'blur');
+  bindGlass('__gsat',  '__gsv',  'sat');
+  bindGlass('__gfill', '__gfv',  'fill');
+  bindGlass('__gtab',  '__gtv',  'tabbar_alpha');
+  bindGlass('__gsheet','__gshv', 'sheet_alpha');
+  bindGlass('__gseg',  '__gsegv','seg_alpha');
+  
+  $('#__gsave').onclick = async () => {
+    try {
+      await api('/api/settings', { method:'POST', body: {
+        glass_blur:         $('#__gblur').value,
+        glass_sat:          $('#__gsat').value,
+        glass_fill:         $('#__gfill').value,
+        glass_tabbar_alpha: $('#__gtab').value,
+        glass_sheet_alpha:  $('#__gsheet').value,
+        glass_seg_alpha:    $('#__gseg').value,
+      }});
+      // تطبيق فوري بدون إعادة تحميل
+      applyGlass({
+        blur:         +$('#__gblur').value,
+        sat:          +$('#__gsat').value,
+        fill:         +$('#__gfill').value,
+        tabbar_alpha: +$('#__gtab').value,
+        sheet_alpha:  +$('#__gsheet').value,
+        seg_alpha:    +$('#__gseg').value,
+      });
+      toast('تم تطبيق الشفافية', 'ok');
     } catch (e) { toast(e.message, 'bad'); }
   };
 }

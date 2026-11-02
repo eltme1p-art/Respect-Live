@@ -10,8 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════
-   RESPECT LIVE — iOS Liquid Glass
-   زجاج سائل بهوية الموقع: أزرق داكن + Orbitron/Tajawal
+   RESPECT LIVE — iOS Liquid Glass + Simple Mode
    ═══════════════════════════════════════════════════════════ */
 :root{
   --blue:#0b55ea;--blue2:#1b67ff;--blue-rgb:11,85,234;
@@ -45,7 +44,7 @@ html{scroll-behavior:smooth;background:var(--bg);-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--text);font-family:var(--font-ar);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:calc(128px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background-image:linear-gradient(rgba(var(--blue-rgb),.04) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--blue-rgb),.04) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse at 50% 20%,#000 20%,transparent 78%)}
 body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 10% 12%,rgba(var(--blue-rgb),.14),transparent 42%),radial-gradient(circle at 92% 70%,rgba(var(--blue-rgb),.10),transparent 46%)}
-/* كرات الإضاءة خلف الزجاج — هي التي تعطي الانكسار الحقيقي */
+/* كرات الإضاءة خلف الزجاج */
 .ambient{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
 .ambient i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;will-change:transform}
 .ambient i:nth-child(1){width:46vmax;height:46vmax;right:-14vmax;top:-12vmax;background:radial-gradient(circle,rgba(var(--blue-rgb),.75),transparent 68%);animation:orbA 22s ease-in-out infinite alternate}
@@ -90,7 +89,7 @@ svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:mid
 
 .page{display:none}
 .page.on{display:block;animation:pageIn .45s var(--ease) both}
-@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px) scale(0.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 #view{animation:pageIn .45s var(--ease) both}
 
 /* ═══ الشريط العلوي ═══ */
@@ -114,7 +113,7 @@ svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:mid
 .hdr-login{height:42px;padding:0 16px;border-radius:999px;font-weight:900;font-size:13px;display:inline-flex;align-items:center;gap:7px;color:#fff;background:linear-gradient(160deg,rgba(var(--blue-rgb),.95),rgba(var(--blue-rgb),.6));box-shadow:var(--g-rim),0 6px 20px rgba(var(--blue-rgb),.4);transition:transform .3s var(--spring)}
 .hdr-login:active{transform:scale(.93)}
 
-/* ═══ شريط التبويب السفلي (4 أزرار + عدسة سائلة) ═══ */
+/* ═══ شريط التبويب السفلي ═══ */
 .tabbar{--n:4;--i:0;position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:100;width:min(92%,430px);height:74px;padding:6px;border-radius:999px;display:grid;grid-template-columns:repeat(var(--n),1fr);background-color:rgba(12,18,32,.46);-webkit-backdrop-filter:blur(30px) saturate(200%) brightness(1.08);backdrop-filter:blur(30px) saturate(200%) brightness(1.08);box-shadow:var(--g-rim),0 22px 54px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.25)}
 .tab-lens{position:absolute;top:6px;bottom:6px;inset-inline-start:6px;width:calc((100% - 12px)/var(--n));border-radius:999px;transform:translateX(calc(var(--i) * -100%));transition:transform .55s var(--spring);pointer-events:none;background:radial-gradient(120% 150% at 28% 0%,rgba(255,255,255,.30),rgba(255,255,255,.05) 55%),rgba(var(--blue-rgb),.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),inset 0 9px 14px rgba(255,255,255,.12),inset 0 -10px 16px rgba(var(--blue-rgb),.38),0 8px 24px rgba(var(--blue-rgb),.45)}
 .tabbar button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);border-radius:999px;transition:color .3s var(--ease-soft),transform .3s var(--spring)}
@@ -125,7 +124,7 @@ svg{width:20px;height:20px;flex-shrink:0;display:inline-block;vertical-align:mid
 .tabbar button.on svg{transform:translateY(-1px) scale(1.12);filter:drop-shadow(0 0 8px rgba(120,170,255,.9))}
 .tabbar .tb-dot{position:absolute;top:9px;inset-inline-end:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid rgba(12,18,32,.9)}
 
-/* ═══ Segmented (اختيار المنصة) ═══ */
+/* ═══ Segmented ═══ */
 .seg-wrap{padding:0 var(--pad);margin-bottom:18px;position:sticky;top:calc(76px + env(safe-area-inset-top));z-index:40}
 .seg{--n:4;--i:0;position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);padding:5px;border-radius:999px;background-color:rgba(12,18,32,.5)}
 .seg-lens{position:absolute;top:5px;bottom:5px;inset-inline-start:5px;width:calc((100% - 10px)/var(--n));border-radius:999px;transform:translateX(calc(var(--i) * -100%));transition:transform .5s var(--spring),background .3s;pointer-events:none;background:radial-gradient(120% 160% at 30% 0%,rgba(255,255,255,.30),rgba(255,255,255,.04) 60%),rgba(var(--blue-rgb),.40);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),inset 0 8px 12px rgba(255,255,255,.10),inset 0 -8px 12px rgba(var(--blue-rgb),.35),0 6px 20px rgba(var(--blue-rgb),.4)}
@@ -607,6 +606,31 @@ button.gl-row:active,a.gl-row:active{background-color:rgba(255,255,255,.08)}
 .lock-cover h3{font-size:15px;font-weight:900}
 .lc-icon{display:grid;place-items:center;border-radius:18px;color:#fff;background-image:var(--g-sheen);background-color:rgba(var(--blue-rgb),.3);border:1px solid var(--line-2);box-shadow:var(--g-rim)}
 .msg-it a{direction:rtl}
+
+/* ═══ الوضع البسيط (Simple Mode) ═══ */
+body.simple-mode * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  box-shadow: none !important;
+}
+body.simple-mode .glass, 
+body.simple-mode .top, 
+body.simple-mode .tabbar, 
+body.simple-mode .sheet,
+body.simple-mode .hero-card,
+body.simple-mode .ch,
+body.simple-mode .login-card,
+body.simple-mode .adm-card,
+body.simple-mode .q-tile,
+body.simple-mode .gl-group {
+  background: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  background-image: none !important;
+}
+body.simple-mode .ambient { display: none !important; }
+body.simple-mode .ch-cover::after { background: var(--panel) !important; }
 </style>
 </head>
 <body>
@@ -738,7 +762,6 @@ function modal(opts) {
     const m = $('#modal'), sh = $('#sheet');
     sh.className = 'sheet' + (opts.small ? ' sm' : '') + (opts.wide ? ' wide' : '') + (opts.xwide ? ' xwide' : '');
     let html = '<div class="grab"></div>';
-    // زر الإلغاء (أو الإغلاق) في الأعلى دائماً — لا حاجة للنزول لأسفل النافذة
     if (opts.cancel !== false) html += '<div class="sh-top"><button class="btn ghost sm" id="__mc" type="button">' + IC.x + ' ' + esc(opts.cancelText || 'إلغاء') + '</button></div>';
     else html += '<div class="sh-top"><button class="btn ghost sm" id="__mx" type="button">' + IC.x + ' إغلاق</button></div>';
     if (opts.title) html += '<div class="sh-title">' + esc(opts.title) + '</div>';
@@ -760,6 +783,37 @@ function modal(opts) {
   });
 }
 const dlgConfirm = (msg, title, danger) => modal({ title: title || 'تأكيد', sub: msg, danger, okText:'تأكيد' });
+
+async function askUiMode() {
+    if (localStorage.getItem('rl_ui_mode_chosen')) return;
+    const m = $('#modal'), sh = $('#sheet');
+    sh.className = 'sheet sm';
+    sh.innerHTML = `
+        <div class="grab"></div>
+        <div class="sh-title">أهلاً بك!</div>
+        <div class="sh-sub">اختر طريقة العرض المفضلة لك. يمكنك تغييرها لاحقاً من صفحة الحساب.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+            <button class="btn pri wide" id="__modeGlass" style="padding:20px;flex-direction:column;gap:8px;height:auto">
+                ${IC.sparkle} <b>الوضع العادي (Liquid Glass)</b>
+                <small style="font-weight:400;opacity:0.8">تأثيرات بصرية، شفافية، وحركات سلسة</small>
+            </button>
+            <button class="btn ghost wide" id="__modeSimple" style="padding:20px;flex-direction:column;gap:8px;height:auto">
+                ${IC.cog} <b>الوضع البسيط (خفيف)</b>
+                <small style="font-weight:400;opacity:0.8">ألوان صلبة، بدون تأثيرات زجاجية، أسرع للأجهزة الضعيفة</small>
+            </button>
+        </div>
+    `;
+    m.classList.add('on');
+    const close = (mode) => {
+        m.classList.remove('on');
+        localStorage.setItem('rl_ui_mode_chosen', '1');
+        localStorage.setItem('rl_ui_mode', mode);
+        document.body.classList.toggle('simple-mode', mode === 'simple');
+        if (S.me && S.me.user) api('/api/me/profile', { method:'PATCH', body: { ui_mode: mode } }).catch(()=>{});
+    };
+    $('#__modeGlass').onclick = () => close('glass');
+    $('#__modeSimple').onclick = () => close('simple');
+}
 
 /* ═══ STATE ═══ */
 const S = {
@@ -878,6 +932,15 @@ async function boot() {
     if (sp && b.site_logo) sp.innerHTML = '<img src="' + esc(b.site_logo) + '" alt="">';
     if (b.theme) applyTheme(b.theme);
     if (b.glass) applyGlass(b.glass);
+    
+    // Apply UI Mode & Splash Code
+    const savedMode = localStorage.getItem('rl_ui_mode') || 'glass';
+    document.body.classList.toggle('simple-mode', savedMode === 'simple');
+    if (b.splash_code) {
+        const splash = $('#splash');
+        if (splash) splash.innerHTML = b.splash_code;
+    }
+    
     console.log('[RL] boot loaded, maintenance=', S.maintenance);
   } catch (e) {
     console.log('[RL] boot failed:', e.message);
@@ -887,6 +950,10 @@ async function boot() {
     const me = await api('/api/me');
     S.me = me;
     S.maintenance = !!me.maintenance;
+    if (me.user.ui_mode) {
+        localStorage.setItem('rl_ui_mode', me.user.ui_mode);
+        document.body.classList.toggle('simple-mode', me.user.ui_mode === 'simple');
+    }
     console.log('[RL] logged in as', me.user.username, 'is_member=', me.user.is_member);
     await loadAll();
     await checkPushStatus();
@@ -910,6 +977,9 @@ async function boot() {
     const sp = $('#splash');
     if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 900); }
   }, 1300);
+  
+  // Ask UI mode on first visit
+  setTimeout(() => askUiMode(), 1500);
 }
 
 async function loadAll() {
@@ -1106,7 +1176,6 @@ function renderView() {
   S.view = 'home'; return viewHome(v);
 }
 
-/* ═══ NEWS PAGE ═══ */
 function viewNews(v) {
   const kindLabel = k => k === 'update' ? 'تحديث' : k === 'maintenance' ? 'صيانة' : k === 'warning' ? 'تحذير' : 'خبر';
   v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الأخبار والإعلانات <span>.</span></div></div>${S.news.length ? '<div id="newsList"></div>' : `<div class="empty"><div class="em-icon">${IC.newsp}</div><h3>لا أخبار</h3></div>`}</div>`;
@@ -1157,7 +1226,6 @@ async function showNewsPopup() {
   }
 }
 
-/* ═══ HOME ═══ */
 function viewHome(v) {
   const logged = isLogged();
   const counts = logged
@@ -1231,7 +1299,6 @@ function viewHome(v) {
   $$('[data-open]', v).forEach(t => { t.onclick = () => window.open(t.dataset.open, '_blank', 'noopener'); });
 }
 
-/* ═══ SOCIAL (كيك · يوتيوب · تويتر · ديسكورد) ═══ */
 const socialItems = () => [
   { k:'kick', t:'كيك' },
   { k:'yt',   t:'يوتيوب' },
@@ -1269,7 +1336,6 @@ function renderSocialBody() {
   return viewChannels(b, S.social);
 }
 
-/* ═══ TELEGRAM ═══ */
 function viewTelegram(v) {
   const logged = isLogged();
   const u = logged ? S.me.user : null;
@@ -1316,7 +1382,6 @@ function viewTelegram(v) {
   viewChannels($('#tgBody'), 'tg');
 }
 
-/* ═══ CHANNELS ═══ */
 function limitBarHTML(kind) {
   const l = S.limits[kind] || { used:0, limit:10, remaining:10 };
   const pct = l.limit > 0 ? Math.min(100, (l.used / l.limit) * 100) : 0;
@@ -1358,10 +1423,23 @@ function viewChannels(v, kind) {
   const ab = $('#addBtn'); if (ab && !lim.isFull && canAdd) ab.onclick = () => isTg ? openTgVerify() : openAddChannel(kind);
 }
 
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    let color = '#';
+    for (let i = 0; i < 3; i++) color += ('00' + ((hash >> (i * 8)) & 0xFF).toString(16)).slice(-2);
+    return color;
+}
+
 function chCard(kind, r) {
   const card = el('div', 'ch');
+  const brandColor = stringToColor(r.slug || r.name || r.username || 'channel');
   const brandImg = r.banner || r.avatar || '';
-  if (brandImg) card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
+  if (brandImg) {
+      card.style.setProperty('--ch-brand', 'url("' + brandImg.replace(/"/g, '%22') + '")');
+  } else {
+      card.style.setProperty('--ch-brand', `linear-gradient(135deg, ${brandColor}, rgba(0,0,0,0.8))`);
+  }
 
   if (!isLogged()) {
     card.innerHTML = `<div style="padding:14px;filter:blur(14px) saturate(.7);pointer-events:none"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue2))"></div><div style="flex:1"><div style="height:16px;background:rgba(255,255,255,.15);border-radius:6px;margin-bottom:6px;width:70%"></div><div style="height:12px;background:rgba(255,255,255,.08);border-radius:6px;width:50%"></div></div></div><div style="height:140px;background:rgba(255,255,255,.05);border-radius:12px"></div></div><div class="lock-cover"><div class="lc-icon" style="width:52px;height:52px">${IC.lock}</div><h3>سجّل دخولك</h3></div>`;
@@ -1380,7 +1458,7 @@ function chCard(kind, r) {
   const avatarHTML = r.avatar ? `<img src="${esc(r.avatar)}" alt="" onerror="this.style.display='none'">` : `<div class="ph">${IC[kind]}</div>`;
 
   card.innerHTML = `
-    <div class="ch-cover">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
+    <div class="ch-cover" style="${!cover ? `background:linear-gradient(135deg, ${brandColor}, rgba(0,0,0,0.6))` : ''}">${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}${liveBadge}${offBadge}${noSend}${verifiedBadge}</div>
     <div class="ch-head">${avatarHTML}<div class="ch-info"><b>${esc(title)}</b><small>${esc(slug)}</small></div></div>
     ${kind === 'kick' && r.live && r.title ? `<div class="ch-live"><div>${esc(r.title)}</div><span>${r.viewers||0} ${IC.eye}</span></div>` : ''}
     <div class="ch-acts">
@@ -1568,7 +1646,6 @@ async function openAddChannel(kind) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TWITTER FILTERS ═══ */
 function twFiltersHTML(f) {
   f = f || {};
   const chk = (id, label, sub, on) => `<label class="tw-opt"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><div><b>${label}</b>${sub ? `<small>${sub}</small>` : ''}</div></label>`;
@@ -1603,7 +1680,6 @@ async function editTwFilters(r) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG MESSAGE LOG (زر المعلومات) ═══ */
 async function showTgMessages(r) {
   let res;
   try { res = await api('/api/channels/tg/' + r.id + '/messages'); } catch (e) { return toast(e.message, 'bad'); }
@@ -1622,7 +1698,6 @@ async function showTgMessages(r) {
   await modal({ title: 'آخر الرسائل', sub: (res.name || r.name || 'قناة تيليجرام') + ' — آخر 20 رسالة', html, noOk: true, cancelText: 'إغلاق', wide: true });
 }
 
-/* ═══ TG VERIFY ═══ */
 async function openTgVerify() {
   if (!isLogged()) return;
   if (!canWrite()) return toast('الموقع في صيانة — لا يمكن التوثيق', 'bad');
@@ -1635,7 +1710,7 @@ async function openTgVerify() {
   }
   const html = `
     <div class="callout green">${IC.shieldCheck}<div><b>التوثيق عبر مشرف القناة</b><br><span class="mu">يصل رمز من 6 أرقام إلى مشرف القناة في تيليجرام (يحتاج أن يفتح البوت ويضغط /start).</span></div></div>
-    <div class="callout orange">${IC.warn}<div><b>قبل البدء:</b> أضف البوت <b>كمشرف</b> في القناة مع صلاحية نشر الرسائل.</div></div>
+    <div class="callout orange">${IC.warn}<div><b>قبل البدء:</b> أضف البوت <b><a href="https://t.me/${esc(S.boot.bot_name_custom || 'RespectLiveBot')}" target="_blank" style="color:var(--orange);text-decoration:underline">@${esc(S.boot.bot_name_custom || 'RespectLiveBot')}</a></b> كمشرف في القناة مع صلاحية نشر الرسائل.<br><small>أيضاً تأكد من فتح البوت والضغط على /start</small></div></div>
     <label class="fld"><span>قناة تيليجرام</span>
       <input type="text" id="__tgc" placeholder="@mychannel أو رابط t.me أو الرقم -100...">
       <small class="mu" style="display:block;margin-top:6px;font-size:11.5px">للقنوات الخاصة اكتب رقم القناة (يبدأ بـ -100)</small>
@@ -1808,7 +1883,6 @@ async function tgVerifyCode(verifyId, chatName, chatAvatar) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ TG ACCOUNT LINK ═══ */
 async function openLinkTgModal() {
   if (!isLogged()) return;
   if (!S.boot.has_telegram) return toast('تيليجرام غير مضبوط في السيرفر', 'bad');
@@ -1913,7 +1987,6 @@ async function loadMe() {
   } catch (e) {}
 }
 
-/* ═══ SEND MODAL ═══ */
 async function openSendModal() {
   if (!isLogged()) return;
   if (!canWrite()) return toast('الموقع في صيانة — لا يمكن الإرسال', 'bad');
@@ -1998,7 +2071,6 @@ async function openSendModal() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ DISCORD ═══ */
 function viewDiscord(v) {
   v.innerHTML = `
     <div class="sec" style="padding-top:0">
@@ -2371,7 +2443,6 @@ async function openAddFeed() {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ NOTIFICATIONS ═══ */
 function viewNotifs(v) {
   v.innerHTML = `<div class="sec" style="padding-top:0"><div class="sec-h"><div class="sec-title">الإشعارات <span>.</span></div>${S.notifs.length ? `<div style="display:flex;gap:7px"><button class="btn sm ghost" id="readAll">قرأت الكل</button><button class="btn sm danger" id="clearAll">مسح</button></div>` : ''}</div><div id="ntList"></div></div>`;
   const l = $('#ntList');
@@ -2386,7 +2457,6 @@ function viewNotifs(v) {
   const ca = $('#clearAll'); if (ca) ca.onclick = async () => { const ok = await dlgConfirm('مسح كل الإشعارات؟', 'تأكيد', true); if (!ok) return; try { await api('/api/notifs/clear', { method:'POST' }); await loadNotifs(); renderApp(); } catch (e) {} };
 }
 
-/* ═══ ACCOUNT PAGE (صفحة كاملة) ═══ */
 const fmtDate = ts => ts ? new Date(ts * 1000).toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' }) : '—';
 const ACT_LABELS = {
   login_ok:['تسجيل دخول','ok'], login_fail:['محاولة دخول فاشلة','bad'], login_banned:['محاولة دخول محظورة','bad'],
@@ -2476,6 +2546,18 @@ function renderAccountBody(v) {
       <div class="gl-row"><span class="ib sm">${IC.clock}</span><span class="tx"><b>آخر تسجيل دخول</b></span><span class="tr">${a.last_login ? fmtTime(a.last_login) : '—'}</span></div>
       <div class="gl-row"><span class="ib sm green">${IC.device}</span><span class="tx"><b>الجلسات النشطة</b><small>${sessions != null ? sessions + ' جهاز مسجّل الدخول' : '—'}</small></span>${sessions > 1 ? `<button class="btn sm ghost danger" id="acRevoke">إنهاء الأخرى</button>` : ''}</div>
     </div>
+    
+    <div class="gl-title">${IC.sparkle} إعدادات العرض</div>
+    <div class="gl-group">
+      <div class="gl-row">
+        <span class="ib sm purple">${IC.sparkle}</span>
+        <span class="tx"><b>وضع الواجهة</b><small>${localStorage.getItem('rl_ui_mode') === 'simple' ? 'بسيط (خفيف)' : 'عادي (Liquid Glass)'}</small></span>
+        <label class="sw">
+          <input type="checkbox" id="acUiMode" ${localStorage.getItem('rl_ui_mode') !== 'simple' ? 'checked' : ''}>
+          <i></i>
+        </label>
+      </div>
+    </div>
 
     ${acts.length ? `
     <div class="gl-title">${IC.activity} النشاط الأخير</div>
@@ -2509,6 +2591,16 @@ function renderAccountBody(v) {
   });
   const pc = $('#acPush', v);
   if (pc) pc.onchange = async () => { pc.disabled = true; try { await (pc.checked ? enablePush() : disablePush()); } finally { pc.checked = !!S.pushEnabled; pc.disabled = false; } };
+  
+  const uiModeSw = $('#acUiMode', v);
+  if (uiModeSw) uiModeSw.onchange = async () => {
+      const mode = uiModeSw.checked ? 'glass' : 'simple';
+      localStorage.setItem('rl_ui_mode', mode);
+      document.body.classList.toggle('simple-mode', mode === 'simple');
+      try { await api('/api/me/profile', { method:'PATCH', body: { ui_mode: mode } }); } catch(e) {}
+      toast(mode === 'simple' ? 'تم تفعيل الوضع البسيط' : 'تم تفعيل الوضع العادي', 'ok');
+      renderAccountBody(v);
+  };
 }
 
 async function openPasswordModal() {
@@ -2571,7 +2663,6 @@ async function openSuggestion() {
   catch (e) { toast(e.message, 'bad'); }
 }
 
-/* ═══ ADMIN ═══ */
 async function openAdmin() {
   if (!isOwner()) { S.view = 'home'; return renderApp(); }
   if (!isAdminPath()) { try { history.pushState({ adm: 1 }, '', '/admin'); } catch (e) {} }
@@ -2911,7 +3002,6 @@ async function adminUserAction(u, act) {
   }
 }
 
-/* ═══ ADMIN NEWS ═══ */
 function renderAdminNews(c) {
   const rows = S.admin.news || [];
   c.innerHTML = `<div class="sec-h"><div class="sec-title">الأخبار <span>(${rows.length})</span></div><button class="btn pri sm" id="adAddNews">${IC.plus} خبر جديد</button></div><div id="adNewsList"></div>`;
@@ -3111,6 +3201,11 @@ async function renderAdminAppearance(c) {
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">شعار الموقع</div>
       <div class="img-preview-box ${s.site_logo ? '' : 'empty'}" id="__logoBox" style="max-width:200px;margin:0 auto 14px">${s.site_logo ? `<img src="${esc(s.site_logo)}" alt="">` : '<div>لا شعار</div>'}</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn sm" id="__logoUp">${IC.upload} رفع</button><button class="btn sm ghost" id="__logoDel">${IC.x} حذف</button><input type="file" id="__logoFile" accept="image/*" style="display:none"></div>
+    </div>
+    <div class="ad-user-card">
+      <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">كود الأنميشن المخصص (Splash Screen)</div>
+      <div class="mu" style="font-size:12px;line-height:1.7;margin-bottom:10px">ألصق كود HTML/JS الخاص بشاشة الدخول هنا. سيتم استبدال الأنميشن الافتراضي بهذا الكود (يُفضل أن يكون كود CSS/HTML بسيط).</div>
+      <textarea id="__splashCode" class="mono" rows="6" placeholder="<div>Hello World</div>">${esc(s.splash_code || '')}</textarea>
     </div>
     <div class="ad-user-card">
       <div style="font-weight:900;font-size:14.5px;margin-bottom:14px">الثيمات</div>
@@ -3434,6 +3529,7 @@ async function renderAdminSettings(c) {
         bot_name_custom: $('#__bn').value, bot_invite_url: $('#__bi').value,
         lim_kick: $('#__lk').value, lim_yt: $('#__ly').value, lim_tg: $('#__lt').value,
         guest_mode: $('#__gm').checked ? '1' : '0',
+        splash_code: $('#__splashCode').value,
       }});
       toast('تم الحفظ', 'ok'); await loadSettings();
     } catch (e) { toast(e.message, 'bad'); }

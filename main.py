@@ -1,4 +1,4 @@
-"""Respect Live — v9 (Twitter/X + TG Quick Verify + TG Message Log + Admin Page + Suggestion Dedupe)"""
+"""Respect Live — v9 (Twitter/X + TG Quick Verify + TG Message Log + Admin Page + Suggestion Dedupe + UI Modes)"""
 import os, re, json, time, hashlib, secrets, sqlite3, asyncio
 import html as htmllib
 from urllib.parse import unquote
@@ -26,7 +26,7 @@ SITE_NAME = os.getenv("SITE_NAME", "Respect Live")
 SITE_COLOR = os.getenv("SITE_COLOR", "#0b55ea")
 DB_PATH = os.getenv("DB_PATH", "respect.db")
 GROQ_ENV_KEY = os.getenv("GROQ_API_KEY", "")
-TWITTER_ENV_KEY = os.getenv("TWITTER_BEARER_TOKEN", "")  # اختياري: يمكن إضافته من لوحة الإدارة بدلاً منه
+TWITTER_ENV_KEY = os.getenv("TWITTER_BEARER_TOKEN", "")
 SESSION_TTL = 7 * 24 * 3600
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
 MAX_PER_MIN_TG = 30
@@ -38,10 +38,9 @@ VERIFY_TTL = 600
 LINK_CODE_TTL = 600
 MEMBER_CHECK_TTL = 600
 BATCH_TW = 30
-TG_LOG_KEEP = 25      # عدد آخر الرسائل المحفوظة لكل قناة تيليجرام (خفيف على التخزين)
-TG_LOG_DAYS = 14      # وتُحذف تلقائياً بعد هذه المدة
+TG_LOG_KEEP = 25
+TG_LOG_DAYS = 14
 
-# خرائط الأنواع (كيك / يوتيوب / تيليجرام / تويتر)
 KIND_TABLE = {"kick": "kick_channels", "yt": "yt_channels", "tg": "tg_channels", "tw": "tw_channels"}
 KIND_IDCOL = {"kick": "slug", "yt": "channel_id", "tg": "chat_id", "tw": "username"}
 
@@ -147,6 +146,7 @@ def init_db():
         ("users","linked_tg_name","TEXT DEFAULT ''"),
         ("users","is_member","INTEGER DEFAULT 0"),
         ("users","member_checked","INTEGER DEFAULT 0"),
+        ("users","ui_mode","TEXT DEFAULT 'glass'"),
         ("kick_channels","btn_text","TEXT DEFAULT ''"),
         ("kick_channels","auto_send","INTEGER DEFAULT 1"),
         ("yt_channels","btn_text","TEXT DEFAULT ''"),
@@ -214,13 +214,13 @@ def init_db():
         "required_channel_msg": "🚀 للحصول على صلاحيات مضاعفة، انضم إلى قناتنا الرسمية عبر الرابط أدناه ثم اضغط تحقق.",
         "signup_welcome_title": "مرحباً بك!",
         "signup_welcome_text": "حسابك بصلاحيات محدودة (كيك 10، يوتيوب 5، تليجرام 1) وبدون وصول لصفحة الديسكورد. للترقية، اربط حسابك في تيليجرام وانضم للقناة الرسمية.",
-        # شفافية Liquid Glass
         "glass_blur": "22",
         "glass_sat": "185",
         "glass_fill": "0.055",
         "glass_tabbar_alpha": "0.46",
         "glass_sheet_alpha": "0.62",
         "glass_seg_alpha": "0.50",
+        "splash_code": "",
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
@@ -324,12 +324,10 @@ def require_discord(request):
     raise HTTPException(403, "غير مصرح — تحتاج وصول الديسكورد")
 
 def is_maintenance_blocking_write(u):
-    """يرجع True إذا كانت الصيانة مفعلة والمستخدم ليس مالك"""
     if cfg("maintenance", "0") != "1": return False
     return u["role"] != "owner"
 
 def get_user_limits(username, role):
-    """الأولوية: admin override → bonus (عضو) → default"""
     if role == "owner": return {"kick":9999,"yt":9999,"tg":9999,"tw":9999}
     c = db()
     u = c.execute("SELECT lim_kick,lim_yt,lim_tg,lim_tw,is_member,linked_tg_id FROM users WHERE username=?", (username,)).fetchone()
@@ -372,7 +370,6 @@ def limit_info(username, kind, role):
 async def tg_send(chat_id, text, image="", btn="", url=""):
     if not TELEGRAM_TOKEN: return False
     
-    # ⚡ إصلاح إرسال الصور: إذا كان الرابط نسبياً نضيف الدومين
     if image and image.startswith('/'):
         if PUBLIC_URL:
             image = PUBLIC_URL + image
@@ -384,7 +381,6 @@ async def tg_send(chat_id, text, image="", btn="", url=""):
     try:
         async with httpx.AsyncClient(timeout=15) as c:
             if image:
-                # ⚡ إذا كان النص طويلاً نرسل الصورة أولاً ثم النص
                 if len(text) > 1024:
                     await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendPhoto", json={**base,"photo":image})
                     r = await c.post("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", json={**base,"text":(text or ".")[:4096],"reply_markup":markup})
@@ -408,9 +404,7 @@ async def tg_api(method, body):
     except Exception as e:
         print("[TG API] " + str(e)); return {"ok": False}
 
-# ═══ المقترحات: منع التكرار وإعادة استخدام البيانات الموجودة ═══
 def find_default(kind, ident):
-    """يبحث عن القناة في مقترحات الإدارة (بالمعرّف الأساسي أو الاسم المستعار @handle/@user)"""
     ident = (ident or "").strip()
     if not ident: return None
     c = db()
@@ -423,7 +417,6 @@ def find_default(kind, ident):
         c.close()
 
 def shared_row(kind, ident):
-    """أي صف موجود لنفس القناة عند مستخدم آخر — نعيد استخدام بياناته بدل طلب شبكة جديد"""
     table = KIND_TABLE[kind]; col = KIND_IDCOL[kind]
     c = db()
     try:
@@ -448,13 +441,11 @@ def default_tg_info(chat_id):
     return {"name": d["name"] or d["identifier"], "username": d.get("alias") or "", "avatar": d["avatar"] or "", "chat_id": d["identifier"], "type": "channel"}
 
 def split_msg_img(msg):
-    """رسالة القناة المخصصة قد تحتوي {img:رابط} — نفصل الصورة عن النص"""
     msg = msg or ""
     m = re.search(r"\{img:([^}]+)\}", msg)
     img = m.group(1).strip() if m else ""
     return re.sub(r"\{img:[^}]+\}", "", msg).strip(), img
 
-# ═══ سجل رسائل تيليجرام (زر المعلومات) ═══
 def tg_log(tg_id, chat_id, source, source_name, text, image, url, ok):
     try:
         plain = htmllib.unescape(re.sub(r"<[^>]+>", "", text or "")).strip()[:300]
@@ -467,7 +458,6 @@ def tg_log(tg_id, chat_id, source, source_name, text, image, url, ok):
         print("[TG log] " + str(e))
 
 async def tg_deliver(rows, text, image, btn, url, source, source_name=""):
-    """يرسل مرة واحدة لكل chat_id (منع التكرار) ويسجّل الرسالة في سجل كل قناة معنية. يرجع {chat_id: نجاح}"""
     results = {}
     for tg in rows:
         cid = tg["chat_id"]
@@ -517,6 +507,7 @@ async def _cache_and_return_chat(chat):
             print("[TG cache save] " + str(e))
     return {"name": name, "username": username, "avatar": avatar, "chat_id": cid, "type": ctype}
 
+# ⚡ الدالة المحدثة لجلب بيانات القناة بشكل ذكي
 async def tg_get_chat_info(chat_input):
     if not TELEGRAM_TOKEN: return None
     s = str(chat_input or "").strip()
@@ -527,6 +518,8 @@ async def tg_get_chat_info(chat_input):
     elif s.startswith("@"): uname = s[1:]
     elif re.match(r"^-?\d+$", s): numeric = s
     elif re.match(r"^[A-Za-z0-9_]{5,}$", s): uname = s
+    
+    # 1. البحث في الكاش المحلي
     if uname or numeric:
         c = db()
         try:
@@ -545,6 +538,8 @@ async def tg_get_chat_info(chat_input):
         finally:
             try: c.close()
             except: pass
+            
+    # 2. محاولة getChat
     attempts = []
     if uname:
         attempts.append("@" + uname); attempts.append(uname)
@@ -556,6 +551,7 @@ async def tg_get_chat_info(chat_input):
             attempts.append("-100" + numeric[1:]); attempts.append(numeric[1:])
         else:
             attempts.append("-100" + numeric); attempts.append("-" + numeric)
+            
     seen = set(); last_err = ""
     for a in attempts:
         if a in seen: continue
@@ -568,6 +564,8 @@ async def tg_get_chat_info(chat_input):
                 last_err = j.get("description", "")
         except Exception as e:
             last_err = str(e)
+            
+    # 3. المحاولة الأخيرة عبر getUpdates
     try:
         j = await tg_api("getUpdates", {"limit": 100, "allowed_updates": ["channel_post", "my_chat_member", "message"]})
         if j.get("ok"):
@@ -586,6 +584,7 @@ async def tg_get_chat_info(chat_input):
                         return await _cache_and_return_chat(chat)
     except Exception as e:
         print("[TG getUpdates fallback] " + str(e))
+        
     print("[TG getChat] '" + s + "' failed: " + last_err)
     return None
 
@@ -624,7 +623,6 @@ async def tg_bot_id():
     return _BOT_ID["id"]
 
 async def tg_bot_admin_state(chat_id):
-    """هل البوت مشرف في القناة وقادر على قراءة منشوراتها؟ يرجع (نجاح، رسالة خطأ بالعربي)"""
     bid = await tg_bot_id()
     if not bid: return False, "تعذّر الاتصال بتيليجرام، حاول بعد قليل"
     j = await tg_api("getChatMember", {"chat_id": chat_id, "user_id": int(bid)})
@@ -644,7 +642,6 @@ def norm_chat(s):
     if re.match(r"^[A-Za-z][\w]{3,}$", s): return "@" + s
     return None
 
-# ═══ TG VERIFY (channel ownership) ═══
 async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     tpl = cfg("tpl_tg_verify", "🔐 <b>طلب توثيق قناة</b>\n\nالمستخدم <code>{site_user}</code> يحاول ربط قناة <b>{chat_name}</b>.\n\n<b>هل أنت من يحاول ذلك؟</b>")
     text = tpl.replace("{site_user}", site_username).replace("{chat_name}", chat_name)
@@ -652,7 +649,6 @@ async def send_verify_dm(vid, tg_user_id, site_username, chat_name):
     j = await tg_api("sendMessage", {"chat_id": tg_user_id, "text": text, "parse_mode": "HTML", "reply_markup": kb})
     return j["result"]["message_id"] if j.get("ok") else 0
 
-# ═══ TG LINK (account linking for membership) ═══
 async def send_link_code_dm(tg_user_id, code):
     tpl = cfg("tpl_tg_link", "🔐 <b>ربط حساب</b>\n\nرمز التحقق الخاص بك:\n\n<code>{code}</code>\n\n<i>صالح لمدة 10 دقائق.</i>")
     text = tpl.replace("{code}", code)
@@ -818,7 +814,6 @@ async def yt_resolve(input_str):
     return None
 
 async def resolve_yt(raw):
-    """يرجع (channel_id, handle) ويفضّل المقترحات والقنوات الموجودة قبل أي طلب شبكة"""
     raw = (raw or "").strip()[:300]
     m = re.search(r"UC[\w-]{22}", raw)
     if m: return m.group(0), ""
@@ -836,7 +831,6 @@ async def resolve_yt(raw):
     return None, ""
 
 async def kick_record(slug):
-    """بيانات قناة كيك للإضافة: من صف مشترك حديث، وإلا من الشبكة، وإلا من المقترحة"""
     sh = shared_row("kick", slug)
     if sh and sh.get("name") and (now() - (sh.get("last_check") or 0) < 600):
         return {"name": sh["name"], "avatar": sh["avatar"], "banner": sh["banner"], "live": bool(sh["live"]), "title": sh["title"], "viewers": sh["viewers"], "thumb": sh["thumb"]}
@@ -859,14 +853,14 @@ async def yt_record(raw):
             "avatar": info.get("avatar") or (d or {}).get("avatar") or "", "banner": info.get("banner") or "",
             "last_video": feed[0]["id"] if feed else ""}
 
-# ═══ TWITTER / X  (X API v2 — Bearer Token) ═══
+# ═══ TWITTER / X ═══
 TW_BASES = ["https://api.x.com/2", "https://api.twitter.com/2"]
 _tw_state = {"pause_until": 0, "last_error": "", "last_ok": 0}
 
 def get_tw_key():
     k = (TWITTER_ENV_KEY or cfg("twitter_bearer", "") or "").strip()
     if k.lower().startswith("bearer "): k = k[7:].strip()
-    if "%" in k: k = unquote(k)   # المفاتيح تُنسخ أحياناً بصيغة URL-encoded
+    if "%" in k: k = unquote(k)
     return k
 
 def tw_available(): return bool(get_tw_key())
@@ -879,7 +873,6 @@ def norm_tw(s):
     return u if re.match(r"^[A-Za-z0-9_]{1,15}$", u) else None
 
 async def tw_get(path, params=None):
-    """يرجع (status, json, رسالة_خطأ_بالعربي)"""
     key = get_tw_key()
     if not key: return 0, {}, "مفتاح تويتر غير مضبوط"
     if _tw_state["pause_until"] > time.time():
@@ -912,7 +905,6 @@ async def tw_get(path, params=None):
     return 0, {}, _tw_state["last_error"]
 
 async def tw_resolve(username):
-    """يتحقق من الحساب ويجلب بياناته. يرجع (info أو None، رسالة، status)"""
     st, j, err = await tw_get("/users/by/username/" + username, {"user.fields": "profile_image_url,name,protected,profile_banner_url"})
     if st != 200: return None, err, st
     d = j.get("data")
@@ -958,7 +950,6 @@ async def tw_timeline(user_id, since_id="", exclude=None, max_results=10):
     media = {m["media_key"]: m for m in ((j.get("includes") or {}).get("media") or []) if m.get("media_key")}
     return [tw_parse(t, media) for t in (j.get("data") or [])], ""
 
-# ─── فلترة التغريدات (كلها اختيارية — لا شيء مفعّل افتراضياً) ───
 TW_FILTER_DEFAULT = {"skip_retweets": False, "skip_replies": False, "skip_quotes": False, "only_media": False,
                      "block_youtube": False, "block_words": [], "require_words": [], "block_domains": [], "min_chars": 0}
 _YT_RE = re.compile(r"(youtube\.com|youtu\.be|youtube-nocookie\.com)", re.I)
@@ -981,7 +972,6 @@ def parse_tw_filters(raw):
     return out
 
 def tw_pass_filters(tw, f):
-    """True = تُرسل التغريدة"""
     if f["skip_retweets"] and tw["is_rt"]: return False
     if f["skip_replies"] and tw["is_reply"]: return False
     if f["skip_quotes"] and tw["is_quote"]: return False
@@ -998,12 +988,11 @@ def tw_pass_filters(tw, f):
     return True
 
 async def tw_record(uname):
-    """بيانات حساب تويتر للإضافة. يرجع (record أو None، رسالة خطأ)"""
     d = find_default("tw", uname.lower())
     sh = shared_row("tw", uname)
     if sh and sh.get("user_id"):
         return {"username": sh["username"], "user_id": sh["user_id"], "name": sh["name"] or sh["username"], "avatar": sh["avatar"], "banner": sh["banner"], "last_tweet": sh["last_tweet"]}, ""
-    if d:   # موجودة في المقترحة → بدون أي طلب مدفوع، والـ user_id يُجلب عند أول فحص
+    if d:
         return {"username": uname, "user_id": "", "name": d["name"] or uname, "avatar": d["avatar"] or "", "banner": "", "last_tweet": ""}, ""
     info, err, st = await tw_resolve(uname)
     if not info: return None, err
@@ -1044,8 +1033,6 @@ def clean_mentions(text):
     t = str(text)
     t = _MENTION_RE.sub("", t); t = _ROLE_RE.sub("", t); t = _CHAN_RE.sub("", t)
     t = re.sub(r"@everyone\b", "", t); t = re.sub(r"@here\b", "", t); t = _EMOJI_RE.sub("", t)
-    
-    # ⚡ إصلاح السطور المتعددة: الحفاظ على الأسطر وعدم استبدالها بمسافة واحدة
     t = re.sub(r"[ \t]+", " ", t)
     t = re.sub(r"\n\s*\n", "\n\n", t)
     return t.strip()
@@ -1278,7 +1265,7 @@ async def job_kick():
     infos = {}
     sem = asyncio.Semaphore(8)
     async def f(sl):
-        async with sem: infos[sl] = await kick_fetch(sl)      # طلب واحد لكل قناة مهما كان عدد من أضافها
+        async with sem: infos[sl] = await kick_fetch(sl)
     await asyncio.gather(*(f(sl) for sl in slugs), return_exceptions=True)
     c = db()
     rows = c.execute("SELECT * FROM kick_channels WHERE enabled=1 AND slug IN (" + ",".join("?"*len(slugs)) + ")", tuple(slugs)).fetchall()
@@ -1319,7 +1306,7 @@ async def job_yt():
     feeds = {}
     sem = asyncio.Semaphore(8)
     async def f(cid):
-        async with sem: feeds[cid] = await yt_feed(cid)      # طلب واحد لكل قناة
+        async with sem: feeds[cid] = await yt_feed(cid)
     await asyncio.gather(*(f(cid) for cid in cids), return_exceptions=True)
     c = db()
     rows = c.execute("SELECT * FROM yt_channels WHERE enabled=1 AND channel_id IN (" + ",".join("?"*len(cids)) + ")", tuple(cids)).fetchall()
@@ -1360,14 +1347,13 @@ async def job_yt():
     await asyncio.gather(*(notify(r, v) for r, v in new_vids), return_exceptions=True)
 
 async def job_tw():
-    """جلب تغريدات الحسابات المضافة — طلب واحد لكل حساب مهما كان عدد من أضافه، ويجلب الجديد فقط (since_id)"""
     if not tw_available(): return
     if _tw_state["pause_until"] > time.time(): return
     interval = max(60, int(cfg("tw_interval", "300") or 300))
     cap = int(cfg("tw_daily_cap", "500") or 0)
     day = time.strftime("%Y%m%d", time.gmtime())
     used = int(cfg("tw_reads_" + day, "0") or 0)
-    if cap and used >= cap: return          # حماية من استهلاك الرصيد
+    if cap and used >= cap: return
     c = db()
     due = c.execute("SELECT DISTINCT lower(username) u FROM tw_channels WHERE enabled=1 AND auto_send=1 AND last_check<? ORDER BY last_check LIMIT ?", (now()-interval, BATCH_TW)).fetchall()
     unames = [r["u"] for r in due]
@@ -1415,7 +1401,7 @@ async def job_tw():
                 if tw_pass_filters(tw, flt): events.append((r, tw))
             keep = newest if int(newest) > int(r["last_tweet"]) else r["last_tweet"]
         else:
-            keep = newest      # أول فحص: نسجّل آخر تغريدة فقط بدون إرسال القديم
+            keep = newest
         updates.append((keep, t, r["id"]))
     c = db()
     for u in updates: c.execute("UPDATE tw_channels SET last_tweet=?, last_check=? WHERE id=?", u)
@@ -1438,7 +1424,6 @@ async def job_tw():
     await asyncio.gather(*(notify(r, tw) for r, tw in events), return_exceptions=True)
 
 async def job_membership_check():
-    """فحص عضوية المستخدمين المرتبطين في القناة المطلوبة"""
     req_ch = cfg("required_channel_id", "").strip()
     if not req_ch or not TELEGRAM_TOKEN: return
     c = db()
@@ -1476,7 +1461,8 @@ async def job_cleanup():
     c.execute("DELETE FROM tg_sent_log WHERE ts<?", (now()-TG_LOG_DAYS*86400,))
     c.execute("DELETE FROM settings WHERE k LIKE 'tw_reads_%' AND k < ?", ("tw_reads_" + time.strftime("%Y%m%d", time.gmtime(time.time()-3*86400)),))
     c.commit(); c.close()
-    # ═══ APP + SCHEDULER ═══
+
+# ═══ APP + SCHEDULER ═══
 scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
@@ -1503,7 +1489,6 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 
-# ═══ REGISTRATION ═══
 @app.get("/api/register-status")
 async def api_register_status():
     return {"enabled": cfg("registration_enabled", "1") == "1", "site_name": cfg("site_name", SITE_NAME),
@@ -1541,7 +1526,6 @@ async def api_register(request: Request, response: Response, username: str = For
     log_sec(un, "register_ok", "", ip)
     return {"ok":True, "username":un, "message":"تم إنشاء الحساب! صلاحياتك محدودة. اربط حسابك في تيليجرام وانضم للقناة الرسمية للحصول على صلاحيات مضاعفة."}
 
-# ═══ LOGIN / LOGOUT ═══
 @app.post("/api/login")
 async def api_login(request: Request, response: Response, u: str = Form(...), p: str = Form(...)):
     u = u.strip()[:60]
@@ -1569,7 +1553,6 @@ async def api_logout(request: Request, response: Response):
     response.delete_cookie("rl_sid")
     return {"ok":True}
 
-# ═══ ME ═══
 @app.get("/api/me")
 async def api_me(request: Request):
     u = auth(request)
@@ -1578,7 +1561,8 @@ async def api_me(request: Request):
     return {
         "user":{"username":u["username"],"display":u["display"],"role":u["role"],"avatar":u.get("avatar",""),"can_discord":u.get("can_discord",0)==1,
                 "linked_tg_id":u.get("linked_tg_id",""),"linked_tg_username":u.get("linked_tg_username",""),
-                "linked_tg_name":u.get("linked_tg_name",""),"is_member":bool(u.get("is_member",0))},
+                "linked_tg_name":u.get("linked_tg_name",""),"is_member":bool(u.get("is_member",0)),
+                "ui_mode": u.get("ui_mode", "glass")},
         "limits":lim,
         "usage":{"kick":limit_info(u["username"],"kick",u["role"])["used"],"yt":limit_info(u["username"],"yt",u["role"])["used"],"tg":limit_info(u["username"],"tg",u["role"])["used"],"tw":limit_info(u["username"],"tw",u["role"])["used"]},
         "tpl_kick":cfg("tpl_kick"),"tpl_yt":cfg("tpl_yt"),"tpl_tw":cfg("tpl_tw"),"btn_tw":cfg("btn_tw","عرض التغريدة"),
@@ -1657,12 +1641,13 @@ async def api_profile(request: Request):
         if d: sets.append("display=?"); vals.append(d)
     if "avatar" in body:
         sets.append("avatar=?"); vals.append(str(body["avatar"]).strip()[:500])
+    if "ui_mode" in body:
+        sets.append("ui_mode=?"); vals.append(str(body["ui_mode"])[:20])
     if not sets: return {"ok":True}
     vals.append(u["username"])
     c = db(); c.execute("UPDATE users SET " + ", ".join(sets) + " WHERE username=?", vals); c.commit(); c.close()
     return {"ok":True}
 
-# ═══ TG ACCOUNT LINKING ═══
 @app.post("/api/link-tg/start")
 async def api_link_tg_start(request: Request):
     u = require_auth(request)
@@ -1761,7 +1746,6 @@ async def api_link_tg_unlink(request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ NEWS ═══
 @app.get("/api/news")
 async def api_news(request: Request):
     u = auth(request)
@@ -1835,7 +1819,6 @@ async def api_admin_news_delete(nid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ BOOT ═══
 @app.get("/api/boot")
 async def api_boot():
     theme = get_site_theme()
@@ -1852,7 +1835,7 @@ async def api_boot():
         "registration_enabled": cfg("registration_enabled", "1") == "1",
         "bot_invite_url": cfg("bot_invite_url", ""),
         "bot_name_custom": cfg("bot_name_custom", "Respect Live"),
-        "self_bot_mode": False,   # خصوصية: لا نكشف نوع الحساب للزوار
+        "self_bot_mode": False,
         "has_twitter": tw_available(),
         "glass": {
             "blur": cfg("glass_blur", "22"),
@@ -1862,6 +1845,7 @@ async def api_boot():
             "sheet_alpha": cfg("glass_sheet_alpha", "0.62"),
             "seg_alpha": cfg("glass_seg_alpha", "0.50"),
         },
+        "splash_code": cfg("splash_code", ""),
     }
 
 @app.get("/api/guest-preview")
@@ -1895,7 +1879,6 @@ async def api_home_stats(request: Request):
     c.close()
     return {"my":my,"global":g,"live_now":[dict(r) for r in live],"videos":[dict(r) for r in vids]}
 
-# ═══ CHANNELS ═══
 @app.get("/api/channels/{kind}")
 async def api_channels(kind: str, request: Request):
     u = require_auth(request)
@@ -1922,7 +1905,6 @@ async def api_suggestions(kind: str, request: Request):
     return {"rows":[dict(r) for r in defaults if str(r["identifier"]).lower() not in mine]}
 
 def _insert_channel(c, kind, username, rec, msg="", btn_text="", filters="", t=None):
-    """إدخال صف مستخدم لقناة (كيك/يوتيوب/تويتر) — الصف خفيف ويعتمد على بيانات مشتركة"""
     t = t or now()
     if kind == "kick":
         c.execute("INSERT INTO kick_channels(slug,name,avatar,banner,msg,btn_text,enabled,auto_send,live,title,viewers,thumb,last_check,added_by,created) VALUES(?,?,?,?,?,?,1,1,?,?,?,?,?,?,?)",
@@ -1952,7 +1934,7 @@ async def api_add_channel(kind: str, request: Request):
         if user_has("kick", slug, u["username"]): return JSONResponse({"error":"مضافة لديك مسبقاً"},409)
         if not check_limit(u["username"], "kick", u["role"]):
             i = limit_info(u["username"],"kick",u["role"]); return JSONResponse({"error":"وصلت الحد (" + str(i["limit"]) + ")"},400)
-        from_sug = bool(find_default("kick", slug))      # إن كانت من المقترحة نتعامل معها كأنها مختارة منها
+        from_sug = bool(find_default("kick", slug))
         rec = await kick_record(slug); rec["slug"] = slug
     elif kind == "yt":
         raw = body.get("channel_id") or body.get("input") or ""
@@ -2100,7 +2082,6 @@ async def api_refresh_channel(kind: str, cid: int, request: Request):
 
 @app.get("/api/channels/tg/{cid}/messages")
 async def api_tg_messages(cid: int, request: Request):
-    """آخر الرسائل المرسلة إلى قناة تيليجرام ومن أي مصدر (كيك/يوتيوب/تويتر/ديسكورد)"""
     u = require_auth(request)
     c = db()
     row = c.execute("SELECT id,name,added_by FROM tg_channels WHERE id=?", (cid,)).fetchone()
@@ -2110,7 +2091,6 @@ async def api_tg_messages(cid: int, request: Request):
     c.close()
     return {"name": row["name"], "rows": [dict(r) for r in rows]}
 
-# ═══ TG VERIFY FLOW ═══
 @app.post("/api/tg/verify/start")
 async def tg_verify_start(request: Request):
     u = require_auth(request)
@@ -2143,7 +2123,7 @@ async def tg_verify_start(request: Request):
     admins, adm_err = await tg_get_full_admins(chat_info["chat_id"])
     if admins is None:
         return JSONResponse({"error":"تعذّر جلب مشرفي القناة.\n" + adm_err}, 400)
-    if not admins:   # لا يوجد مشرف بكل الصلاحيات → نقبل أي مشرف بشري يستطيع النشر بدل الرفض
+    if not admins:
         admins, _e2 = await tg_get_full_admins(chat_info["chat_id"], strict=False)
     if not admins:
         return JSONResponse({"error":"لا يوجد مشرف بشري يستطيع النشر في القناة — تأكد أن أحد المشرفين يستطيع النشر وأن البوت مشرف"}, 400)
@@ -2237,7 +2217,6 @@ async def tg_verify_cancel(vid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ SEND ═══
 @app.get("/api/send/prefill")
 async def api_send_prefill(request: Request):
     u = require_auth(request)
@@ -2299,7 +2278,6 @@ async def api_send(request: Request):
             out["users"] += 1
     return {"ok":True,"result":out}
 
-# ═══ DISCORD ═══
 @app.get("/api/discord/channels")
 async def api_dc_channels(request: Request):
     _u = require_discord(request); _own = _u["role"] == "owner"
@@ -2425,7 +2403,6 @@ async def api_dc_feed_sub(fid: int, request: Request):
     c.commit(); c.close()
     return {"ok":True}
 
-# ═══ NOTIFS ═══
 @app.get("/api/notifs")
 async def api_notifs(request: Request):
     u = require_auth(request)
@@ -2448,7 +2425,6 @@ async def api_notifs_clear(request: Request):
     c = db(); c.execute("DELETE FROM notifs WHERE username=?", (u["username"],)); c.commit(); c.close()
     return {"ok":True}
 
-# ═══ SUGGESTIONS ═══
 @app.post("/api/suggestions")
 async def api_suggest(request: Request):
     u = require_auth(request)
@@ -2485,7 +2461,6 @@ async def api_admin_del_sug(sid: int, request: Request):
     c = db(); c.execute("DELETE FROM suggestions WHERE id=?", (sid,)); c.commit(); c.close()
     return {"ok":True}
 
-# ═══ PUSH ═══
 @app.get("/api/push/key")
 async def api_push_key():
     if not push_available(): return JSONResponse({"error":"Push غير مفعّل"},404)
@@ -2520,7 +2495,6 @@ async def api_push_test(request: Request):
     if sent == 0: return JSONResponse({"error":"لا اشتراك فعّال"},404)
     return {"ok":True,"sent":sent}
 
-# ═══ UPLOAD ═══
 @app.post("/api/upload")
 async def api_upload(request: Request):
     u = require_auth(request)
@@ -2549,7 +2523,6 @@ async def api_get_image(img_id: str):
     if not row: raise HTTPException(404)
     return FastResponse(content=row["data"], media_type=row["mime"], headers={"cache-control":"public, max-age=31536000, immutable"})
 
-# ═══ SETTINGS ═══
 @app.get("/api/settings")
 async def api_settings(request: Request):
     require_auth(request)
@@ -2564,7 +2537,8 @@ async def api_settings(request: Request):
             "required_channel_id","required_channel_url","required_channel_name","required_channel_msg",
             "signup_welcome_title","signup_welcome_text",
             "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw",
-            "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha"]
+            "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha",
+            "splash_code"]
     out = {k:cfg(k) for k in keys}
     out["groq_configured"] = groq_available()
     out["groq_source"] = "env" if GROQ_ENV_KEY else ("db" if cfg("groq_api_key","") else "none")
@@ -2585,7 +2559,8 @@ async def api_save_settings(request: Request):
                "required_channel_id","required_channel_url","required_channel_name","required_channel_msg",
                "signup_welcome_title","signup_welcome_text",
                "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw",
-               "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha"]
+               "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha",
+               "splash_code"]
     for k in allowed:
         if k in body: set_cfg(k, str(body[k])[:2000])
     return {"ok":True}
@@ -2626,7 +2601,6 @@ async def api_maint(request: Request):
     if text: set_cfg("maintenance_text", text)
     return {"ok":True,"maintenance":enabled==1}
 
-# ═══ GROQ ═══
 @app.get("/api/ai/status")
 async def api_ai_status(request: Request):
     require_auth(request)
@@ -2659,7 +2633,6 @@ async def api_admin_groq(request: Request):
         return {"ok":True,"test":out or "فشل الاختبار"}
     return {"ok":True,"available":groq_available()}
 
-# ═══ ADMIN DEFAULTS ═══
 @app.get("/api/admin/default-channels")
 async def api_admin_defaults(request: Request):
     require_owner(request)
@@ -2671,7 +2644,6 @@ async def api_admin_defaults(request: Request):
     return {"rows":[dict(r) for r in rows]}
 
 async def _default_from_input(kind, raw, cname=""):
-    """يحوّل مدخلاً واحداً إلى (identifier, name, avatar, alias) أو يرجع (None, رسالة خطأ)"""
     alias = ""
     if kind == "kick":
         ident = re.sub(r"[^a-z0-9_-]","",raw.lower().replace("@",""))
@@ -2766,7 +2738,6 @@ async def api_admin_patch_default(cid: int, request: Request):
     c.close()
     return {"ok":True}
 
-# ═══ ADMIN TWITTER ═══
 @app.get("/api/admin/twitter")
 async def api_admin_tw_get(request: Request):
     require_owner(request)
@@ -2808,7 +2779,6 @@ async def api_admin_tw_set(request: Request):
         return {"ok": False, "error": err or "فشل الاتصال بتويتر"}
     return {"ok": True, "configured": tw_available()}
 
-# ═══ ADMIN USERS ═══
 @app.get("/api/admin/users")
 async def api_admin_users(request: Request):
     require_owner(request)
@@ -2953,7 +2923,6 @@ async def api_admin_sec(request: Request):
     c.close()
     return {"rows":[dict(r) for r in rows]}
 
-# ═══ WEBHOOK ═══
 @app.post("/api/telegram/webhook")
 async def tg_webhook(request: Request):
     try:
@@ -2984,7 +2953,6 @@ async def tg_known_channels(request: Request):
     c.close()
     return {"rows": [dict(r) for r in rows]}
 
-# ═══ ROOT + MANIFEST + SW ═══
 @app.get("/", response_class=HTMLResponse)
 async def index():
     try:
@@ -2993,7 +2961,6 @@ async def index():
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page():
-    """صفحة إدارة مستقلة بعنوان ثابت — نفس التطبيق لكنه يفتح مباشرة على لوحة الإدارة"""
     return await index()
 
 @app.get("/manifest.json")

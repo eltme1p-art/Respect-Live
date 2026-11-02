@@ -214,6 +214,13 @@ def init_db():
         "required_channel_msg": "🚀 للحصول على صلاحيات مضاعفة، انضم إلى قناتنا الرسمية عبر الرابط أدناه ثم اضغط تحقق.",
         "signup_welcome_title": "مرحباً بك!",
         "signup_welcome_text": "حسابك بصلاحيات محدودة (كيك 10، يوتيوب 5، تليجرام 1) وبدون وصول لصفحة الديسكورد. للترقية، اربط حسابك في تيليجرام وانضم للقناة الرسمية.",
+        # شفافية Liquid Glass
+        "glass_blur": "22",
+        "glass_sat": "185",
+        "glass_fill": "0.055",
+        "glass_tabbar_alpha": "0.46",
+        "glass_sheet_alpha": "0.62",
+        "glass_seg_alpha": "0.50",
     }
     for k, v in defaults.items():
         c.execute("INSERT OR IGNORE INTO settings(k,v) VALUES(?,?)", (k, v))
@@ -1003,7 +1010,6 @@ async def tw_record(uname):
     info["last_tweet"] = ""
     return info, ""
 
-# ═══ PUSH ═══
 # ═══ PUSH ═══
 def push_available(): return bool(VAPID_PUBLIC and VAPID_PRIVATE)
 
@@ -1848,6 +1854,14 @@ async def api_boot():
         "bot_name_custom": cfg("bot_name_custom", "Respect Live"),
         "self_bot_mode": False,   # خصوصية: لا نكشف نوع الحساب للزوار
         "has_twitter": tw_available(),
+        "glass": {
+            "blur": cfg("glass_blur", "22"),
+            "sat": cfg("glass_sat", "185"),
+            "fill": cfg("glass_fill", "0.055"),
+            "tabbar_alpha": cfg("glass_tabbar_alpha", "0.46"),
+            "sheet_alpha": cfg("glass_sheet_alpha", "0.62"),
+            "seg_alpha": cfg("glass_seg_alpha", "0.50"),
+        },
     }
 
 @app.get("/api/guest-preview")
@@ -2549,7 +2563,8 @@ async def api_settings(request: Request):
             "bonus_lim_kick","bonus_lim_yt","bonus_lim_tg",
             "required_channel_id","required_channel_url","required_channel_name","required_channel_msg",
             "signup_welcome_title","signup_welcome_text",
-            "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw"]
+            "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw",
+            "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha"]
     out = {k:cfg(k) for k in keys}
     out["groq_configured"] = groq_available()
     out["groq_source"] = "env" if GROQ_ENV_KEY else ("db" if cfg("groq_api_key","") else "none")
@@ -2569,7 +2584,8 @@ async def api_save_settings(request: Request):
                "bonus_lim_kick","bonus_lim_yt","bonus_lim_tg",
                "required_channel_id","required_channel_url","required_channel_name","required_channel_msg",
                "signup_welcome_title","signup_welcome_text",
-            "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw"]
+               "tpl_tw","btn_tw","default_lim_tw","bonus_lim_tw","lim_tw",
+               "glass_blur","glass_sat","glass_fill","glass_tabbar_alpha","glass_sheet_alpha","glass_seg_alpha"]
     for k in allowed:
         if k in body: set_cfg(k, str(body[k])[:2000])
     return {"ok":True}

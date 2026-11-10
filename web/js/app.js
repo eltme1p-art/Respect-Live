@@ -30,8 +30,10 @@ const TABS = () => [
 ];
 
 function brand() {
-  const b = S.boot;
-  return html`<a class="brand" href="/" aria-label="${b.site_name || 'Respect Live'}"><span class="brand-logo">${b.site_logo ? html`<img src="${b.site_logo}" alt="">` : ic('logo')}</span><span class="brand-name">${b.site_name || 'Respect Live'}</span></a>`;
+  const b = S.boot, name = String(b.site_name || 'Respect Live').trim().split(/\s+/);
+  // الاسم بالأحرف الكبيرة، وآخر كلمة بلون الموقع (كالتصميم الأصلي)
+  const first = name.length > 1 ? name.slice(0, -1).join(' ') : '', last = name[name.length - 1];
+  return html`<a class="brand" href="/" aria-label="${b.site_name || 'Respect Live'}"><span class="brand-logo">${b.site_logo ? html`<img src="${b.site_logo}" alt="">` : ic('logo')}</span><span class="brand-txt"><span class="brand-name">${first ? first + ' ' : ''}<span>${last}</span></span><span class="brand-sub">${b.site_sub || 'STREAM MONITOR'}</span></span></a>`;
 }
 
 function sidebar() {

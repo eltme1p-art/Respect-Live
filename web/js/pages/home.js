@@ -70,7 +70,7 @@ async function guest(ctx) {
   const b = S.boot;
   let p = null;
   const paint = () => render(ctx.root, html`
-    <section class="hello" style="padding-top:18px"><h1>${b.hero_title || 'مراقبة'} ${b.hero_accent || 'القنوات.'}</h1>
+    <section class="hello" style="padding-top:18px"><h1>${b.hero_title || 'مراقبة'} <span>${b.hero_accent || 'القنوات.'}</span></h1>
       <p class="status">${b.hero_text || 'تابع قنواتك على كيك ويوتيوب وX وتيك توك، وتصلك التنبيهات في تيليجرام فور حدوثها.'}</p>
       <div class="hstack" style="margin-top:18px">${b.registration_enabled ? html`<a class="btn pri lg" href="/register">أنشئ حسابك مجاناً</a>` : ''}<a class="btn lg" href="/login">تسجيل الدخول</a></div></section>
     ${p && p.live && p.live.length ? html`<section class="sec"><div class="sec-h"><h2>على الهواء الآن</h2></div><div class="live-strip">${p.live.map(r => liveCard(r))}</div></section>` : ''}

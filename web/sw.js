@@ -1,14 +1,15 @@
 // Service Worker — تثبيت سريع، كاش ذكي، وإشعارات
 const PWA = '__PWA__' === '1';
 const V = 'rl-__BUILD__';
-const SHELL = ['/', '/assets/css/app.css?v=__BUILD__', '/assets/js/app.js?v=__BUILD__'];
+const SHELL = ['/', '/assets/css/app.css?v=__BUILD__', '/assets/css/classic.css?v=__BUILD__', '/assets/js/app.js?v=__BUILD__'];
 
+// لا skipWaiting ولا clients.claim: النسخة الجديدة تُفعَّل عند الفتح التالي فقط،
+// فلا يتبدّل شيء أثناء استخدام الموقع (يمنع إعادة التحميل أو اختلاط ملفات نسختين).
 self.addEventListener('install', e => {
-  self.skipWaiting();
   if (PWA) e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).catch(() => {}));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('rl-') && k !== V && k !== 'rl-img').map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('rl-') && k !== V && k !== 'rl-img').map(k => caches.delete(k)))));
 });
 
 self.addEventListener('fetch', e => {

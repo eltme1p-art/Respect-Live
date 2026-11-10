@@ -18,7 +18,14 @@ export function html(strings, ...vals) {
   return new Raw(out);
 }
 export const ic = (n, c) => raw(icon(n, c));
-export function render(el, tpl) { if (el) el.innerHTML = tpl instanceof Raw ? tpl.s : esc(tpl); return el; }
+// إذا لم يتغيّر المحتوى لا نلمس الـDOM إطلاقاً: يمنع الوميض وإعادة تحميل الصور وقفزة التمرير عند التحديث الدوري
+export function render(el, tpl) {
+  if (!el) return el;
+  const s = tpl instanceof Raw ? tpl.s : esc(tpl);
+  if (el.__rl === s && el.firstChild) return el;
+  el.__rl = s; el.innerHTML = s;
+  return el;
+}
 export function frag(tpl) { const t = document.createElement('template'); t.innerHTML = tpl instanceof Raw ? tpl.s : esc(tpl); return t.content; }
 
 export const $ = (s, r = document) => r.querySelector(s);

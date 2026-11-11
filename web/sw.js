@@ -1,36 +1,76 @@
-// Service Worker — تثبيت سريع، كاش ذكي، وإشعارات
-const PWA = '__PWA__' === '1';
-const V = 'rl-__BUILD__';
-const SHELL = ['/', '/assets/css/app.css?v=__BUILD__', '/assets/css/classic.css?v=__BUILD__', '/assets/js/app.js?v=__BUILD__'];
+// Service Worker — يجعل الموقع يعمل كتطبيق حقيقي:
+//  • الهيكل (الصفحة) يُفتح فوراً من التخزين ثم يُحدَّث في الخلفية (stale-while-revalidate)
+//  • الخطوط والصور تُخزَّن على الجهاز (لا إعادة تحميل، وتعمل بلا إنترنت)
+//  • لا skipWaiting ولا clients.claim → لا يتبدّل شيء أثناء الاستخدام ولا إعادة تحميل مفاجئة
+//  • إذا نزل تحديث جديد نُخبر الصفحة برسالة، والمستخدم هو من يقرر متى يحدّث
+const SHELL = 'rl-shell', FONTS = 'rl-fonts', IMG = 'rl-img';
+const KEEP = [SHELL, FONTS, IMG];
 
-// لا skipWaiting ولا clients.claim: النسخة الجديدة تُفعَّل عند الفتح التالي فقط،
-// فلا يتبدّل شيء أثناء استخدام الموقع (يمنع إعادة التحميل أو اختلاط ملفات نسختين).
 self.addEventListener('install', e => {
-  if (PWA) e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).catch(() => {}));
+  e.waitUntil(caches.open(SHELL).then(c => c.add(new Request('/', { cache: 'reload' }))).catch(() => {}));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('rl-') && k !== V && k !== 'rl-img').map(k => caches.delete(k)))));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('rl-') && !KEEP.includes(k)).map(k => caches.delete(k)))));
 });
+
+async function tell(msg) {
+  const cs = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  cs.forEach(c => c.postMessage(msg));
+}
+
+// صفحة التطبيق: من الكاش فوراً، وتُحدَّث بالخلفية؛ إن اختلفت عن المخزّنة نُخبر الصفحة
+async function shell(req) {
+  const cache = await caches.open(SHELL);
+  const cached = await cache.match('/');
+  const net = fetch(new Request('/', { cache: 'no-cache', credentials: 'same-origin' })).then(async res => {
+    if (res && res.ok) {
+      const copy = res.clone();
+      if (cached) {
+        try {
+          const [a, b] = await Promise.all([cached.clone().text(), res.clone().text()]);
+          if (a !== b) tell({ t: 'update' });
+        } catch (x) {}
+      }
+      await cache.put('/', copy);
+    }
+    return res;
+  }).catch(() => null);
+  if (cached) { net.catch(() => {}); return cached; }
+  const res = await net;
+  return res || new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#030508;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;margin:0"><div style="text-align:center"><h2>لا يوجد اتصال</h2><p>افتح التطبيق مرة واحدة وأنت متصل ليُحفظ على جهازك.</p></div>', { status: 503, headers: { 'content-type': 'text/html; charset=utf-8' } });
+}
+
+// الأصول الثابتة: من الكاش أولاً، وإن لم توجد تُجلب وتُحفظ
+async function cacheFirst(req, name) {
+  const c = await caches.open(name);
+  const h = await c.match(req);
+  if (h) return h;
+  const res = await fetch(req);
+  if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone());
+  return res;
+}
+// الخطوط: من الكاش فوراً مع تحديث بالخلفية
+async function swr(req, name) {
+  const c = await caches.open(name);
+  const h = await c.match(req);
+  const net = fetch(req).then(res => { if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; }).catch(() => null);
+  return h || (await net) || Response.error();
+}
 
 self.addEventListener('fetch', e => {
   const r = e.request;
-  if (!PWA || r.method !== 'GET') return;
+  if (r.method !== 'GET') return;
   const u = new URL(r.url);
+  if (u.hostname === 'fonts.googleapis.com') { e.respondWith(swr(r, FONTS)); return; }
+  if (u.hostname === 'fonts.gstatic.com') { e.respondWith(cacheFirst(r, FONTS)); return; }
   if (u.origin !== location.origin) return;
-  // صفحات التطبيق: الشبكة أولاً، والكاش عند انقطاع الاتصال
   if (r.mode === 'navigate') {
-    e.respondWith(fetch(r).then(res => { if (res.ok) caches.open(V).then(c => c.put('/', res.clone())); return res; }).catch(() => caches.match('/')));
+    if (u.pathname.startsWith('/api/')) return;
+    e.respondWith(shell(r));
     return;
   }
-  // ملفات الواجهة (مختومة بالإصدار): الكاش أولاً
-  if (u.pathname.startsWith('/assets/')) {
-    e.respondWith(caches.open(V).then(c => c.match(r).then(h => h || fetch(r).then(res => { if (res.ok) c.put(r, res.clone()); return res; }))));
-    return;
-  }
-  // الصور: من الكاش فوراً ثم تُحدّث
-  if (u.pathname.startsWith('/api/image/')) {
-    e.respondWith(caches.open('rl-img').then(c => c.match(r).then(h => h || fetch(r).then(res => { if (res.ok) c.put(r, res.clone()); return res; }))));
-  }
+  if (u.pathname.startsWith('/api/image/')) { e.respondWith(cacheFirst(r, IMG)); return; }
+  if (u.pathname === '/favicon.ico' || u.pathname === '/manifest.json' || u.pathname.startsWith('/assets/')) { e.respondWith(swr(r, SHELL)); }
 });
 
 self.addEventListener('push', e => {
@@ -39,7 +79,7 @@ self.addEventListener('push', e => {
   const o = { body: d.body || '', icon: '/favicon.ico', badge: '/favicon.ico', image: d.image || undefined, tag: d.tag || undefined, renotify: !!d.tag, dir: 'rtl', lang: 'ar', data: { url: d.url || '/notifications' } };
   e.waitUntil(Promise.all([
     self.registration.showNotification(d.title || 'تنبيه', o),
-    self.clients.matchAll({ type: 'window' }).then(cs => cs.forEach(c => c.postMessage({ t: 'push' }))),
+    tell({ t: 'push' }),
   ]));
 });
 self.addEventListener('notificationclick', e => {

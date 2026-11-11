@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="__THEME_BG__">
+<meta name="color-scheme" content="dark light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="تابع بث كيك وتيك توك وفيديوهات يوتيوب وتغريدات X، وتصلك التنبيهات مباشرة في قنوات تيليجرام.">
+<title>__SITE_NAME__</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;500;700;800;900&display=swap">
+<link rel="stylesheet" href="/assets/css/app.css?v=__BUILD__">
+<link rel="stylesheet" href="/assets/css/classic.css?v=__BUILD__">
+<script>
+window.__BOOT__ = /*__BOOT__*/null || {};
+(function () {
+  try {
+    var d = document.documentElement, ls = localStorage;
+    var sc = ls.getItem('rl_scheme') || 'dark';
+    if (sc === 'light' || (sc === 'auto' && matchMedia('(prefers-color-scheme: light)').matches)) d.classList.add('light');
+    if (ls.getItem('rl_ui_mode') === 'lite') d.classList.add('lite');
+    var bt = window.__BOOT__ || {};
+    document.addEventListener('DOMContentLoaded', function () {
+      var f = document.getElementById('spFoot'), l = document.getElementById('spLogo');
+      if (f && bt.site_sub) f.textContent = String(bt.site_sub).toUpperCase();
+      if (l && bt.site_logo) { var im = new Image(); im.alt = ''; im.src = bt.site_logo; l.textContent = ''; l.appendChild(im); }
+    });
+    var t = bt.theme;
+    if (t && !d.classList.contains('light')) { d.style.setProperty('--bg', t.c1); d.style.setProperty('--bg-2', t.c2); }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<div id="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+<div id="splash" aria-hidden="true"><div class="sp-wrap"><div class="sp-logo" id="spLogo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6 3.4 9.4a1 1 0 0 0-.4.8V20a1.6 1.6 0 0 0 1.6 1.6h4.2a.8.8 0 0 0 .8-.8v-4.6a.6.6 0 0 1 .6-.6h3.6a.6.6 0 0 1 .6.6v4.6a.8.8 0 0 0 .8.8h4.2A1.6 1.6 0 0 0 21 20v-9.8a1 1 0 0 0-.4-.8z"/></svg></div><div class="sp-dots"><i></i><i></i><i></i></div><div class="sp-foot" id="spFoot">STREAM MONITOR</div></div></div>
+<div id="app"></div>
+<noscript><p style="padding:40px;text-align:center">هذا الموقع يحتاج تفعيل JavaScript.</p></noscript>
+<script type="module" src="/assets/js/app.js?v=__BUILD__"></script>
+</body>
+</html>
